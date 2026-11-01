@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { Play, Bell, Clock, ChevronLeft, ChevronRight, Compass, Radio } from 'lucide-react'
 import type { EPGChannel, EPGProgram, EPGProgramStatus } from '../../../types/epg'
 import { Badge } from '../../../components/common/Badge'
@@ -35,19 +35,21 @@ export const EPGFullGuide: React.FC<EPGFullGuideProps> = ({
 }) => {
   // Mobile selected channel tab
   const [mobileChannelId, setMobileChannelId] = useState<string>(tunedChannelId || channels[0]?.id)
+  const [prevTunedId, setPrevTunedId] = useState(tunedChannelId)
 
   // Timeline window offset in minutes relative to currentTime (rounded down to half-hour)
   const [windowOffsetMinutes, setWindowOffsetMinutes] = useState(0)
 
   // Sync mobile selected channel if tuned channel changes
-  useEffect(() => {
+  if (prevTunedId !== tunedChannelId) {
+    setPrevTunedId(tunedChannelId)
     if (tunedChannelId) {
       setMobileChannelId(tunedChannelId)
     }
-  }, [tunedChannelId])
+  }
 
   // Calculate 5-hour timeline window starting 30 minutes before current half-hour
-  const { windowStart, windowEnd, timeSlots, totalWindowMinutes } = useMemo(() => {
+  const { windowStart, windowEnd, timeSlots } = useMemo(() => {
     const totalMinutes = 300 // 5 hours visible
     const base = new Date(currentTime)
 
@@ -71,7 +73,6 @@ export const EPGFullGuide: React.FC<EPGFullGuideProps> = ({
       windowStart: start,
       windowEnd: end,
       timeSlots: slots,
-      totalWindowMinutes: totalMinutes,
     }
   }, [currentTime, windowOffsetMinutes])
 
@@ -344,7 +345,7 @@ export const EPGFullGuide: React.FC<EPGFullGuideProps> = ({
       </div>
 
       {/* ─── MOBILE RESPONSIVE VERTICALLY STACKED SCHEDULE ─── */}
-      <div className="block md:hidden space-y-4">
+      <div data-testid="epg-mobile-guide" className="block md:hidden space-y-4">
         {/* Mobile Channel Horizontal Selector */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           {channels.map((ch) => {

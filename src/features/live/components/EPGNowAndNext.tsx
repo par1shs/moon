@@ -1,5 +1,5 @@
 import React from 'react'
-import { Play, Bell, Clock, Radio, ChevronRight } from 'lucide-react'
+import { Play, Bell } from 'lucide-react'
 import type { EPGChannel, EPGProgram, ChannelLiveState } from '../../../types/epg'
 import { Badge } from '../../../components/common/Badge'
 import { Button } from '../../../components/common/Button'

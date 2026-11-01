@@ -21,7 +21,7 @@ import { EPGFullGuide } from '../../live/components/EPGFullGuide'
 import { ProgramInfoModal } from '../../live/components/ProgramInfoModal'
 import { ReminderToast } from '../../live/components/ReminderToast'
 import { SimulatedPlayerModal } from '../../../components/player/SimulatedPlayerModal'
-import { ALL_CONTENT } from '../../../data/sampleContent'
+import { ALL_DISCOVERY_TITLES } from '../../../data/sampleContent'
 
 const CATEGORIES = ['All Channels', 'News', 'Sports', 'Cinema', 'Culture']
 
@@ -119,13 +119,13 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
 
   // Channel Surfing Handlers (within full-screen player or EPG)
   const handlePreviousChannel = useCallback(() => {
-    const idx = channels.findIndex((c) => c.id === tunedChannelId)
+    const idx = channels.findIndex((c: EPGChannel) => c.id === tunedChannelId)
     const prevIdx = (idx - 1 + channels.length) % channels.length
     setTunedChannelId(channels[prevIdx].id)
   }, [channels, tunedChannelId])
 
   const handleNextChannel = useCallback(() => {
-    const idx = channels.findIndex((c) => c.id === tunedChannelId)
+    const idx = channels.findIndex((c: EPGChannel) => c.id === tunedChannelId)
     const nextIdx = (idx + 1) % channels.length
     setTunedChannelId(channels[nextIdx].id)
   }, [channels, tunedChannelId])
@@ -143,7 +143,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
   const handleOpenLinkedContent = useCallback(
     (contentId: string) => {
       if (!onSelectContent) return
-      const found = ALL_CONTENT.find((c) => c.id === contentId)
+      const found = ALL_DISCOVERY_TITLES.find((c) => c.id === contentId)
       if (found) {
         onSelectContent(found)
       }

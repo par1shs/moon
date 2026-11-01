@@ -1,5 +1,5 @@
 import React from 'react'
-import { Play, Bell, BellOff, Clock, Film, Radio, Check } from 'lucide-react'
+import { Play, Bell, BellOff, Clock, Film, Radio } from 'lucide-react'
 import type { EPGProgram, EPGChannel, EPGProgramStatus } from '../../../types/epg'
 import { Modal } from '../../../components/modals/Modal'
 import { Badge } from '../../../components/common/Badge'

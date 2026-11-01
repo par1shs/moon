@@ -20,13 +20,15 @@ export function useEPGSchedule(selectedCategory: string = 'All Channels') {
   }, [selectedCategory])
 
   // Rolling schedules for all channels (spans yesterday, today, tomorrow)
+  const currentDay = currentTime.toDateString()
   const channelSchedules = useMemo(() => {
     const schedules: Record<string, EPGProgram[]> = {}
     for (const ch of EPG_CHANNELS) {
       schedules[ch.id] = generateRollingSchedule(ch.id, currentTime)
     }
     return schedules
-  }, [currentTime.getDate()]) // Regenerate when calendar day changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDay])
 
   // Helper to determine programme status relative to given time
   const getProgramStatus = useCallback(

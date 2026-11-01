@@ -29,16 +29,18 @@ export function useProgramReminders(profileId: string = 'default') {
     }
   }, [reminders, storageKey])
 
-  // Reload when profileId changes
-  useEffect(() => {
+  // Track storageKey to synchronize reminders on profile switch
+  const [prevStorageKey, setPrevStorageKey] = useState(storageKey)
+  if (prevStorageKey !== storageKey) {
+    setPrevStorageKey(storageKey)
     try {
-      const stored = localStorage.getItem(storageKey)
+      const stored = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
       setReminders(stored ? JSON.parse(stored) : [])
-      setDueReminder(null)
     } catch {
       setReminders([])
     }
-  }, [storageKey])
+    setDueReminder(null)
+  }
 
   // Check for due reminders periodically
   useEffect(() => {

@@ -36,6 +36,16 @@ export interface LiveProgramInfo {
   channelCategory?: string
 }
 
+export interface CatchUpProgramInfo {
+  channelNumber: string
+  channelTitle: string
+  programTitle: string
+  broadcastDateText: string
+  expiryText?: string
+  genre?: string
+  isExpiringSoon?: boolean
+}
+
 export interface SimulatedPlayerModalProps {
   isOpen: boolean
   content: ContentMetadata | null
@@ -59,6 +69,7 @@ export interface SimulatedPlayerModalProps {
   onMarkCompleted: (contentId: string) => void
   onNextEpisode?: (nextEpisode: EpisodeMetadata) => void
   liveProgram?: LiveProgramInfo
+  catchUpProgram?: CatchUpProgramInfo
   onPreviousChannel?: () => void
   onNextChannel?: () => void
 }
@@ -165,6 +176,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   onMarkCompleted,
   onNextEpisode,
   liveProgram,
+  catchUpProgram,
   onPreviousChannel,
   onNextChannel,
 }) => {
@@ -660,6 +672,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
         !showControls ? 'cursor-none' : 'cursor-default'
       }`}
       role="region"
+      data-testid="simulated-player-modal"
       aria-label={`Video player for ${content.title}`}
     >
       {/* ─── Background Cinematic Canvas ─── */}
@@ -740,8 +753,8 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
             <ArrowLeft className="w-5 h-5" />
           </button>
 
-          {/* Live Channel Surfing Controls */}
-          {(liveProgram || content.type === 'live') && onPreviousChannel && onNextChannel && (
+          {/* Live Channel Surfing Controls (only in live mode, not catch-up) */}
+          {(liveProgram || content.type === 'live') && !catchUpProgram && onPreviousChannel && onNextChannel && (
             <div className="flex items-center gap-1 bg-black/60 border border-white/15 rounded-xl p-0.5 shrink-0">
               <button
                 type="button"
@@ -766,13 +779,23 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
 
           <div className="space-y-0.5 truncate">
             <div className="flex items-center gap-2">
-              {(liveProgram || content.type === 'live') && (
+              {catchUpProgram ? (
+                <span
+                  data-testid="player-catch-up-badge"
+                  className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1 shrink-0"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  CATCH-UP
+                </span>
+              ) : (liveProgram || content.type === 'live') ? (
                 <Badge variant="live" size="sm" className="px-2 py-0.5 animate-pulse">
                   ● LIVE
                 </Badge>
-              )}
+              ) : null}
               <h2 className="font-display font-bold text-base sm:text-lg text-white truncate drop-shadow">
-                {liveProgram
+                {catchUpProgram
+                  ? `CH ${catchUpProgram.channelNumber}: ${catchUpProgram.channelTitle}`
+                  : liveProgram
                   ? `CH ${liveProgram.channelNumber}: ${liveProgram.channelTitle}`
                   : content.title}
               </h2>
@@ -784,7 +807,9 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
             </div>
 
             <p className="text-xs font-mono text-[var(--accent-secondary)] truncate">
-              {liveProgram
+              {catchUpProgram
+                ? `${catchUpProgram.programTitle} • Broadcast: ${catchUpProgram.broadcastDateText}${catchUpProgram.expiryText ? ` • ${catchUpProgram.expiryText}` : ''}`
+                : liveProgram
                 ? `LIVE: ${liveProgram.programTitle}${liveProgram.programGenre ? ` • ${liveProgram.programGenre}` : ''}`
                 : currentEpisode
                 ? `Season ${currentSeasonNumber} • Episode ${currentEpisode.episodeNumber}: ${currentEpisode.title}`
@@ -795,7 +820,17 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
 
         {/* Top Right: Telemetry Watermark & Stream Indicator */}
         <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
-          {liveProgram || content.type === 'live' ? (
+          {catchUpProgram ? (
+            <div
+              data-testid="player-catch-up-indicator"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 backdrop-blur-md"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-[11px] uppercase tracking-wider font-bold">
+                CATCH-UP STREAM
+              </span>
+            </div>
+          ) : liveProgram || content.type === 'live' ? (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/60 border border-red-500/40 text-red-300 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
               <span className="text-[11px] uppercase tracking-wider font-bold">

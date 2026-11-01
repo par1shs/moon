@@ -1,6 +1,18 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import type { EPGChannel, EPGProgram, ChannelLiveState, EPGProgramStatus } from '../types/epg'
-import { EPG_CHANNELS, generateRollingSchedule } from '../data/epgSchedule'
+import type {
+  EPGChannel,
+  EPGProgram,
+  ChannelLiveState,
+  EPGProgramStatus,
+  CatchUpProgramItem,
+  CatchUpStatus,
+} from '../types/epg'
+import {
+  EPG_CHANNELS,
+  generateRollingSchedule,
+  generateCatchUpCatalogue,
+  getCatchUpStatus,
+} from '../data/epgSchedule'
 
 export function useEPGSchedule(selectedCategory: string = 'All Channels') {
   // Live ticking clock updated every 10 seconds
@@ -16,7 +28,9 @@ export function useEPGSchedule(selectedCategory: string = 'All Channels') {
   // Filter channels based on selected category
   const filteredChannels = useMemo(() => {
     if (selectedCategory === 'All Channels') return EPG_CHANNELS
-    return EPG_CHANNELS.filter((ch) => ch.category.toLowerCase() === selectedCategory.toLowerCase())
+    return EPG_CHANNELS.filter(
+      (ch) => ch.category.toLowerCase() === selectedCategory.toLowerCase()
+    )
   }, [selectedCategory])
 
   // Rolling schedules for all channels (spans yesterday, today, tomorrow)
@@ -69,7 +83,10 @@ export function useEPGSchedule(selectedCategory: string = 'All Channels') {
         const totalDurationMs = e - s
 
         if (totalDurationMs > 0) {
-          progressPercent = Math.min(100, Math.max(0, ((nowMs - s) / totalDurationMs) * 100))
+          progressPercent = Math.min(
+            100,
+            Math.max(0, ((nowMs - s) / totalDurationMs) * 100)
+          )
           remainingMinutes = Math.max(0, Math.ceil((e - nowMs) / (60 * 1000)))
           elapsedMinutes = Math.max(0, Math.floor((nowMs - s) / (60 * 1000)))
         }
@@ -104,6 +121,100 @@ export function useEPGSchedule(selectedCategory: string = 'All Channels') {
     }
     return states
   }, [getChannelLiveState, currentTime])
+
+  // Extended catch-up catalogue spanning past 14 days
+  const allCatchUpPrograms = useMemo(() => {
+    return generateCatchUpCatalogue(currentTime, 14)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDay])
+
+  // Helper map from channelId to EPGChannel
+  const channelMap = useMemo(() => {
+    const map = new Map<string, EPGChannel>()
+    for (const ch of EPG_CHANNELS) {
+      map.set(ch.id, ch)
+    }
+    return map
+  }, [])
+
+  // Catch-up status calculator wrapper
+  const getProgramCatchUpStatus = useCallback(
+    (program: EPGProgram): CatchUpStatus => {
+      return getCatchUpStatus(program, currentTime)
+    },
+    [currentTime]
+  )
+
+  // Filtered & enriched active catch-up items (excludes expired and ineligible)
+  const activeCatchUpItems = useMemo<CatchUpProgramItem[]>(() => {
+    return allCatchUpPrograms
+      .filter((p) => {
+        const st = getCatchUpStatus(p, currentTime)
+        return st.isAvailable && !st.isExpired
+      })
+      .map((p) => {
+        const ch = channelMap.get(p.channelId) || EPG_CHANNELS[0]
+        const st = getCatchUpStatus(p, currentTime)
+        return {
+          program: p,
+          channel: ch,
+          catchUpStatus: st,
+        }
+      })
+  }, [allCatchUpPrograms, currentTime, channelMap])
+
+  // ─── Organised Catch-up Shelves ───
+  const catchUpShelves = useMemo(() => {
+    const nowMs = currentTime.getTime()
+    const todayStr = currentTime.toDateString()
+
+    // 1. Recently Aired: Concluded within last 48 hours, newest first
+    const recentlyAired = activeCatchUpItems
+      .filter((item) => nowMs - item.program.endTime.getTime() <= 48 * 3600 * 1000)
+      .slice(0, 16)
+
+    // 2. Available Today: Aired earlier today (same calendar date)
+    const availableToday = activeCatchUpItems.filter(
+      (item) => item.program.startTime.toDateString() === todayStr
+    )
+
+    // 3. Expiring Soon: Less than 48 hours remaining before catch-up expires
+    const expiringSoon = activeCatchUpItems
+      .filter((item) => item.catchUpStatus.isExpiringSoon)
+      .sort((a, b) => {
+        const expA = a.program.catchUpExpiresAt?.getTime() || 0
+        const expB = b.program.catchUpExpiresAt?.getTime() || 0
+        return expA - expB // Soonest expiry first
+      })
+      .slice(0, 16)
+
+    // 4. Recently Missed: Flagship and highlighted programmes from past 4 days
+    const fourDaysAgoMs = nowMs - 4 * 24 * 3600 * 1000
+    const recentlyMissed = activeCatchUpItems
+      .filter(
+        (item) =>
+          item.program.endTime.getTime() >= fourDaysAgoMs &&
+          (item.program.badge ||
+            item.program.linkedContentId ||
+            item.program.rating === '16+' ||
+            item.program.durationMinutes >= 120)
+      )
+      .slice(0, 12)
+
+    // 5. Catch-up by Channel
+    const byChannel: Record<string, CatchUpProgramItem[]> = {}
+    for (const ch of EPG_CHANNELS) {
+      byChannel[ch.id] = activeCatchUpItems.filter((item) => item.channel.id === ch.id)
+    }
+
+    return {
+      recentlyAired,
+      availableToday,
+      expiringSoon,
+      recentlyMissed,
+      byChannel,
+    }
+  }, [activeCatchUpItems, currentTime])
 
   // Get programmes within a specific time window for a channel
   const getProgramsInWindow = useCallback(
@@ -143,8 +254,12 @@ export function useEPGSchedule(selectedCategory: string = 'All Channels') {
     filteredChannels,
     channelSchedules,
     channelLiveStates,
+    allCatchUpPrograms,
+    activeCatchUpItems,
+    catchUpShelves,
     getChannelLiveState,
     getProgramStatus,
+    getCatchUpStatus: getProgramCatchUpStatus,
     getProgramsInWindow,
     formatTime,
     formatTimeRange,

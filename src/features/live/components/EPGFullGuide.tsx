@@ -317,6 +317,11 @@ export const EPGFullGuide: React.FC<EPGFullGuideProps> = ({
                                     LIVE
                                   </Badge>
                                 )}
+                                {isEnded && program.isCatchUpEligible && (
+                                  <span className="px-1 py-0 text-[8px] font-mono rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                    CATCH-UP
+                                  </span>
+                                )}
                                 {hasRem && (
                                   <Bell className="w-3 h-3 text-[var(--accent-primary)] fill-current" />
                                 )}
@@ -473,6 +478,10 @@ export const EPGFullGuide: React.FC<EPGFullGuideProps> = ({
                     >
                       Watch Live
                     </Button>
+                  ) : isEnded ? (
+                    <span className="text-[11px] font-mono text-amber-400 font-semibold">
+                      {program.isCatchUpEligible ? 'Catch-up Available' : 'Ended'}
+                    </span>
                   ) : (
                     <button
                       type="button"

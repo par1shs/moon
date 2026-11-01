@@ -13,6 +13,10 @@ export interface EPGProgram {
   rating: string
   linkedContentId?: string
   badge?: string
+  // Catch-up metadata
+  isCatchUpEligible?: boolean
+  catchUpDays?: number
+  catchUpExpiresAt?: Date
 }
 
 export interface EPGChannel {
@@ -28,6 +32,17 @@ export interface EPGChannel {
 }
 
 export type EPGProgramStatus = 'ended' | 'live' | 'upcoming'
+
+export interface CatchUpStatus {
+  isAvailable: boolean
+  isExpired: boolean
+  isEligible: boolean
+  remainingHours: number
+  remainingDays: number
+  expiryText: string
+  isExpiringSoon: boolean
+  broadcastDateText: string
+}
 
 export interface ChannelLiveState {
   channel: EPGChannel
@@ -49,4 +64,12 @@ export interface ProgramReminder {
   genre?: string
   artworkUrl?: string
   notified?: boolean
+}
+
+export interface CatchUpProgramItem {
+  program: EPGProgram
+  channel: EPGChannel
+  catchUpStatus: CatchUpStatus
+  savedProgress?: number
+  savedRemainingMinutes?: number
 }

@@ -190,6 +190,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
 
         {/* Modal Window Container */}
         <motion.div
+          data-testid="content-details-modal"
           initial={reducedMotion ? false : { opacity: 0, scale: 0.96, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={reducedMotion ? undefined : { opacity: 0, scale: 0.96, y: 16 }}

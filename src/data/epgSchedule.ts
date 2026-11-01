@@ -1,4 +1,4 @@
-import type { EPGChannel, EPGProgram } from '../types/epg'
+import type { EPGChannel, EPGProgram, CatchUpStatus } from '../types/epg'
 import { SAMPLE_LIVE_CHANNELS } from './sampleContent'
 
 export const EPG_CHANNELS: EPGChannel[] = SAMPLE_LIVE_CHANNELS.map((ch) => ({
@@ -24,6 +24,8 @@ export interface ProgramTemplate {
   artworkUrl: string
   linkedContentId?: string
   badge?: string
+  isCatchUpEligible?: boolean
+  catchUpDays?: number // default 7, premium 14
 }
 
 export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
@@ -38,6 +40,7 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=800&auto=format&fit=crop',
       badge: 'LIVE WIRE',
+      isCatchUpEligible: false,
     },
     {
       slotId: '101-02',
@@ -48,6 +51,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Finance',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '101-03',
@@ -58,6 +63,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Business',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '101-04',
@@ -69,6 +76,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=800&auto=format&fit=crop',
       badge: 'FLAGSHIP',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '101-05',
@@ -79,6 +88,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'World News',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '101-06',
@@ -89,6 +100,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Markets',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '101-07',
@@ -100,6 +113,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?q=80&w=800&auto=format&fit=crop',
       badge: 'SPECIAL',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '101-08',
@@ -110,6 +125,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Technology',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '101-09',
@@ -121,6 +138,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=800&auto=format&fit=crop',
       badge: 'FLAGSHIP',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '101-10',
@@ -131,6 +150,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Debate',
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '101-11',
@@ -141,6 +162,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Investigative',
       rating: '16+',
       artworkUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '101-12',
@@ -151,6 +174,7 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Nightly News',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: false,
     },
   ],
   'ch-102': [
@@ -163,6 +187,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Motorsport',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '102-02',
@@ -173,6 +199,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Racing',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '102-03',
@@ -183,6 +211,7 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Analysis',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: false,
     },
     {
       slotId: '102-04',
@@ -194,6 +223,7 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1541348263662-e0c8de4259ba?q=80&w=800&auto=format&fit=crop',
       badge: 'PRACTICE',
+      isCatchUpEligible: false,
     },
     {
       slotId: '102-05',
@@ -205,16 +235,20 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop',
       badge: 'QUALIFYING',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '102-06',
       title: 'Formula Kinetic: Grid Walk & Driver Debrief',
-      description: 'Martin Brundle-style celebrity pitlane walk with team bosses, race strategists, and aerodynamics directors.',
+      description: 'Celebrity pitlane walk with team bosses, race strategists, and aerodynamics directors.',
       startMinutes: 810,
       durationMinutes: 150,
       genre: 'Interviews',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '102-07',
@@ -226,6 +260,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop',
       badge: 'MAIN EVENT',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '102-08',
@@ -236,6 +272,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Sports Talk',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '102-09',
@@ -246,6 +284,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Superbikes',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '102-10',
@@ -256,6 +296,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Documentary',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1541348263662-e0c8de4259ba?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
   ],
   'ch-103': [
@@ -270,6 +312,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       artworkUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop',
       linkedContentId: 'mov-8',
       badge: '4K RESTORATION',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-02',
@@ -281,6 +325,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: '16+',
       artworkUrl: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=800&auto=format&fit=crop',
       linkedContentId: 'mov-1',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-03',
@@ -291,6 +337,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Silent Masterpiece',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-04',
@@ -301,6 +349,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Classic Comedy',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-05',
@@ -311,6 +361,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Historical Epic',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-06',
@@ -321,6 +373,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Classic Drama',
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-07',
@@ -333,6 +387,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       artworkUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop',
       linkedContentId: 'mov-5',
       badge: 'VAULT SELECTION',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-08',
@@ -343,6 +399,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Romance',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-09',
@@ -353,6 +411,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Neo-Noir',
       rating: '16+',
       artworkUrl: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '103-10',
@@ -363,6 +423,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Gothic Thriller',
       rating: '16+',
       artworkUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
   ],
   'ch-104': [
@@ -377,6 +439,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       artworkUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop',
       linkedContentId: 'feat-2',
       badge: 'SPATIAL AUDIO',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '104-02',
@@ -387,6 +451,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Earth & Space',
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '104-03',
@@ -397,6 +463,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Nature',
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '104-04',
@@ -407,6 +475,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Earth Science',
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '104-05',
@@ -418,6 +488,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop',
       linkedContentId: 'ser-8',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '104-06',
@@ -428,6 +500,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Volcanology',
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '104-07',
@@ -439,6 +513,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop',
       badge: 'ATMOS MASTER',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '104-08',
@@ -449,6 +525,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Natural Wonder',
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '104-09',
@@ -459,6 +537,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Deep Sea',
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '104-10',
@@ -469,6 +549,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Cosmic Ambient',
       rating: 'All',
       artworkUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
   ],
   'ch-105': [
@@ -481,6 +563,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Speedrunning',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '105-02',
@@ -491,6 +575,7 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Esports',
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: false,
     },
     {
       slotId: '105-03',
@@ -501,6 +586,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Gaming Talk',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '105-04',
@@ -512,6 +599,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop',
       badge: 'LIVE ARENA',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '105-05',
@@ -522,6 +611,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Competitive FPS',
       rating: '16+',
       artworkUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '105-06',
@@ -532,6 +623,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Sim Racing',
       rating: 'G',
       artworkUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '105-07',
@@ -543,6 +636,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop',
       badge: 'GRAND FINALS',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '105-08',
@@ -553,6 +648,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Esports Desk',
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '105-09',
@@ -563,6 +660,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'FGC',
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '105-10',
@@ -573,6 +672,7 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Casual Play',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: false,
     },
   ],
   'ch-106': [
@@ -585,6 +685,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Oceanography',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '106-02',
@@ -595,6 +697,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Archaeology',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '106-03',
@@ -605,6 +709,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Wildlife',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '106-04',
@@ -617,6 +723,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       artworkUrl: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=800&auto=format&fit=crop',
       linkedContentId: 'ser-8',
       badge: 'SPECIAL',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '106-05',
@@ -627,6 +735,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'History',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '106-06',
@@ -637,6 +747,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Biodiversity',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '106-07',
@@ -648,6 +760,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop',
       badge: 'EXPLORATION',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '106-08',
@@ -658,6 +772,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Rainforest Ecology',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
     {
       slotId: '106-09',
@@ -668,6 +784,8 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Science',
       rating: 'PG',
       artworkUrl: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 14,
     },
     {
       slotId: '106-10',
@@ -678,19 +796,19 @@ export const EPG_SCHEDULE_TEMPLATES: Record<string, ProgramTemplate[]> = {
       genre: 'Predators',
       rating: '13+',
       artworkUrl: 'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?q=80&w=800&auto=format&fit=crop',
+      isCatchUpEligible: true,
+      catchUpDays: 7,
     },
   ],
 }
 
 /**
- * Generate multi-day scheduled programme instances mapped to the user's local timezone.
- * Handles seamless day boundaries and guarantees continuous coverage without gaps or overlaps.
+ * Generate scheduled programme instances for a specific calendar day in user's local timezone.
  */
 export function generateScheduleForDay(channelId: string, referenceDate: Date): EPGProgram[] {
   const templates = EPG_SCHEDULE_TEMPLATES[channelId] || []
   if (templates.length === 0) return []
 
-  // Create start of day in user's local time (00:00:00.000)
   const dayStart = new Date(
     referenceDate.getFullYear(),
     referenceDate.getMonth(),
@@ -706,6 +824,9 @@ export function generateScheduleForDay(channelId: string, referenceDate: Date): 
   return templates.map((tmpl) => {
     const startTime = new Date(dayStartTime + tmpl.startMinutes * 60 * 1000)
     const endTime = new Date(dayStartTime + (tmpl.startMinutes + tmpl.durationMinutes) * 60 * 1000)
+    const isCatchUpEligible = tmpl.isCatchUpEligible !== false
+    const catchUpDays = tmpl.catchUpDays ?? 7
+    const catchUpExpiresAt = new Date(endTime.getTime() + catchUpDays * 24 * 60 * 60 * 1000)
 
     return {
       id: `prog-${channelId}-${dateKey}-${tmpl.slotId}`,
@@ -720,6 +841,9 @@ export function generateScheduleForDay(channelId: string, referenceDate: Date): 
       rating: tmpl.rating,
       linkedContentId: tmpl.linkedContentId,
       badge: tmpl.badge,
+      isCatchUpEligible,
+      catchUpDays,
+      catchUpExpiresAt,
     }
   })
 }
@@ -737,6 +861,93 @@ export function generateRollingSchedule(channelId: string, now: Date = new Date(
     allPrograms.push(...generateScheduleForDay(channelId, d))
   }
 
-  // Sort chronologically
   return allPrograms.sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+}
+
+/**
+ * Generate extended catch-up catalogue spanning past N days (up to 14 days back) for all channels.
+ */
+export function generateCatchUpCatalogue(now: Date = new Date(), pastDays = 14): EPGProgram[] {
+  const allPrograms: EPGProgram[] = []
+  const nowMs = now.getTime()
+
+  for (let offset = -pastDays; offset <= 0; offset++) {
+    const d = new Date(now)
+    d.setDate(d.getDate() + offset)
+    for (const ch of EPG_CHANNELS) {
+      const dayProgs = generateScheduleForDay(ch.id, d)
+      allPrograms.push(...dayProgs)
+    }
+  }
+
+  // Filter programmes whose broadcast has ended
+  return allPrograms
+    .filter((p) => p.endTime.getTime() <= nowMs)
+    .sort((a, b) => b.endTime.getTime() - a.endTime.getTime()) // Newest first
+}
+
+/**
+ * Calculate detailed catch-up availability status for a programme.
+ */
+export function getCatchUpStatus(program: EPGProgram, now: Date = new Date()): CatchUpStatus {
+  const nowMs = now.getTime()
+  const endMs = program.endTime.getTime()
+  const isEligible = Boolean(program.isCatchUpEligible)
+  const expiresAtMs = program.catchUpExpiresAt ? program.catchUpExpiresAt.getTime() : 0
+  const isExpired = isEligible && nowMs > expiresAtMs
+  const isAvailable = isEligible && nowMs >= endMs && nowMs <= expiresAtMs
+
+  const remainingMs = Math.max(0, expiresAtMs - nowMs)
+  const remainingHours = Math.floor(remainingMs / (3600 * 1000))
+  const remainingDays = Math.ceil(remainingMs / (24 * 3600 * 1000))
+  const isExpiringSoon = isAvailable && remainingHours <= 48
+
+  let expiryText = 'Catch-up Unavailable'
+  if (isExpired) {
+    expiryText = 'Catch-up Expired'
+  } else if (isAvailable) {
+    if (remainingHours <= 24) {
+      expiryText = `Expiring soon • ${Math.max(1, remainingHours)}h left`
+    } else if (remainingHours <= 48) {
+      expiryText = `Expiring soon • ${remainingDays} days left`
+    } else {
+      expiryText = `Available for ${remainingDays} days`
+    }
+  }
+
+  // Format broadcast date string
+  const isToday = program.startTime.toDateString() === now.toDateString()
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const isYesterday = program.startTime.toDateString() === yesterday.toDateString()
+
+  const timeStr = program.startTime.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+
+  let broadcastDateText = ''
+  if (isToday) {
+    broadcastDateText = `Today at ${timeStr}`
+  } else if (isYesterday) {
+    broadcastDateText = `Yesterday at ${timeStr}`
+  } else {
+    const dateStr = program.startTime.toLocaleDateString([], {
+      day: 'numeric',
+      month: 'short',
+    })
+    broadcastDateText = `${dateStr} at ${timeStr}`
+  }
+
+  return {
+    isAvailable,
+    isExpired,
+    isEligible,
+    remainingHours,
+    remainingDays,
+    expiryText,
+    isExpiringSoon,
+    broadcastDateText,
+  }
 }

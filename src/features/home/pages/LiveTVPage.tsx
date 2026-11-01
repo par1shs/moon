@@ -8,19 +8,25 @@ import {
   Info,
   Maximize2,
   Tv,
+  RotateCcw,
 } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import type { ContentMetadata } from '../../../types'
-import type { EPGChannel, EPGProgram } from '../../../types/epg'
+import type { EPGChannel, EPGProgram, CatchUpProgramItem, CatchUpStatus } from '../../../types/epg'
 import { Badge } from '../../../components/common/Badge'
 import { Button } from '../../../components/common/Button'
 import { useEPGSchedule } from '../../../hooks/useEPGSchedule'
 import { useProgramReminders } from '../../../hooks/useProgramReminders'
+import { useViewingHistory } from '../../../hooks/useViewingHistory'
 import { EPGNowAndNext } from '../../live/components/EPGNowAndNext'
 import { EPGFullGuide } from '../../live/components/EPGFullGuide'
+import { CatchUpSection } from '../../live/components/CatchUpSection'
 import { ProgramInfoModal } from '../../live/components/ProgramInfoModal'
 import { ReminderToast } from '../../live/components/ReminderToast'
-import { SimulatedPlayerModal } from '../../../components/player/SimulatedPlayerModal'
+import {
+  SimulatedPlayerModal,
+  type CatchUpProgramInfo,
+} from '../../../components/player/SimulatedPlayerModal'
 import { ALL_DISCOVERY_TITLES } from '../../../data/sampleContent'
 
 const CATEGORIES = ['All Channels', 'News', 'Sports', 'Cinema', 'Culture']
@@ -36,7 +42,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
 }) => {
   // Navigation & Filter state
   const [selectedCategory, setSelectedCategory] = useState('All Channels')
-  const [viewMode, setViewMode] = useState<'now-next' | 'full-guide'>('now-next')
+  const [viewMode, setViewMode] = useState<'now-next' | 'full-guide' | 'catch-up'>('now-next')
   const [tunedChannelId, setTunedChannelId] = useState('ch-101')
 
   // Detailed Modal inspection state
@@ -48,6 +54,30 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
   // Full-Screen Live Player state
   const [isLivePlayerOpen, setIsLivePlayerOpen] = useState(false)
 
+  // Catch-Up On-Demand Player state
+  const [catchUpPlayerState, setCatchUpPlayerState] = useState<{
+    content: ContentMetadata
+    catchUpProgram: CatchUpProgramInfo
+    initialProgress: number
+  } | null>(null)
+  const [isCatchUpPlayerOpen, setIsCatchUpPlayerOpen] = useState(false)
+
+  // ─── Profile-Isolated Viewing History Engine ───
+  const {
+    updateProgress,
+    markCompleted,
+    getHistoryItem,
+  } = useViewingHistory(profile?.id || 'default')
+
+  const getHistoryProgress = useCallback(
+    (contentId: string) => {
+      const item = getHistoryItem(contentId)
+      if (!item) return undefined
+      return { progress: item.progress, completed: Boolean(item.completed) }
+    },
+    [getHistoryItem]
+  )
+
   // ─── Time-Aware EPG Schedule Engine ───
   const {
     currentTime,
@@ -55,8 +85,11 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
     filteredChannels,
     channelSchedules,
     channelLiveStates,
+    activeCatchUpItems,
+    catchUpShelves,
     getChannelLiveState,
     getProgramStatus,
+    getCatchUpStatus: getScheduleCatchUpStatus,
     formatTime,
     formatTimeRange,
   } = useEPGSchedule(selectedCategory)
@@ -137,6 +170,59 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
       setIsLivePlayerOpen(true)
     },
     []
+  )
+
+  // Watch Catch-up handler
+  const handleWatchCatchUp = useCallback(
+    (
+      itemOrProgram:
+        | CatchUpProgramItem
+        | { program: EPGProgram; channel: EPGChannel; status?: CatchUpStatus }
+    ) => {
+      const program = itemOrProgram.program
+      const channel = itemOrProgram.channel
+      const status =
+        'status' in itemOrProgram && itemOrProgram.status
+          ? itemOrProgram.status
+          : getScheduleCatchUpStatus(program)
+
+      const catchUpContentId = `catchup-${program.id}`
+      const existingHistory = getHistoryItem(catchUpContentId)
+      const initialProg = existingHistory?.progress || 0
+      const durationMin = program.durationMinutes || 60
+
+      const catchUpContent: ContentMetadata = {
+        id: catchUpContentId,
+        title: program.title,
+        subtitle: `Channel ${channel.channelNumber}: ${channel.title}`,
+        description: program.description,
+        type: 'movie',
+        rating: program.rating || 'PG',
+        quality: channel.quality || 'HD',
+        duration: `${durationMin}m`,
+        year: new Date(program.startTime).getFullYear().toString(),
+        backdropUrl: program.artworkUrl || channel.backdropUrl,
+        posterUrl: program.artworkUrl || channel.backdropUrl,
+      }
+
+      const catchUpProgramInfo: CatchUpProgramInfo = {
+        channelNumber: channel.channelNumber,
+        channelTitle: channel.title,
+        programTitle: program.title,
+        broadcastDateText: status.broadcastDateText,
+        expiryText: status.expiryText,
+        genre: program.genre,
+        isExpiringSoon: status.isExpiringSoon,
+      }
+
+      setCatchUpPlayerState({
+        content: catchUpContent,
+        catchUpProgram: catchUpProgramInfo,
+        initialProgress: initialProg,
+      })
+      setIsCatchUpPlayerOpen(true)
+    },
+    [getHistoryItem, getScheduleCatchUpStatus]
   )
 
   // Open linked on-demand content handler
@@ -385,19 +471,37 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
             <Calendar className="w-3.5 h-3.5" />
             <span>Full Guide</span>
           </button>
+
+          <button
+            type="button"
+            data-testid="mode-catch-up"
+            onClick={() => setViewMode('catch-up')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+              viewMode === 'catch-up'
+                ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] font-bold shadow-sm'
+                : 'text-[var(--text-muted)] hover:text-white'
+            }`}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Catch-up TV</span>
+          </button>
         </div>
       </div>
 
-      {/* ─── EPG View: Now & Next vs Full Guide ─── */}
+      {/* ─── EPG View: Now & Next vs Full Guide vs Catch-up TV ─── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
           <span>
             {viewMode === 'now-next'
               ? `NOW & NEXT SCHEDULE • LINEAR BROADCAST (${filteredChannels.length} CHANNELS)`
-              : `FULL EPG TIMELINE GUIDE • 24/7 BROADCAST (${filteredChannels.length} CHANNELS)`}
+              : viewMode === 'full-guide'
+              ? `FULL EPG TIMELINE GUIDE • 24/7 BROADCAST (${filteredChannels.length} CHANNELS)`
+              : `CATCH-UP TV ARCHIVE • 7 & 14-DAY ON-DEMAND BROADCASTS (${activeCatchUpItems.length} AVAILABLE)`}
           </span>
           <span className="hidden sm:inline">
-            CLICK ANY PROGRAMME FOR DETAILS &amp; ACTIONS
+            {viewMode === 'catch-up'
+              ? 'ALL PROGRAMMES DIGITALLY ARCHIVED FOR ON-DEMAND STREAMING'
+              : 'CLICK ANY PROGRAMME FOR DETAILS & ACTIONS'}
           </span>
         </div>
 
@@ -416,7 +520,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
             formatTime={formatTime}
             formatTimeRange={formatTimeRange}
           />
-        ) : (
+        ) : viewMode === 'full-guide' ? (
           <EPGFullGuide
             channels={filteredChannels}
             channelSchedules={channelSchedules}
@@ -432,6 +536,21 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
             getProgramStatus={getProgramStatus}
             formatTime={formatTime}
             formatTimeRange={formatTimeRange}
+          />
+        ) : (
+          <CatchUpSection
+            channels={filteredChannels}
+            activeCatchUpItems={activeCatchUpItems}
+            catchUpShelves={catchUpShelves}
+            getHistoryProgress={getHistoryProgress}
+            onWatchCatchUp={handleWatchCatchUp}
+            onInspectProgram={(item) =>
+              setInspectedProgram({
+                channel: item.channel,
+                program: item.program,
+              })
+            }
+            onOpenLinkedContent={handleOpenLinkedContent}
           />
         )}
       </div>
@@ -451,8 +570,14 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
             channelLiveStates[inspectedProgram.channel.id]?.remainingMinutes
           }
           hasReminder={hasReminder(inspectedProgram.program.id)}
+          savedCatchUpProgress={
+            getHistoryProgress(`catchup-${inspectedProgram.program.id}`)?.progress
+          }
           onToggleReminder={toggleReminder}
           onWatchLive={handleWatchLive}
+          onWatchCatchUp={(program, channel, status) => {
+            handleWatchCatchUp({ program, channel, status })
+          }}
           onOpenLinkedContent={handleOpenLinkedContent}
           formatTimeRange={formatTimeRange}
         />
@@ -490,6 +615,23 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
         onPreviousChannel={handlePreviousChannel}
         onNextChannel={handleNextChannel}
       />
+
+      {/* ─── Full-Screen Catch-Up Video Player Experience ─── */}
+      {catchUpPlayerState && (
+        <SimulatedPlayerModal
+          isOpen={isCatchUpPlayerOpen}
+          content={catchUpPlayerState.content}
+          initialProgress={catchUpPlayerState.initialProgress}
+          catchUpProgram={catchUpPlayerState.catchUpProgram}
+          onClose={() => setIsCatchUpPlayerOpen(false)}
+          onProgressUpdate={(contentId, progress, details) => {
+            updateProgress(contentId, progress, details)
+          }}
+          onMarkCompleted={(contentId) => {
+            markCompleted(contentId)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -1,9 +1,10 @@
 import React from 'react'
-import { Play, Bell, BellOff, Clock, Film, Radio } from 'lucide-react'
-import type { EPGProgram, EPGChannel, EPGProgramStatus } from '../../../types/epg'
+import { Play, Bell, BellOff, Clock, Film, Radio, RotateCcw, AlertTriangle, ShieldAlert } from 'lucide-react'
+import type { EPGProgram, EPGChannel, EPGProgramStatus, CatchUpStatus } from '../../../types/epg'
 import { Modal } from '../../../components/modals/Modal'
 import { Badge } from '../../../components/common/Badge'
 import { Button } from '../../../components/common/Button'
+import { getCatchUpStatus } from '../../../data/epgSchedule'
 
 export interface ProgramInfoModalProps {
   isOpen: boolean
@@ -14,8 +15,10 @@ export interface ProgramInfoModalProps {
   progressPercent?: number
   remainingMinutes?: number
   hasReminder: boolean
+  savedCatchUpProgress?: number
   onToggleReminder: (program: EPGProgram, channel: EPGChannel) => void
   onWatchLive: (channel: EPGChannel, program: EPGProgram) => void
+  onWatchCatchUp?: (program: EPGProgram, channel: EPGChannel, catchUpStatus: CatchUpStatus) => void
   onOpenLinkedContent?: (contentId: string) => void
   formatTimeRange: (start: Date, end: Date) => string
 }
@@ -29,8 +32,10 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
   progressPercent = 0,
   remainingMinutes = 0,
   hasReminder,
+  savedCatchUpProgress,
   onToggleReminder,
   onWatchLive,
+  onWatchCatchUp,
   onOpenLinkedContent,
   formatTimeRange,
 }) => {
@@ -38,6 +43,10 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
 
   const isLive = status === 'live'
   const isUpcoming = status === 'upcoming'
+  const isEnded = status === 'ended'
+
+  const catchUpStatus = isEnded ? getCatchUpStatus(program) : null
+  const hasCatchUpProgress = savedCatchUpProgress !== undefined && savedCatchUpProgress > 0 && savedCatchUpProgress < 95
 
   return (
     <Modal
@@ -67,12 +76,21 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
                 <Badge variant="subtle" size="sm">
                   UPCOMING
                 </Badge>
+              ) : catchUpStatus?.isAvailable ? (
+                <Badge variant="accent" size="sm" className="bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border-[var(--accent-primary)]/40 font-bold">
+                  CATCH-UP AVAILABLE
+                </Badge>
+              ) : catchUpStatus?.isExpired ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-red-950/60 text-red-300 border border-red-500/40 font-bold">
+                  CATCH-UP EXPIRED
+                </span>
               ) : (
                 <Badge variant="default" size="sm">
-                  ENDED
+                  CATCH-UP UNAVAILABLE
                 </Badge>
               )}
-              <Badge variant="accent" size="sm">
+
+              <Badge variant="subtle" size="sm">
                 CH {channel.channelNumber}
               </Badge>
               <Badge variant="subtle" size="sm">
@@ -104,7 +122,7 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
             <div className="flex items-center gap-2 text-[var(--text-secondary)]">
               <Clock className="w-4 h-4 text-[var(--accent-primary)] shrink-0" />
               <span className="font-semibold text-white">
-                {formatTimeRange(program.startTime, program.endTime)}
+                {catchUpStatus?.broadcastDateText || formatTimeRange(program.startTime, program.endTime)}
               </span>
               <span className="text-[var(--text-muted)]">({program.durationMinutes} mins)</span>
             </div>
@@ -118,7 +136,23 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
 
             {isUpcoming && (
               <span className="text-emerald-400 font-semibold">
-                Scheduled Broadcast
+                Scheduled Linear Broadcast
+              </span>
+            )}
+
+            {isEnded && catchUpStatus?.isAvailable && (
+              <span
+                className={`font-semibold ${
+                  catchUpStatus.isExpiringSoon ? 'text-amber-400 font-bold' : 'text-[var(--accent-secondary)]'
+                }`}
+              >
+                {catchUpStatus.expiryText}
+              </span>
+            )}
+
+            {isEnded && catchUpStatus?.isExpired && (
+              <span className="text-red-400 font-semibold">
+                Availability window expired
               </span>
             )}
           </div>
@@ -130,6 +164,32 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
                 className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
+            </div>
+          )}
+
+          {/* Catch-up Availability Callout */}
+          {isEnded && catchUpStatus?.isAvailable && (
+            <div className="flex items-center gap-2 pt-1 text-xs font-mono text-[var(--text-muted)] border-t border-white/5">
+              {catchUpStatus.isExpiringSoon ? (
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              ) : (
+                <Clock className="w-4 h-4 text-[var(--accent-secondary)] shrink-0" />
+              )}
+              <span>
+                Broadcast on <strong>{channel.title}</strong> • Catch-up eligible for {program.catchUpDays || 7} days post-broadcast.
+              </span>
+            </div>
+          )}
+
+          {/* Catch-up Expired / Unavailable Callout */}
+          {isEnded && !catchUpStatus?.isAvailable && (
+            <div className="flex items-center gap-2 pt-1 text-xs font-mono text-[var(--text-muted)] border-t border-white/5">
+              <ShieldAlert className="w-4 h-4 text-white/40 shrink-0" />
+              <span>
+                {catchUpStatus?.isExpired
+                  ? 'Catch-up window has expired. This broadcast is no longer available on catch-up.'
+                  : 'Catch-up is unavailable for this programme due to broadcast rights limitations.'}
+              </span>
             </div>
           )}
         </div>
@@ -146,8 +206,9 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--border-subtle)]">
-          <div className="flex items-center gap-2.5">
-            {isLive ? (
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Live Play Action */}
+            {isLive && (
               <Button
                 variant="primary"
                 size="md"
@@ -159,7 +220,10 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
               >
                 Watch Live
               </Button>
-            ) : isUpcoming ? (
+            )}
+
+            {/* Upcoming Reminder Action */}
+            {isUpcoming && (
               <Button
                 variant={hasReminder ? 'outline' : 'primary'}
                 size="md"
@@ -174,26 +238,52 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
               >
                 {hasReminder ? 'Reminder Set (Cancel)' : 'Remind Me'}
               </Button>
-            ) : null}
+            )}
 
+            {/* Ended: Watch Catch-up Action (Only if eligible & not expired!) */}
+            {isEnded && catchUpStatus?.isAvailable && onWatchCatchUp && (
+              <Button
+                variant="primary"
+                size="md"
+                data-testid="modal-watch-catchup-btn"
+                leftIcon={
+                  hasCatchUpProgress ? (
+                    <RotateCcw className="w-4 h-4" />
+                  ) : (
+                    <Play className="w-4 h-4 fill-current ml-0.5" />
+                  )
+                }
+                onClick={() => {
+                  onWatchCatchUp(program, channel, catchUpStatus)
+                  onClose()
+                }}
+              >
+                {hasCatchUpProgress
+                  ? `Resume Catch-up (${savedCatchUpProgress}%)`
+                  : 'Watch Catch-up'}
+              </Button>
+            )}
+
+            {/* Linked OTT On-Demand Action */}
             {program.linkedContentId && onOpenLinkedContent && (
               <Button
-                variant="outline"
+                variant={isEnded && !catchUpStatus?.isAvailable ? 'primary' : 'outline'}
                 size="md"
+                data-testid="modal-view-ondemand-btn"
                 leftIcon={<Film className="w-4 h-4 text-[var(--accent-primary)]" />}
                 onClick={() => {
                   onOpenLinkedContent(program.linkedContentId!)
                   onClose()
                 }}
               >
-                View On Demand
+                Watch On Demand (OTT)
               </Button>
             )}
           </div>
 
           <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-muted)]">
             <Radio className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-            <span>Linear Feed: Ch {channel.channelNumber}</span>
+            <span>Channel {channel.channelNumber}</span>
           </div>
         </div>
       </div>

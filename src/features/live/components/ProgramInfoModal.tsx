@@ -1,5 +1,5 @@
 import React from 'react'
-import { Play, Bell, BellOff, Clock, Film, Radio, RotateCcw, AlertTriangle, ShieldAlert } from 'lucide-react'
+import { Play, Bell, BellOff, Clock, Film, Radio, RotateCcw, AlertTriangle, ShieldAlert, Sparkles } from 'lucide-react'
 import type { EPGProgram, EPGChannel, EPGProgramStatus, CatchUpStatus } from '../../../types/epg'
 import { Modal } from '../../../components/modals/Modal'
 import { Badge } from '../../../components/common/Badge'
@@ -193,6 +193,41 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Interactive Television Callout */}
+        {program.hasInteractive && (
+          <div
+            data-testid="modal-interactive-section"
+            className="p-3.5 rounded-xl bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]/40 flex items-center justify-center text-[var(--accent-secondary)] shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[var(--text-primary)]">
+                  ⚡ Interactive Broadcast Available
+                </p>
+                <p className="text-[11px] text-[var(--text-muted)]">
+                  Live polls, audience voting, or quizzes available for this programme.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              variant="primary"
+              size="sm"
+              data-testid="program-interact-btn"
+              onClick={() => {
+                onClose()
+                onWatchLive(channel, program)
+              }}
+              leftIcon={<Sparkles className="w-3.5 h-3.5" />}
+            >
+              Watch &amp; Interact
+            </Button>
+          </div>
+        )}
 
         {/* Description */}
         <div className="space-y-2">

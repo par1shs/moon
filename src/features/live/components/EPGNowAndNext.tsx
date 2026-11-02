@@ -117,6 +117,7 @@ export const EPGNowAndNext: React.FC<EPGNowAndNextProps> = ({
               {/* ─── ON NOW BLOCK ─── */}
               {currentEp ? (
                 <div
+                  data-testid={`epg-now-block-${ch.id}`}
                   onClick={() => onSelectProgram(ch, currentEp)}
                   className="p-3.5 rounded-xl bg-[var(--bg-elevated)]/60 border border-[var(--accent-primary)]/30 hover:border-[var(--accent-primary)]/60 transition-all cursor-pointer group flex flex-col justify-between gap-3 shadow-sm"
                 >
@@ -136,13 +137,21 @@ export const EPGNowAndNext: React.FC<EPGNowAndNextProps> = ({
                     </div>
 
                     <div className="space-y-1 min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-secondary)] font-bold">
                           ON NOW
                         </span>
                         <span className="text-[10px] font-mono text-[var(--text-muted)]">
                           • {formatTimeRange(currentEp.startTime, currentEp.endTime)}
                         </span>
+                        {currentEp.hasInteractive && (
+                          <span
+                            data-testid={`badge-interactive-${currentEp.id}`}
+                            className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border border-[var(--accent-primary)]/40 shadow-xs"
+                          >
+                            ⚡ INTERACTIVE
+                          </span>
+                        )}
                       </div>
 
                       <h4 className="font-display font-semibold text-sm text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors truncate">
@@ -183,6 +192,7 @@ export const EPGNowAndNext: React.FC<EPGNowAndNextProps> = ({
               {/* ─── UPCOMING NEXT BLOCK ─── */}
               {nextEp ? (
                 <div
+                  data-testid={`epg-next-block-${ch.id}`}
                   onClick={() => onSelectProgram(ch, nextEp)}
                   className="p-3.5 rounded-xl bg-[var(--bg-elevated)]/30 border border-[var(--border-subtle)] hover:border-white/20 transition-all cursor-pointer group flex flex-col justify-between gap-3 shadow-sm"
                 >
@@ -202,13 +212,21 @@ export const EPGNowAndNext: React.FC<EPGNowAndNextProps> = ({
                     </div>
 
                     <div className="space-y-1 min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
                           UPCOMING NEXT
                         </span>
                         <span className="text-[10px] font-mono text-[var(--text-muted)]">
                           • {nextEp.durationMinutes}m
                         </span>
+                        {nextEp.hasInteractive && (
+                          <span
+                            data-testid={`badge-interactive-${nextEp.id}`}
+                            className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border border-[var(--accent-primary)]/40 shadow-xs"
+                          >
+                            ⚡ INTERACTIVE
+                          </span>
+                        )}
                       </div>
 
                       <h4 className="font-display font-semibold text-sm text-[var(--text-primary)] group-hover:text-white transition-colors truncate">

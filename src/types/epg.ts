@@ -17,6 +17,9 @@ export interface EPGProgram {
   isCatchUpEligible?: boolean
   catchUpDays?: number
   catchUpExpiresAt?: Date
+  // Interactive metadata (Phase 5C)
+  hasInteractive?: boolean
+  interactiveId?: string
 }
 
 export interface EPGChannel {

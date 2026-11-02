@@ -322,6 +322,15 @@ export const EPGFullGuide: React.FC<EPGFullGuideProps> = ({
                                     CATCH-UP
                                   </span>
                                 )}
+                                {program.hasInteractive && (
+                                  <span
+                                    data-testid={`badge-interactive-${program.id}`}
+                                    className="px-1 py-0 text-[8px] font-mono rounded bg-[var(--accent-primary)]/30 text-[var(--accent-secondary)] border border-[var(--accent-primary)]/40 font-bold"
+                                    title="Interactive Television Broadcast"
+                                  >
+                                    ⚡
+                                  </span>
+                                )}
                                 {hasRem && (
                                   <Bell className="w-3 h-3 text-[var(--accent-primary)] fill-current" />
                                 )}

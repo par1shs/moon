@@ -9,6 +9,7 @@ import {
   Maximize2,
   Tv,
   RotateCcw,
+  Sparkles,
 } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import type { ContentMetadata } from '../../../types'
@@ -21,6 +22,7 @@ import { useViewingHistory } from '../../../hooks/useViewingHistory'
 import { EPGNowAndNext } from '../../live/components/EPGNowAndNext'
 import { EPGFullGuide } from '../../live/components/EPGFullGuide'
 import { CatchUpSection } from '../../live/components/CatchUpSection'
+import { InteractionHub } from '../../live/components/interactive/InteractionHub'
 import { ProgramInfoModal } from '../../live/components/ProgramInfoModal'
 import { ReminderToast } from '../../live/components/ReminderToast'
 import {
@@ -42,7 +44,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
 }) => {
   // Navigation & Filter state
   const [selectedCategory, setSelectedCategory] = useState('All Channels')
-  const [viewMode, setViewMode] = useState<'now-next' | 'full-guide' | 'catch-up'>('now-next')
+  const [viewMode, setViewMode] = useState<'now-next' | 'full-guide' | 'catch-up' | 'interact'>('now-next')
   const [tunedChannelId, setTunedChannelId] = useState('ch-101')
 
   // Detailed Modal inspection state
@@ -485,10 +487,24 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Catch-up TV</span>
           </button>
+
+          <button
+            type="button"
+            data-testid="mode-interact"
+            onClick={() => setViewMode('interact')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+              viewMode === 'interact'
+                ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] font-bold shadow-sm'
+                : 'text-[var(--text-muted)] hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Interact</span>
+          </button>
         </div>
       </div>
 
-      {/* ─── EPG View: Now & Next vs Full Guide vs Catch-up TV ─── */}
+      {/* ─── EPG View: Now & Next vs Full Guide vs Catch-up TV vs Interact ─── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
           <span>
@@ -496,11 +512,15 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
               ? `NOW & NEXT SCHEDULE • LINEAR BROADCAST (${filteredChannels.length} CHANNELS)`
               : viewMode === 'full-guide'
               ? `FULL EPG TIMELINE GUIDE • 24/7 BROADCAST (${filteredChannels.length} CHANNELS)`
-              : `CATCH-UP TV ARCHIVE • 7 & 14-DAY ON-DEMAND BROADCASTS (${activeCatchUpItems.length} AVAILABLE)`}
+              : viewMode === 'catch-up'
+              ? `CATCH-UP TV ARCHIVE • 7 & 14-DAY ON-DEMAND BROADCASTS (${activeCatchUpItems.length} AVAILABLE)`
+              : `INTERACTIVE TELEVISION HUB • LIVE POLLS, AUDIENCE VOTING & QUIZZES`}
           </span>
           <span className="hidden sm:inline">
             {viewMode === 'catch-up'
               ? 'ALL PROGRAMMES DIGITALLY ARCHIVED FOR ON-DEMAND STREAMING'
+              : viewMode === 'interact'
+              ? 'SUBMIT LIVE BALLOTS & TRACK RESULTS IN REAL TIME'
               : 'CLICK ANY PROGRAMME FOR DETAILS & ACTIONS'}
           </span>
         </div>
@@ -537,7 +557,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
             formatTime={formatTime}
             formatTimeRange={formatTimeRange}
           />
-        ) : (
+        ) : viewMode === 'catch-up' ? (
           <CatchUpSection
             channels={filteredChannels}
             activeCatchUpItems={activeCatchUpItems}
@@ -551,6 +571,17 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
               })
             }
             onOpenLinkedContent={handleOpenLinkedContent}
+          />
+        ) : (
+          <InteractionHub
+            profileId={profile?.id || 'default'}
+            onTuneChannel={(id) => {
+              setTunedChannelId(id)
+            }}
+            onWatchLiveWithInteractive={(item) => {
+              setTunedChannelId(item.channelId)
+              setIsLivePlayerOpen(true)
+            }}
           />
         )}
       </div>
@@ -614,6 +645,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
         }
         onPreviousChannel={handlePreviousChannel}
         onNextChannel={handleNextChannel}
+        profileId={profile?.id || 'default'}
       />
 
       {/* ─── Full-Screen Catch-Up Video Player Experience ─── */}
@@ -623,6 +655,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
           content={catchUpPlayerState.content}
           initialProgress={catchUpPlayerState.initialProgress}
           catchUpProgram={catchUpPlayerState.catchUpProgram}
+          profileId={profile?.id || 'default'}
           onClose={() => setIsCatchUpPlayerOpen(false)}
           onProgressUpdate={(contentId, progress, details) => {
             updateProgress(contentId, progress, details)

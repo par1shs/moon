@@ -1,4 +1,5 @@
 import type { EPGChannel, EPGProgram, CatchUpStatus } from '../types/epg'
+import { SAMPLE_INTERACTIVE_ITEMS } from './interactiveContent'
 import { SAMPLE_LIVE_CHANNELS } from './sampleContent'
 
 export const EPG_CHANNELS: EPGChannel[] = SAMPLE_LIVE_CHANNELS.map((ch) => ({
@@ -828,6 +829,15 @@ export function generateScheduleForDay(channelId: string, referenceDate: Date): 
     const catchUpDays = tmpl.catchUpDays ?? 7
     const catchUpExpiresAt = new Date(endTime.getTime() + catchUpDays * 24 * 60 * 60 * 1000)
 
+    const matchingInteractive = SAMPLE_INTERACTIVE_ITEMS.find((it) => {
+      return (
+        it.channelId === channelId &&
+        (it.programId === `slot-${tmpl.slotId}` ||
+          it.programId === tmpl.slotId ||
+          it.programTitle.toLowerCase() === tmpl.title.toLowerCase())
+      )
+    })
+
     return {
       id: `prog-${channelId}-${dateKey}-${tmpl.slotId}`,
       channelId,
@@ -844,6 +854,8 @@ export function generateScheduleForDay(channelId: string, referenceDate: Date): 
       isCatchUpEligible,
       catchUpDays,
       catchUpExpiresAt,
+      hasInteractive: Boolean(matchingInteractive),
+      interactiveId: matchingInteractive?.id,
     }
   })
 }

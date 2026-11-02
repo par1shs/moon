@@ -24,6 +24,8 @@ import {
 import { Badge } from '../common/Badge'
 import { Button } from '../common/Button'
 import type { ContentMetadata, EpisodeMetadata } from '../../types'
+import { InteractivePanel } from '../../features/live/components/interactive/InteractivePanel'
+import { SAMPLE_INTERACTIVE_ITEMS } from '../../data/interactiveContent'
 
 export interface LiveProgramInfo {
   channelNumber: string
@@ -72,6 +74,7 @@ export interface SimulatedPlayerModalProps {
   catchUpProgram?: CatchUpProgramInfo
   onPreviousChannel?: () => void
   onNextChannel?: () => void
+  profileId?: string
 }
 
 const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
@@ -179,6 +182,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   catchUpProgram,
   onPreviousChannel,
   onNextChannel,
+  profileId,
 }) => {
   // ─── Active Content & Episode State ───
   const initialEpisode = useMemo(() => {
@@ -198,6 +202,37 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   const [selectedQuality, setSelectedQuality] = useState('Auto (4K HDR Master)')
   const [selectedAudio, setSelectedAudio] = useState('English [Original] (Dolby Atmos)')
   const [selectedSubtitle, setSelectedSubtitle] = useState('Off')
+
+  // ─── Phase 5C: Interactive Television State ───
+  const [isInteractiveOpen, setIsInteractiveOpen] = useState(false)
+
+  const linkedInteractive = useMemo(() => {
+    const currentTitle = liveProgram?.programTitle || catchUpProgram?.programTitle || content?.title
+    const currentChannelNum = liveProgram?.channelNumber || catchUpProgram?.channelNumber
+
+    if (currentTitle) {
+      const byTitle = SAMPLE_INTERACTIVE_ITEMS.find(
+        (it) => it.programTitle.toLowerCase() === currentTitle.toLowerCase()
+      )
+      if (byTitle) return byTitle
+    }
+
+    if (currentChannelNum) {
+      const byChannel = SAMPLE_INTERACTIVE_ITEMS.find(
+        (it) => it.channelNumber === currentChannelNum && it.status === 'active'
+      )
+      if (byChannel) return byChannel
+    }
+
+    if (content?.id) {
+      const byId = SAMPLE_INTERACTIVE_ITEMS.find(
+        (it) => it.channelId === content.id || it.programId === content.id
+      )
+      if (byId) return byId
+    }
+
+    return undefined
+  }, [liveProgram, catchUpProgram, content])
 
   // ─── Menu & Inactivity Controls ───
   const [showControls, setShowControls] = useState(true)
@@ -1140,6 +1175,38 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
 
           {/* Right Controls: Speed, Subtitles, Settings, Fullscreen */}
           <div className="flex items-center gap-2">
+            {/* Interactive Television Trigger */}
+            {linkedInteractive && (
+              <button
+                type="button"
+                data-testid="player-interactive-btn"
+                onClick={() => setIsInteractiveOpen(!isInteractiveOpen)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer ${
+                  isInteractiveOpen
+                    ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] border-[var(--accent-primary)] shadow-lg ring-2 ring-[var(--accent-primary)]/50'
+                    : 'bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border-[var(--accent-primary)]/50 hover:bg-[var(--accent-primary)]/30'
+                }`}
+                title={
+                  linkedInteractive.type === 'poll'
+                    ? 'Live Poll Available'
+                    : linkedInteractive.type === 'voting'
+                    ? 'Audience Vote Active'
+                    : 'Programme Quiz Ready'
+                }
+                aria-label="Toggle interactive panel"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">
+                  {linkedInteractive.type === 'poll'
+                    ? 'Live Poll'
+                    : linkedInteractive.type === 'voting'
+                    ? 'Vote'
+                    : 'Quiz'}
+                </span>
+                <span className="sm:hidden">Interact</span>
+              </button>
+            )}
+
             {/* Speed Selector Toggle */}
             <button
               type="button"
@@ -1387,6 +1454,39 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
             </div>
           )}
         </div>
+      )}
+
+      {/* ─── Phase 5C: Interactive Television Side Panel (Desktop) & Bottom Sheet (Mobile) ─── */}
+      {isInteractiveOpen && linkedInteractive && (
+        <>
+          {/* Desktop slide-over floating panel */}
+          <div
+            data-testid="player-interactive-sidebar"
+            onClick={(e) => e.stopPropagation()}
+            className="hidden md:flex flex-col w-96 absolute right-4 top-20 bottom-28 bg-[var(--bg-card)]/95 backdrop-blur-2xl border border-[var(--border-subtle)] rounded-2xl p-4 overflow-hidden z-40 shadow-2xl animate-in slide-in-from-right duration-200 text-left"
+          >
+            <InteractivePanel
+              item={linkedInteractive}
+              profileId={profileId}
+              onClose={() => setIsInteractiveOpen(false)}
+              isEmbeddedInPlayer={true}
+            />
+          </div>
+
+          {/* Mobile bottom-sheet */}
+          <div
+            data-testid="player-interactive-bottomsheet"
+            onClick={(e) => e.stopPropagation()}
+            className="md:hidden flex flex-col fixed inset-x-0 bottom-0 max-h-[80vh] bg-[var(--bg-card)]/95 backdrop-blur-2xl border-t border-[var(--border-subtle)] rounded-t-3xl p-4 overflow-hidden z-50 shadow-2xl animate-in slide-in-from-bottom duration-200 text-left"
+          >
+            <InteractivePanel
+              item={linkedInteractive}
+              profileId={profileId}
+              onClose={() => setIsInteractiveOpen(false)}
+              isEmbeddedInPlayer={true}
+            />
+          </div>
+        </>
       )}
     </div>
   )

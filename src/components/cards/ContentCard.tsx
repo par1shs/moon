@@ -58,6 +58,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
 
   return (
     <motion.div
+      data-testid={`content-card-${content.id}`}
       variants={reducedMotion ? undefined : hoverLift}
       initial="initial"
       whileHover="hover"
@@ -80,7 +81,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
             <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
             <div className="relative z-10">
               <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--accent-secondary)]">
-                JUNCTION+ ORIGINAL
+                PIXEL+ ORIGINAL
               </span>
             </div>
           </div>
@@ -138,6 +139,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <IconButton
+                data-testid={`content-card-play-btn-${content.id}`}
                 icon={<Play className="w-4 h-4 fill-current ml-0.5" />}
                 aria-label={`Play ${content.title}`}
                 variant="primary"
@@ -158,6 +160,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
                 }}
               />
               <IconButton
+                data-testid={`content-card-details-btn-${content.id}`}
                 icon={<Info className="w-4 h-4" />}
                 aria-label={`Details for ${content.title}`}
                 variant="elevated"

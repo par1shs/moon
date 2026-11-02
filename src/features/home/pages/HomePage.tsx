@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { Sparkles, SlidersHorizontal } from 'lucide-react'
+import { Sparkles, SlidersHorizontal, Tv, Laptop, Smartphone } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import type { ContentMetadata, EpisodeMetadata } from '../../../types'
 import { HeroBanner } from '../components/HeroBanner'
@@ -72,6 +72,12 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const heroContent = SAMPLE_FEATURED_CARDS[0]
 
+  const hybridTitles = useMemo(() => {
+    return ALL_DISCOVERY_TITLES.filter(
+      (c) => Boolean(c.hybridBroadcast || c.broadcastSchedule)
+    )
+  }, [])
+
   const handleOpenDetails = (item: ContentMetadata) => {
     onSelectContent?.(item)
   }
@@ -115,6 +121,29 @@ export const HomePage: React.FC<HomePageProps> = ({
             />
           ))}
         </HorizontalCarousel>
+      )}
+
+      {/* ─── Phase 5D: Airing on Live TV & Catch-up Hybrid Shelf ─── */}
+      {hybridTitles.length > 0 && (
+        <div data-testid="hybrid-discovery-shelf">
+          <HorizontalCarousel
+            title="Airing on Live TV & Catch-up"
+            eyebrow="HYBRID BROADCAST"
+            subtitle="Titles currently broadcasting or available on Catch-up television"
+          >
+            {hybridTitles.map((item) => (
+              <ContentCard
+                key={`hybrid-${item.id}`}
+                content={item}
+                variant="landscape"
+                isSaved={isInWatchlist(item.id)}
+                onPlay={() => handlePlayContent(item, 0)}
+                onInfo={() => handleOpenDetails(item)}
+                onAddToList={() => toggleWatchlist(item.id)}
+              />
+            ))}
+          </HorizontalCarousel>
+        </div>
       )}
 
       {/* ─── Section 2: Top Picks for [Profile Name] ─── */}
@@ -317,6 +346,125 @@ export const HomePage: React.FC<HomePageProps> = ({
           />
         ))}
       </HorizontalCarousel>
+
+      {/* ─── Phase 5D: Seamless Cross-Platform Device Continuity ─── */}
+      <section
+        data-testid="device-continuity-section"
+        className="p-6 sm:p-8 rounded-3xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-6 shadow-md"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-mono uppercase tracking-wider text-[var(--accent-secondary)] font-semibold">
+                CROSS-PLATFORM CONTINUITY
+              </span>
+            </div>
+            <h3 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)]">
+              Start on Smart TV • Continue on Desktop • Resume on Mobile
+            </h3>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl">
+              Profile synchronization tracks exact playback timestamps, audio streams, and bonus material seamlessly across your authorized devices.
+            </p>
+          </div>
+
+          <div className="px-3 py-1.5 rounded-full bg-[var(--accent-primary)]/15 border border-[var(--accent-primary)]/30 text-xs font-mono text-[var(--accent-secondary)] font-semibold shrink-0 self-start sm:self-auto">
+            Syncing Profile: {profile.name}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Smart TV */}
+          <div
+            data-testid="device-card-smart-tv"
+            className="p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-3 hover:border-[var(--accent-primary)]/50 transition-all group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono text-[var(--accent-secondary)]">
+                <Tv className="w-4 h-4 text-[var(--accent-primary)]" />
+                <span className="font-bold">Living Room 4K Apple TV</span>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                ACTIVE
+              </span>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-display font-bold text-[var(--text-primary)] truncate">
+                {continueWatchingList[0]?.content.title || 'KALEIDOSCOPE'}
+              </p>
+              <p className="text-xs font-mono text-[var(--text-muted)]">
+                Stopped at {continueWatchingList[0]?.history.progress || 65}% • 4K HDR Atmos
+              </p>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-[var(--accent-primary)] h-full rounded-full transition-all duration-500"
+                style={{ width: `${continueWatchingList[0]?.history.progress || 65}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Desktop */}
+          <div
+            data-testid="device-card-desktop"
+            className="p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-3 hover:border-[var(--accent-primary)]/50 transition-all group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono text-[var(--accent-secondary)]">
+                <Laptop className="w-4 h-4 text-[var(--accent-primary)]" />
+                <span className="font-bold">MacBook Pro 16&quot;</span>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                STANDBY
+              </span>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-display font-bold text-[var(--text-primary)] truncate">
+                {continueWatchingList[0]?.content.title || 'KALEIDOSCOPE'}
+              </p>
+              <p className="text-xs font-mono text-[var(--text-muted)]">
+                Ready to stream from saved position
+              </p>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-[var(--accent-primary)] h-full rounded-full transition-all duration-500"
+                style={{ width: `${continueWatchingList[0]?.history.progress || 65}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Mobile */}
+          <div
+            data-testid="device-card-mobile"
+            className="p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-3 hover:border-[var(--accent-primary)]/50 transition-all group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono text-[var(--accent-secondary)]">
+                <Smartphone className="w-4 h-4 text-[var(--accent-primary)]" />
+                <span className="font-bold">Pixel 9 Pro Mobile</span>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                SYNCED
+              </span>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-display font-bold text-[var(--text-primary)] truncate">
+                {continueWatchingList[0]?.content.title || 'KALEIDOSCOPE'}
+              </p>
+              <p className="text-xs font-mono text-[var(--text-muted)]">
+                Offline downloads available
+              </p>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-[var(--accent-primary)] h-full rounded-full transition-all duration-500"
+                style={{ width: `${continueWatchingList[0]?.history.progress || 65}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ─── Navigation Shortcut Footer Banners ─── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">

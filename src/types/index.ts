@@ -66,6 +66,39 @@ export interface BroadcastSchedule {
 }
 
 /**
+ * Phase 5D: Unified TV-to-OTT Models
+ */
+export interface BonusFeaturette {
+  id: string
+  title: string
+  duration: string
+  type: 'interview' | 'behind-the-scenes' | 'commentary' | 'deleted-scene' | 'aftershow'
+  thumbnailUrl: string
+  description: string
+  year?: string
+}
+
+export interface ExtendedEditionInfo {
+  isAvailable: boolean
+  title: string
+  additionalMinutes: number
+  description: string
+  editionType: "Director's Cut" | "Extended Cut" | "Special Edition" | "IMAX Enhanced"
+}
+
+export interface HybridBroadcastInfo {
+  channelId: string
+  channelNumber: string
+  channelTitle: string
+  isLiveNow?: boolean
+  airTimeText?: string
+  nextAirTimeISO?: string
+  isCatchUpAvailable?: boolean
+  catchUpExpiryText?: string
+  catchUpProgramId?: string
+}
+
+/**
  * Discovery & Filtering Models
  */
 export type SortOption =
@@ -173,6 +206,9 @@ export interface ContentMetadata {
   audioLanguages?: string[]
   seasons?: SeasonMetadata[]
   broadcastSchedule?: BroadcastSchedule
+  bonusContent?: BonusFeaturette[]
+  extendedEdition?: ExtendedEditionInfo
+  hybridBroadcast?: HybridBroadcastInfo
   relatedIds?: string[]
   trailerUrl?: string
   popularity?: number // numeric rank for sorting

@@ -36,16 +36,26 @@ const CATEGORIES = ['All Channels', 'News', 'Sports', 'Cinema', 'Culture']
 export interface LiveTVPageProps {
   profile?: Profile
   onSelectContent?: (content: ContentMetadata) => void
+  initialChannelId?: string
 }
 
 export const LiveTVPage: React.FC<LiveTVPageProps> = ({
   profile,
   onSelectContent,
+  initialChannelId,
 }) => {
   // Navigation & Filter state
   const [selectedCategory, setSelectedCategory] = useState('All Channels')
   const [viewMode, setViewMode] = useState<'now-next' | 'full-guide' | 'catch-up' | 'interact'>('now-next')
-  const [tunedChannelId, setTunedChannelId] = useState('ch-101')
+  const [tunedChannelId, setTunedChannelId] = useState(initialChannelId || 'ch-101')
+  const [prevInitialChannelId, setPrevInitialChannelId] = useState(initialChannelId)
+
+  if (prevInitialChannelId !== initialChannelId) {
+    setPrevInitialChannelId(initialChannelId)
+    if (initialChannelId) {
+      setTunedChannelId(initialChannelId)
+    }
+  }
 
   // Detailed Modal inspection state
   const [inspectedProgram, setInspectedProgram] = useState<{
@@ -215,6 +225,8 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
         expiryText: status.expiryText,
         genre: program.genre,
         isExpiringSoon: status.isExpiringSoon,
+        linkedContentId: program.linkedContentId,
+        programId: program.id,
       }
 
       setCatchUpPlayerState({
@@ -227,9 +239,11 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
     [getHistoryItem, getScheduleCatchUpStatus]
   )
 
-  // Open linked on-demand content handler
+  // Open linked on-demand content handler (Journey A & Journey C)
   const handleOpenLinkedContent = useCallback(
     (contentId: string) => {
+      setIsLivePlayerOpen(false)
+      setIsCatchUpPlayerOpen(false)
       if (!onSelectContent) return
       const found = ALL_DISCOVERY_TITLES.find((c) => c.id === contentId)
       if (found) {
@@ -390,6 +404,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
             <Button
               variant="primary"
               size="md"
+              data-testid="spotlight-watch-live-btn"
               leftIcon={<Maximize2 className="w-4 h-4" />}
               onClick={() => setIsLivePlayerOpen(true)}
             >
@@ -640,12 +655,15 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
                 programGenre: tunedCurrentProgram.genre,
                 programDuration: `${tunedCurrentProgram.durationMinutes}m`,
                 channelCategory: tunedChannel.category,
+                linkedContentId: tunedCurrentProgram.linkedContentId,
+                programId: tunedCurrentProgram.id,
               }
             : undefined
         }
         onPreviousChannel={handlePreviousChannel}
         onNextChannel={handleNextChannel}
         profileId={profile?.id || 'default'}
+        onExploreOTT={handleOpenLinkedContent}
       />
 
       {/* ─── Full-Screen Catch-Up Video Player Experience ─── */}
@@ -657,6 +675,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
           catchUpProgram={catchUpPlayerState.catchUpProgram}
           profileId={profile?.id || 'default'}
           onClose={() => setIsCatchUpPlayerOpen(false)}
+          onExploreOTT={handleOpenLinkedContent}
           onProgressUpdate={(contentId, progress, details) => {
             updateProgress(contentId, progress, details)
           }}

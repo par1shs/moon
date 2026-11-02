@@ -42,6 +42,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [activePage, setActivePage] = useState<NavigationPage>(initialPage)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedDetailContent, setSelectedDetailContent] = useState<ContentMetadata | null>(null)
+  const [liveTunedChannelId, setLiveTunedChannelId] = useState<string | undefined>(undefined)
   const reducedMotion = useReducedMotionPreference()
 
   const handleNavigate = (page: NavigationPage) => {
@@ -88,6 +89,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         return (
           <LiveTVPage
             profile={profile}
+            initialChannelId={liveTunedChannelId}
             onSelectContent={(c) => setSelectedDetailContent(c)}
           />
         )
@@ -206,6 +208,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onClose={() => setSelectedDetailContent(null)}
         profile={profile}
         onSelectRelated={(c) => setSelectedDetailContent(c)}
+        onWatchLive={(channelId) => {
+          setSelectedDetailContent(null)
+          setLiveTunedChannelId(channelId)
+          handleNavigate('livetv')
+        }}
+        onWatchCatchUp={(_programId, channelId) => {
+          setSelectedDetailContent(null)
+          setLiveTunedChannelId(channelId)
+          handleNavigate('livetv')
+        }}
       />
 
       {/* ─── Edit Active Profile Modal ─── */}

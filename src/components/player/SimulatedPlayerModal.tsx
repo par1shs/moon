@@ -20,10 +20,11 @@ import {
   X,
   Radio,
   SkipForward,
+  Film,
 } from 'lucide-react'
 import { Badge } from '../common/Badge'
 import { Button } from '../common/Button'
-import type { ContentMetadata, EpisodeMetadata } from '../../types'
+import type { ContentMetadata, EpisodeMetadata, BonusFeaturette } from '../../types'
 import { InteractivePanel } from '../../features/live/components/interactive/InteractivePanel'
 import { SAMPLE_INTERACTIVE_ITEMS } from '../../data/interactiveContent'
 
@@ -36,6 +37,8 @@ export interface LiveProgramInfo {
   programStartTime?: string
   programEndTime?: string
   channelCategory?: string
+  linkedContentId?: string
+  programId?: string
 }
 
 export interface CatchUpProgramInfo {
@@ -46,12 +49,15 @@ export interface CatchUpProgramInfo {
   expiryText?: string
   genre?: string
   isExpiringSoon?: boolean
+  linkedContentId?: string
+  programId?: string
 }
 
 export interface SimulatedPlayerModalProps {
   isOpen: boolean
   content: ContentMetadata | null
   episode?: EpisodeMetadata
+  bonusFeature?: BonusFeaturette
   initialProgress?: number
   onClose: () => void
   onProgressUpdate: (
@@ -75,6 +81,7 @@ export interface SimulatedPlayerModalProps {
   onPreviousChannel?: () => void
   onNextChannel?: () => void
   profileId?: string
+  onExploreOTT?: (contentId: string) => void
 }
 
 const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
@@ -173,6 +180,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   isOpen,
   content,
   episode: propEpisode,
+  bonusFeature,
   initialProgress = 0,
   onClose,
   onProgressUpdate,
@@ -183,6 +191,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   onPreviousChannel,
   onNextChannel,
   profileId,
+  onExploreOTT,
 }) => {
   // ─── Active Content & Episode State ───
   const initialEpisode = useMemo(() => {
@@ -234,6 +243,31 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
     return undefined
   }, [liveProgram, catchUpProgram, content])
 
+  // ─── Phase 5D: Unified TV-to-OTT Linked Content Resolution ───
+  const resolvedLinkedContentId = useMemo(() => {
+    if (liveProgram?.linkedContentId) return liveProgram.linkedContentId
+    if (catchUpProgram?.linkedContentId) return catchUpProgram.linkedContentId
+
+    // Fuzzy matching against known broadcast-to-OTT schedules
+    const targetTitle = (liveProgram?.programTitle || catchUpProgram?.programTitle || '').toLowerCase()
+    if (targetTitle.includes('pixel morning live') || targetTitle.includes('overnight global') || targetTitle.includes('convergence of tv') || targetTitle.includes('kaleidoscope')) return 'feat-1'
+    if (targetTitle.includes('world endurance') || targetTitle.includes('night rally') || targetTitle.includes('velocity night')) return 'mov-2'
+    if (targetTitle.includes('metropolis') || targetTitle.includes('silent era')) return 'mov-4'
+    if (targetTitle.includes('ambient earth') || targetTitle.includes('symphony of the void')) return 'feat-2'
+    if (targetTitle.includes('wild soundscapes') || targetTitle.includes('earth reverberations')) return 'ser-8'
+    if (targetTitle.includes('shadows of chinatown') || targetTitle.includes('celestial mechanics')) return 'mov-8'
+
+    // Fallback based on channel number if title wasn't matched
+    const chNum = liveProgram?.channelNumber || catchUpProgram?.channelNumber
+    if (chNum === '101') return 'feat-1'
+    if (chNum === '102') return 'mov-2'
+    if (chNum === '103') return 'mov-4'
+    if (chNum === '104') return 'feat-2'
+    if (chNum === '106') return 'ser-8'
+
+    return undefined
+  }, [liveProgram, catchUpProgram])
+
   // ─── Menu & Inactivity Controls ───
   const [showControls, setShowControls] = useState(true)
   const [activeSettingsTab, setActiveSettingsTab] = useState<'none' | 'menu' | 'speed' | 'audio' | 'subtitles' | 'quality'>('none')
@@ -251,41 +285,47 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   const lastSavedTimeRef = useRef<number>(0)
   const lastReportedProgressRef = useRef<number>(initialProgress)
 
-  // Calculate total seconds for current title / episode
+  // Calculate total seconds for current title / episode / bonus
   const isSeries = Boolean(content?.type === 'series' || content?.seasons?.length)
   const totalDurationSeconds = useMemo(() => {
+    if (bonusFeature) {
+      return parseDurationToSeconds(bonusFeature.duration, false)
+    }
     if (currentEpisode) {
       return parseDurationToSeconds(currentEpisode.duration, true)
     }
     return parseDurationToSeconds(content?.duration, isSeries)
-  }, [content, currentEpisode, isSeries])
+  }, [bonusFeature, content, currentEpisode, isSeries])
 
   // Current playback time in seconds
   const [currentTime, setCurrentTime] = useState(() => (initialProgress / 100) * totalDurationSeconds)
   const currentTimeRef = useRef(currentTime)
 
-  // Sync props change during render (when item, episode, or open state changes)
+  // Sync props change during render (when item, episode, bonus, or open state changes)
   const [prevProps, setPrevProps] = useState({
     contentId: content?.id,
     epId: propEpisode?.id,
+    bonusId: bonusFeature?.id,
     isOpen,
   })
 
   if (
     prevProps.contentId !== content?.id ||
     prevProps.epId !== propEpisode?.id ||
+    prevProps.bonusId !== bonusFeature?.id ||
     prevProps.isOpen !== isOpen
   ) {
     setPrevProps({
       contentId: content?.id,
       epId: propEpisode?.id,
+      bonusId: bonusFeature?.id,
       isOpen,
     })
     const activeEp = propEpisode || (content?.seasons && content.seasons.length > 0 ? content.seasons[0]?.episodes?.[0] : undefined)
     setCurrentEpisode(activeEp)
     if (isOpen) {
       const duration = parseDurationToSeconds(
-        activeEp?.duration || content?.duration,
+        bonusFeature?.duration || activeEp?.duration || content?.duration,
         Boolean(content?.type === 'series' || content?.seasons?.length)
       )
       const initialSec = (initialProgress / 100) * duration
@@ -691,7 +731,11 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
 
   if (!isOpen || !content) return null
 
-  const heroImage = currentEpisode?.thumbnailUrl || content.backdropUrl || content.posterUrl
+  const heroImage =
+    bonusFeature?.thumbnailUrl ||
+    currentEpisode?.thumbnailUrl ||
+    content.backdropUrl ||
+    content.posterUrl
   const subtitleIndex = Math.floor(currentTime / 7) % SAMPLE_SUBTITLE_CUES.length
   const currentSubtitleText = SAMPLE_SUBTITLE_CUES[subtitleIndex]
 
@@ -814,7 +858,15 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
 
           <div className="space-y-0.5 truncate">
             <div className="flex items-center gap-2">
-              {catchUpProgram ? (
+              {bonusFeature ? (
+                <span
+                  data-testid="player-bonus-badge"
+                  className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border border-[var(--accent-primary)]/40 shadow-sm flex items-center gap-1 shrink-0"
+                >
+                  <Sparkles className="w-2.5 h-2.5" />
+                  BONUS: {bonusFeature.type.toUpperCase()}
+                </span>
+              ) : catchUpProgram ? (
                 <span
                   data-testid="player-catch-up-badge"
                   className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1 shrink-0"
@@ -828,7 +880,9 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
                 </Badge>
               ) : null}
               <h2 className="font-display font-bold text-base sm:text-lg text-white truncate drop-shadow">
-                {catchUpProgram
+                {bonusFeature
+                  ? bonusFeature.title
+                  : catchUpProgram
                   ? `CH ${catchUpProgram.channelNumber}: ${catchUpProgram.channelTitle}`
                   : liveProgram
                   ? `CH ${liveProgram.channelNumber}: ${liveProgram.channelTitle}`
@@ -842,23 +896,41 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
             </div>
 
             <p className="text-xs font-mono text-[var(--accent-secondary)] truncate">
-              {catchUpProgram
+              {bonusFeature
+                ? `${bonusFeature.duration} • ${bonusFeature.description}`
+                : catchUpProgram
                 ? `${catchUpProgram.programTitle} • Broadcast: ${catchUpProgram.broadcastDateText}${catchUpProgram.expiryText ? ` • ${catchUpProgram.expiryText}` : ''}`
                 : liveProgram
                 ? `LIVE: ${liveProgram.programTitle}${liveProgram.programGenre ? ` • ${liveProgram.programGenre}` : ''}`
                 : currentEpisode
                 ? `Season ${currentSeasonNumber} • Episode ${currentEpisode.episodeNumber}: ${currentEpisode.title}`
-                : content.subtitle || 'JUNCTION+ Stream Engine'}
+                : content.subtitle || 'PIXEL+ Stream Engine'}
             </p>
           </div>
         </div>
 
         {/* Top Right: Telemetry Watermark & Stream Indicator */}
         <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
+          {/* Phase 5D: Explore on OTT action button */}
+          {resolvedLinkedContentId && onExploreOTT && (
+            <button
+              type="button"
+              data-testid="player-explore-ott-btn"
+              onClick={() => {
+                onExploreOTT(resolvedLinkedContentId)
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-contrast)] hover:scale-105 active:scale-95 transition-all text-xs font-mono font-bold shadow-lg border border-white/20 cursor-pointer"
+              title="Explore On Demand title and bonus features"
+            >
+              <Film className="w-3.5 h-3.5" />
+              <span>Explore on OTT</span>
+            </button>
+          )}
+
           {catchUpProgram ? (
             <div
               data-testid="player-catch-up-indicator"
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 backdrop-blur-md"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 backdrop-blur-md"
             >
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-[11px] uppercase tracking-wider font-bold">
@@ -1175,6 +1247,23 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
 
           {/* Right Controls: Speed, Subtitles, Settings, Fullscreen */}
           <div className="flex items-center gap-2">
+            {/* Phase 5D: Explore on OTT Action */}
+            {resolvedLinkedContentId && onExploreOTT && (
+              <button
+                type="button"
+                data-testid="player-explore-ott-bottom-btn"
+                onClick={() => {
+                  onExploreOTT(resolvedLinkedContentId)
+                }}
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer"
+                title="Explore On Demand title and bonus features"
+                aria-label="Explore on OTT"
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>Explore on OTT</span>
+              </button>
+            )}
+
             {/* Interactive Television Trigger */}
             {linkedInteractive && (
               <button

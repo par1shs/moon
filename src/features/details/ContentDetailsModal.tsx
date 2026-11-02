@@ -14,7 +14,7 @@ import {
   Sparkles,
   Layers,
 } from 'lucide-react'
-import type { ContentMetadata, EpisodeMetadata } from '../../types'
+import type { ContentMetadata, EpisodeMetadata, BonusFeaturette } from '../../types'
 import type { Profile } from '../profiles/types'
 import { Button } from '../../components/common/Button'
 import { IconButton } from '../../components/common/IconButton'
@@ -55,6 +55,8 @@ export interface ContentDetailsModalProps {
   profile: Profile
   onSelectRelated?: (content: ContentMetadata) => void
   onPlay?: (content: ContentMetadata, episode?: EpisodeMetadata) => void
+  onWatchLive?: (channelId: string) => void
+  onWatchCatchUp?: (programId: string, channelId: string) => void
 }
 
 export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
@@ -64,6 +66,8 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   profile,
   onSelectRelated,
   onPlay,
+  onWatchLive,
+  onWatchCatchUp,
 }) => {
   const reducedMotion = useReducedMotionPreference()
   const { isInWatchlist, toggleWatchlist } = useWatchlist(
@@ -80,6 +84,8 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
 
   const [selectedSeasonIdx, setSelectedSeasonIdx] = useState(0)
   const [hasReminder, setHasReminder] = useState(false)
+  const [isExtendedEdition, setIsExtendedEdition] = useState(false)
+  const [activeBonusFeature, setActiveBonusFeature] = useState<BonusFeaturette | null>(null)
   const [activePlayerTitle, setActivePlayerTitle] = useState<string | null>(null)
   const [activePlayerSubtitle, setActivePlayerSubtitle] = useState<string | null>(null)
   const [isInteractivePlayerOpen, setIsInteractivePlayerOpen] = useState(false)
@@ -98,6 +104,8 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   if (prevContentId !== content?.id) {
     setPrevContentId(content?.id)
     setHasReminder(false)
+    setIsExtendedEdition(false)
+    setActiveBonusFeature(null)
 
     let initialSeasonIdx = 0
     if (content && isSeries && content.seasons && seriesProgress?.nextEpisodeToWatch) {
@@ -174,7 +182,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
 
   const handleWatchTrailer = () => {
     setActivePlayerTitle(`${content.title} — Official Trailer`)
-    setActivePlayerSubtitle('JUNCTION+ Theatrical Preview • 4K HDR Atmos')
+    setActivePlayerSubtitle('PIXEL+ Theatrical Preview • 4K HDR Atmos')
   }
 
   return (
@@ -273,7 +281,10 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                 )}
                 {content.duration && (
                   <span className="text-xs font-mono text-[var(--text-muted)]">
-                    • {content.duration}
+                    •{' '}
+                    {isExtendedEdition && content.extendedEdition
+                      ? `${content.duration} (+${content.extendedEdition.additionalMinutes}m ${content.extendedEdition.editionType})`
+                      : content.duration}
                   </span>
                 )}
                 {content.year && (
@@ -287,7 +298,9 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                 id="details-title"
                 className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--text-primary)] leading-[1.1] drop-shadow-md"
               >
-                {content.title}
+                {isExtendedEdition && content.extendedEdition
+                  ? content.extendedEdition.title
+                  : content.title}
               </h1>
 
               {content.subtitle && (
@@ -318,8 +331,31 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                     ? `Resume (${historyItem.progress}%)`
                     : historyItem?.completed
                     ? 'Watch Again'
+                    : isExtendedEdition
+                    ? `Play ${content.extendedEdition?.editionType || 'Extended'}`
                     : 'Play Now'}
                 </Button>
+
+                {content.extendedEdition && (
+                  <button
+                    type="button"
+                    data-testid="hybrid-extended-edition-btn"
+                    onClick={() => setIsExtendedEdition(!isExtendedEdition)}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold border transition-all cursor-pointer ${
+                      isExtendedEdition
+                        ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] border-[var(--accent-primary)] shadow-md ring-2 ring-[var(--accent-primary)]/40'
+                        : 'bg-[var(--bg-elevated)] hover:bg-white/10 text-[var(--text-secondary)] border-[var(--border-subtle)]'
+                    }`}
+                    title={content.extendedEdition.description}
+                  >
+                    <Layers className="w-4 h-4" />
+                    <span>
+                      {isExtendedEdition
+                        ? `${content.extendedEdition.editionType} (+${content.extendedEdition.additionalMinutes}m)`
+                        : `Switch to ${content.extendedEdition.editionType}`}
+                    </span>
+                  </button>
+                )}
 
                 <Button
                   variant="secondary"
@@ -372,9 +408,12 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
 
           {/* ─── Body Details Container ─── */}
           <div className="p-6 sm:p-10 space-y-8 sm:space-y-10">
-            {/* ─── Hybrid Linear TV Integration Broadcast Banner ─── */}
-            {content.broadcastSchedule && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--accent-primary)]/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            {/* ─── Phase 5D: Hybrid Linear TV Integration Broadcast Banner ─── */}
+            {(content.hybridBroadcast || content.broadcastSchedule) && (
+              <div
+                data-testid="hybrid-broadcast-banner"
+                className="p-4 sm:p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--accent-primary)]/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm"
+              >
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 flex items-center justify-center text-[var(--accent-primary)] shrink-0">
                     <Radio className="w-5 h-5 animate-pulse" />
@@ -382,34 +421,54 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--accent-secondary)] font-semibold">
-                        {content.broadcastSchedule.isLiveNow
+                        {content.hybridBroadcast?.isLiveNow || content.broadcastSchedule?.isLiveNow
                           ? '● BROADCASTING LIVE ON LINEAR TV'
+                          : content.hybridBroadcast?.isCatchUpAvailable
+                          ? 'AVAILABLE ON CATCH-UP & SCHEDULED TV'
                           : 'UPCOMING TV BROADCAST PREMIERE'}
                       </span>
                       <Badge variant="live" size="sm">
-                        CH {content.broadcastSchedule.channelNumber}
+                        CH {content.hybridBroadcast?.channelNumber || content.broadcastSchedule?.channelNumber || '101'}
                       </Badge>
                     </div>
                     <p className="text-sm font-display font-bold text-[var(--text-primary)]">
-                      {content.broadcastSchedule.channelName} • {content.broadcastSchedule.airTime}
+                      {content.hybridBroadcast?.channelTitle || content.broadcastSchedule?.channelName}
+                      {' • '}
+                      {content.hybridBroadcast?.airTimeText || content.broadcastSchedule?.airTime}
                     </p>
+                    {content.hybridBroadcast?.isCatchUpAvailable && content.hybridBroadcast?.catchUpExpiryText && (
+                      <p className="text-xs font-mono text-amber-400">
+                        {content.hybridBroadcast.catchUpExpiryText}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  {content.broadcastSchedule.isLiveNow ? (
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  {(content.hybridBroadcast?.isLiveNow || content.broadcastSchedule?.isLiveNow) && (
                     <Button
                       variant="primary"
                       size="sm"
+                      data-testid="hybrid-watch-live-btn"
                       leftIcon={<Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
-                      onClick={() => handlePlayNow()}
+                      onClick={() => {
+                        const chId = content.hybridBroadcast?.channelId || 'ch-101'
+                        if (onWatchLive) {
+                          onWatchLive(chId)
+                        } else {
+                          handlePlayNow()
+                        }
+                      }}
                     >
-                      Watch Live Stream
+                      Watch Live on CH {content.hybridBroadcast?.channelNumber || content.broadcastSchedule?.channelNumber}
                     </Button>
-                  ) : (
+                  )}
+
+                  {!(content.hybridBroadcast?.isLiveNow || content.broadcastSchedule?.isLiveNow) && (
                     <Button
                       variant={hasReminder ? 'secondary' : 'outline'}
                       size="sm"
+                      data-testid="hybrid-remind-me-btn"
                       leftIcon={
                         hasReminder ? (
                           <BellRing className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
@@ -420,6 +479,26 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                       onClick={() => setHasReminder(!hasReminder)}
                     >
                       {hasReminder ? 'Reminder Set' : 'Remind Me'}
+                    </Button>
+                  )}
+
+                  {content.hybridBroadcast?.isCatchUpAvailable && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      data-testid="hybrid-watch-catchup-btn"
+                      leftIcon={<RotateCcw className="w-3.5 h-3.5 text-amber-400" />}
+                      onClick={() => {
+                        const progId = content.hybridBroadcast?.catchUpProgramId || `catchup-${content.id}`
+                        const chId = content.hybridBroadcast?.channelId || 'ch-101'
+                        if (onWatchCatchUp) {
+                          onWatchCatchUp(progId, chId)
+                        } else {
+                          handlePlayNow()
+                        }
+                      }}
+                    >
+                      Watch Catch-up TV
                     </Button>
                   )}
                 </div>
@@ -794,12 +873,98 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
               </div>
             )}
 
+            {/* ─── Phase 5D: Bonus Content & Behind-The-Scenes Shelf ─── */}
+            {content.bonusContent && content.bonusContent.length > 0 && (
+              <div
+                data-testid="hybrid-bonus-content-section"
+                className="space-y-4 pt-4 border-t border-[var(--border-subtle)]"
+              >
+                <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+                    <strong className="text-[var(--text-primary)] uppercase tracking-wider">
+                      Bonus Content &amp; Behind-the-Scenes
+                    </strong>
+                  </span>
+                  <span className="text-[var(--accent-secondary)]">
+                    {content.bonusContent.length} EXCLUSIVE FEATURETTES
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {content.bonusContent.map((bonus) => (
+                    <div
+                      key={bonus.id}
+                      data-testid={`bonus-card-${bonus.id}`}
+                      onClick={() => {
+                        setActiveBonusFeature(bonus)
+                        setIsInteractivePlayerOpen(true)
+                      }}
+                      className="group relative rounded-2xl overflow-hidden bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/50 transition-all p-3 space-y-3 cursor-pointer shadow-sm hover:shadow-md"
+                    >
+                      <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black/60">
+                        <img
+                          src={bonus.thumbnailUrl}
+                          alt={bonus.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
+
+                        {/* Play hover badge */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)] text-[var(--accent-contrast)] flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                            <Play className="w-5 h-5 fill-current ml-0.5" />
+                          </div>
+                        </div>
+
+                        {/* Duration badge */}
+                        <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-black/80 text-white border border-white/20">
+                          {bonus.duration}
+                        </span>
+
+                        {/* Type badge */}
+                        <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-mono uppercase font-bold tracking-wider bg-[var(--accent-primary)]/90 text-[var(--accent-contrast)] shadow">
+                          {bonus.type}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="font-display font-bold text-sm text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors line-clamp-1">
+                          {bonus.title}
+                        </h4>
+                        <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
+                          {bonus.description}
+                        </p>
+                      </div>
+
+                      <div className="pt-1 flex items-center justify-between">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-testid={`bonus-play-btn-${bonus.id}`}
+                          leftIcon={<Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveBonusFeature(bonus)
+                            setIsInteractivePlayerOpen(true)
+                          }}
+                          className="group-hover:bg-[var(--accent-primary)] group-hover:text-[var(--accent-contrast)] text-xs"
+                        >
+                          Play Featurette
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ─── Related / More Like This Shelf ─── */}
             {relatedContent.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-[var(--border-subtle)]">
                 <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
                   <span>MORE LIKE THIS</span>
-                  <span>JUNCTION+ RECOMMENDATIONS</span>
+                  <span>PIXEL+ RECOMMENDATIONS</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -831,8 +996,11 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
         isOpen={isInteractivePlayerOpen}
         content={content}
         episode={activePlayerEpisode}
+        bonusFeature={activeBonusFeature || undefined}
         initialProgress={
-          activePlayerEpisode
+          activeBonusFeature
+            ? 0
+            : activePlayerEpisode
             ? getEpisodeProgress(
                 content.id,
                 activePlayerEpisode.id,
@@ -844,6 +1012,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
         onClose={() => {
           setIsInteractivePlayerOpen(false)
           setActivePlayerEpisode(undefined)
+          setActiveBonusFeature(null)
         }}
         onNextEpisode={(nextEp) => setActivePlayerEpisode(nextEp)}
         onProgressUpdate={updateProgress}
@@ -875,7 +1044,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                   {activePlayerTitle}
                 </h4>
                 <p className="text-xs font-mono text-[var(--accent-secondary)]">
-                  {activePlayerSubtitle || 'JUNCTION+ Stream Engine • 4K HDR Atmos'}
+                  {activePlayerSubtitle || 'PIXEL+ Stream Engine • 4K HDR Atmos'}
                 </p>
               </div>
             </div>

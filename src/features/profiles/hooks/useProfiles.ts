@@ -20,8 +20,17 @@ export function useProfiles() {
       if (stored) {
         const parsed: Profile[] = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length > 0) {
+          // Remove Kabir and Kids if present in stored sessions
+          const filtered = parsed.filter(
+            (p) =>
+              p.id !== 'profile-kabir' &&
+              p.id !== 'profile-kids' &&
+              p.name.toLowerCase() !== 'kabir' &&
+              p.name.toLowerCase() !== 'kids'
+          )
+          const activeList = filtered.length > 0 ? filtered : DEFAULT_PROFILES
           // Ensure all profiles have a cached themePalette
-          return parsed.map((p) => {
+          return activeList.map((p) => {
             if (!p.themePalette) {
               const palette = extractThemeFromAvatar(p.avatarConfig, p.name)
               return {
@@ -51,7 +60,7 @@ export function useProfiles() {
     if (typeof window === 'undefined') return null
     try {
       const activeId = localStorage.getItem(ACTIVE_PROFILE_KEY)
-      if (activeId) {
+      if (activeId && activeId !== 'profile-kabir' && activeId !== 'profile-kids') {
         const found = profiles.find((p) => p.id === activeId)
         if (found) return found
       }

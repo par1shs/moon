@@ -57,7 +57,7 @@ export const StartupScreen: React.FC<StartupScreenProps> = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.45, ease: 'easeInOut' } }}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg-main)] px-4 select-none overflow-hidden"
-      aria-label="JUNCTION+ Startup Intro"
+      aria-label="PIXEL Startup Intro"
     >
       {/* 1 & 2: Subtle Ambient Light / Gradient Effect */}
       <motion.div
@@ -80,7 +80,7 @@ export const StartupScreen: React.FC<StartupScreenProps> = ({
 
       {/* Center Cinematic Container */}
       <div className="relative z-10 flex flex-col items-center text-center max-w-xl">
-        {/* 3 & 4: JUNCTION+ Logo with Light Sweep */}
+        {/* 3 & 4: PIXEL Logo with Light Sweep */}
         <motion.div
           initial={{
             opacity: 0,
@@ -136,7 +136,7 @@ export const StartupScreen: React.FC<StartupScreenProps> = ({
           }}
           className="mt-4"
         >
-          <span className="font-display font-semibold uppercase text-[var(--text-primary)] text-xs sm:text-sm tracking-[0.25em] sm:tracking-[0.32em]">
+          <span className="font-pixel font-bold uppercase text-[var(--text-primary)] text-xs sm:text-sm tracking-[0.2em] sm:tracking-[0.25em]">
             ONE STORY. EVERY SCREEN.
           </span>
         </motion.div>
@@ -154,7 +154,7 @@ export const StartupScreen: React.FC<StartupScreenProps> = ({
         >
           <Sparkles className="w-3 h-3 text-[var(--accent-secondary)]" />
           <span className="text-[11px] sm:text-xs text-[var(--text-secondary)] font-medium">
-            Your entertainment destination.
+            Welcome to <span className="font-pixel font-bold text-[var(--accent-primary)]">PIXEL</span> — Your entertainment destination.
           </span>
         </motion.div>
       </div>

@@ -70,7 +70,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             type="button"
             onClick={() => onNavigate('home')}
             className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-lg"
-            aria-label="JUNCTION+ Home"
+            aria-label="PIXEL Home"
           >
             <BrandLogo size="md" />
           </button>

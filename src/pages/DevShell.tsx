@@ -196,7 +196,7 @@ export const DevShell: React.FC<DevShellProps> = ({ onLaunchStartup }) => {
               <div>
                 <span className="text-[10px] text-[var(--text-muted)] font-mono">Body Regular (15px)</span>
                 <p className="text-[var(--text-primary)] text-sm sm:text-base leading-relaxed">
-                  JUNCTION+ synthesizes broadcast television reliability with the non-linear flexibility of next-generation on-demand streaming.
+                  <span className="font-pixel font-bold text-[var(--accent-primary)]">PIXEL</span> synthesizes broadcast television reliability with the non-linear flexibility of next-generation on-demand streaming.
                 </p>
               </div>
               <div>
@@ -208,7 +208,7 @@ export const DevShell: React.FC<DevShellProps> = ({ onLaunchStartup }) => {
               <div>
                 <span className="text-[10px] text-[var(--text-muted)] font-mono">Muted Footnote (11px Uppercase)</span>
                 <p className="text-[var(--text-muted)] text-[11px] font-mono uppercase tracking-wider">
-                  © 2026 JUNCTION+ INC. ALL RIGHTS RESERVED.
+                  © 2026 PIXEL INC. ALL RIGHTS RESERVED.
                 </p>
               </div>
             </div>
@@ -528,7 +528,7 @@ export const DevShell: React.FC<DevShellProps> = ({ onLaunchStartup }) => {
       <footer className="pt-8 pb-12 mt-12 border-t border-[var(--border-subtle)] text-center space-y-2">
         <BrandLogo size="sm" className="mx-auto" />
         <p className="text-xs text-[var(--text-muted)] font-mono">
-          JUNCTION+ Phase 1 Foundation & Design System • Ready for Phase 2 Architecture
+          <span className="font-pixel font-bold text-[var(--accent-primary)]">PIXEL</span> Design System & Streaming Architecture
         </p>
       </footer>
     </PageContainer>

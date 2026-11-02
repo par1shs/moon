@@ -3,6 +3,7 @@
 @theme {
   --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-pixel: 'Pixelify Sans', 'Press Start 2P', 'Silkscreen', monospace;
 
   --color-junction-brand-foundation: var(--brand-foundation);
   --color-junction-brand-midnight: var(--brand-midnight);

@@ -6,6 +6,7 @@ import { BrandLogo } from '../../../components/common/BrandLogo'
 import { ThemeToggle } from '../../../components/common/ThemeToggle'
 import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
 import { ProfileMenu } from './ProfileMenu'
+import { useSubscriptionTier } from '../../../hooks/useSubscriptionTier'
 
 export type NavigationPage = 'home' | 'series' | 'movies' | 'discover' | 'livetv' | 'mylist' | 'search'
 
@@ -44,6 +45,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const { subscriptionTier, isFreeTier } = useSubscriptionTier(profile.id)
 
   // Listen for scroll to dynamically add solid background & subtle shadow
   useEffect(() => {
@@ -143,6 +145,17 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
               <span className="hidden lg:inline text-xs font-medium text-[var(--text-primary)] max-w-[100px] truncate">
                 {profile.name}
+              </span>
+
+              <span
+                data-testid="nav-subscription-badge"
+                className={`hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase ${
+                  isFreeTier
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                }`}
+              >
+                {subscriptionTier.toUpperCase()}
               </span>
 
               <ChevronDown

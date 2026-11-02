@@ -49,6 +49,7 @@ export interface Profile {
   accentColor: string
   themePalette?: AccentTheme
   createdAt: number
+  subscriptionTier?: 'free' | 'premium'
 }
 
 export interface ProfileFormData {

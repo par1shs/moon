@@ -99,6 +99,39 @@ export interface HybridBroadcastInfo {
 }
 
 /**
+ * Phase 6A: AVOD Advertising & Sponsorship Models
+ */
+export type SubscriptionTier = 'free' | 'premium'
+
+export type AdPlacementType = 'pre-roll' | 'mid-roll' | 'sponsored'
+
+export interface Advertisement {
+  id: string
+  advertiserName: string
+  campaignTitle: string
+  tagline?: string
+  mediaUrl: string
+  durationSeconds: number
+  placement: AdPlacementType
+  canSkip: boolean
+  skipOffsetSeconds: number
+  eligibleContentIds?: string[]
+  startDateISO?: string
+  endDateISO?: string
+  callToActionText?: string
+  sponsorUrl?: string
+  accentColor?: string
+}
+
+export interface SponsorInfo {
+  name: string
+  tagline: string
+  badgeText?: string
+  logoUrl?: string
+  sponsorUrl?: string
+}
+
+/**
  * Discovery & Filtering Models
  */
 export type SortOption =
@@ -209,6 +242,7 @@ export interface ContentMetadata {
   bonusContent?: BonusFeaturette[]
   extendedEdition?: ExtendedEditionInfo
   hybridBroadcast?: HybridBroadcastInfo
+  sponsor?: SponsorInfo
   relatedIds?: string[]
   trailerUrl?: string
   popularity?: number // numeric rank for sorting

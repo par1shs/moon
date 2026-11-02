@@ -1,4 +1,5 @@
 import type { ContentMetadata } from '../types'
+import { SAMPLE_SPONSORS } from './sampleAds'
 
 /**
  * PIXEL Comprehensive Content Catalogue for OTT & Hybrid Linear Broadcast
@@ -78,6 +79,7 @@ export const SAMPLE_FEATURED_CARDS: ContentMetadata[] = [
         year: '2026',
       },
     ],
+    sponsor: SAMPLE_SPONSORS.apex,
     relatedIds: ['mov-1', 'ser-1', 'feat-2', 'mov-6'],
   },
   {
@@ -858,6 +860,7 @@ export const SAMPLE_MOVIE_CARDS: ContentMetadata[] = [
         year: '2026',
       },
     ],
+    sponsor: SAMPLE_SPONSORS.veloce,
     relatedIds: ['port-3', 'ser-6', 'land-2'],
   },
   {
@@ -1024,6 +1027,7 @@ export const SAMPLE_LIVE_CHANNELS: (ContentMetadata & { channelNumber: string; c
     duration: 'Live 24/7',
     year: 'ON AIR',
     quality: 'HD',
+    sponsor: SAMPLE_SPONSORS.apex,
     backdropUrl: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=1200&auto=format&fit=crop',
     broadcastSchedule: {
       channelNumber: '101',
@@ -1045,6 +1049,7 @@ export const SAMPLE_LIVE_CHANNELS: (ContentMetadata & { channelNumber: string; c
     duration: 'Live',
     year: 'LIVE',
     quality: '4K HDR',
+    sponsor: SAMPLE_SPONSORS.veloce,
     backdropUrl: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=1200&auto=format&fit=crop',
     broadcastSchedule: {
       channelNumber: '102',

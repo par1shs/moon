@@ -505,6 +505,31 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
               </div>
             )}
 
+            {/* ─── Phase 6A: Sponsored Content Disclosure ─── */}
+            {content.sponsor && (
+              <div
+                data-testid="details-sponsor-box"
+                className="p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4 text-xs font-mono"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-amber-500 text-black text-[10px]">
+                    SPONSORED
+                  </span>
+                  <span className="text-[var(--text-primary)]">
+                    Presented in partnership with <strong>{content.sponsor.name}</strong>
+                  </span>
+                  <span className="hidden md:inline text-[var(--text-muted)]">
+                    • {content.sponsor.tagline}
+                  </span>
+                </div>
+                {content.sponsor.sponsorUrl && (
+                  <span className="text-[var(--accent-secondary)] font-semibold shrink-0">
+                    Visit Sponsor &rarr;
+                  </span>
+                )}
+              </div>
+            )}
+
             {/* ─── Synopsis & Metadata Grid ─── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column: Full Synopsis & Genres */}
@@ -995,6 +1020,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
       <SimulatedPlayerModal
         isOpen={isInteractivePlayerOpen}
         content={content}
+        profileId={profile.id}
         episode={activePlayerEpisode}
         bonusFeature={activeBonusFeature || undefined}
         initialProgress={

@@ -8,12 +8,14 @@ import {
   ShieldCheck,
   RotateCcw,
   Code2,
+  Sparkles,
 } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
 import { ThemeToggle } from '../../../components/common/ThemeToggle'
 import { useAudio } from '../../audio/useAudio'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
+import { useSubscriptionTier } from '../../../hooks/useSubscriptionTier'
 
 export interface ProfileMenuProps {
   isOpen: boolean
@@ -37,6 +39,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   const menuRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotionPreference()
   const { isSoundEnabled, toggleSound } = useAudio()
+  const { isFreeTier, toggleTier } = useSubscriptionTier(profile.id)
 
   // Handle click outside and Escape key
   useEffect(() => {
@@ -143,6 +146,40 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 <span className="block font-medium">Switch Profile</span>
                 <span className="block text-xs text-[var(--text-muted)]">Return to Who's watching?</span>
               </div>
+            </button>
+
+            {/* Phase 6A: Subscription Tier Switcher (Free AVOD vs Premium) */}
+            <button
+              type="button"
+              role="menuitem"
+              data-testid="toggle-subscription-tier-btn"
+              onClick={() => {
+                toggleTier()
+              }}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] active:bg-[var(--border-hover)] transition-colors duration-150 cursor-pointer group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] group-hover:border-[var(--accent-primary)]/40 transition-colors">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+                <div>
+                  <span className="block font-medium">Subscription Tier</span>
+                  <span className="block text-xs text-[var(--text-muted)]">
+                    {isFreeTier ? 'Free (Ad-Supported)' : 'Premium (Ad-Free)'}
+                  </span>
+                </div>
+              </div>
+
+              <span
+                data-testid="subscription-tier-badge"
+                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider ${
+                  isFreeTier
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                }`}
+              >
+                {isFreeTier ? 'FREE' : 'PREMIUM'}
+              </span>
             </button>
 
             {/* Light / Dark Mode Toggle */}

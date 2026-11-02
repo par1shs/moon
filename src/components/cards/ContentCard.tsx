@@ -89,7 +89,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
 
         {/* Top Badges & Actions */}
         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
-          <div className="pointer-events-none">
+          <div className="pointer-events-none flex items-center gap-1.5 flex-wrap">
             {content.isLive ? (
               <Badge variant="live" size="sm">
                 LIVE TV
@@ -99,6 +99,15 @@ export const ContentCard: React.FC<ContentCardProps> = ({
                 {content.badge}
               </Badge>
             ) : null}
+
+            {content.sponsor && (
+              <span
+                data-testid="card-sponsored-badge"
+                className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
+              >
+                SPONSORED
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5">

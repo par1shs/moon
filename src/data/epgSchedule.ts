@@ -12,6 +12,7 @@ export const EPG_CHANNELS: EPGChannel[] = SAMPLE_LIVE_CHANNELS.map((ch) => ({
   backdropUrl: ch.backdropUrl || '',
   logoText: ch.title.split(' ')[0],
   contentRef: ch,
+  sponsor: ch.sponsor,
 }))
 
 export interface ProgramTemplate {

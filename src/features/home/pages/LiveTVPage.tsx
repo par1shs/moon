@@ -340,11 +340,19 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
 
         {/* Spotlight Channel & Programme Info */}
         <div className="w-full md:w-1/2 space-y-3.5">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="accent">CURRENTLY TUNED</Badge>
             <span className="text-xs font-mono text-[var(--text-muted)]">
               {tunedChannel.category} • {tunedChannel.quality}
             </span>
+            {(tunedCurrentProgram?.sponsor || tunedChannel.sponsor || tunedChannel.channelNumber === '102') && (
+              <span
+                data-testid="livetv-sponsor-badge"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/15 border border-amber-500/30 text-amber-300 font-semibold"
+              >
+                SPONSORED BY {tunedCurrentProgram?.sponsor?.name || tunedChannel.sponsor?.name || 'VELOCE MOTORS'}
+              </span>
+            )}
           </div>
 
           <div>

@@ -517,6 +517,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       <SimulatedPlayerModal
         isOpen={Boolean(activePlayback)}
         content={activePlayback?.content || null}
+        profileId={profile.id}
         episode={activePlayback?.episode}
         initialProgress={activePlayback?.progress || 0}
         onClose={() => setActivePlayback(null)}

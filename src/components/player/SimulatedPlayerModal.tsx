@@ -21,12 +21,16 @@ import {
   Radio,
   SkipForward,
   Film,
+  ExternalLink,
+  Megaphone,
 } from 'lucide-react'
 import { Badge } from '../common/Badge'
 import { Button } from '../common/Button'
-import type { ContentMetadata, EpisodeMetadata, BonusFeaturette } from '../../types'
+import type { ContentMetadata, EpisodeMetadata, BonusFeaturette, Advertisement } from '../../types'
 import { InteractivePanel } from '../../features/live/components/interactive/InteractivePanel'
 import { SAMPLE_INTERACTIVE_ITEMS } from '../../data/interactiveContent'
+import { useSubscriptionTier } from '../../hooks/useSubscriptionTier'
+import { getPreRollAd, getMidRollAd, isContentEligibleForAds } from '../../data/sampleAds'
 
 export interface LiveProgramInfo {
   channelNumber: string
@@ -212,6 +216,12 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   const [selectedAudio, setSelectedAudio] = useState('English [Original] (Dolby Atmos)')
   const [selectedSubtitle, setSelectedSubtitle] = useState('Off')
 
+  // ─── Phase 6A: AVOD Subscription Tier & Ad State ───
+  const { subscriptionTier, isFreeTier } = useSubscriptionTier(profileId || 'default')
+  const [activeAd, setActiveAd] = useState<Advertisement | null>(null)
+  const [adTimeElapsed, setAdTimeElapsed] = useState(0)
+  const hasTriggeredMidRollRef = useRef(false)
+
   // ─── Phase 5C: Interactive Television State ───
   const [isInteractiveOpen, setIsInteractiveOpen] = useState(false)
 
@@ -333,6 +343,18 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
       setIsPlaying(true)
       setIsAutoplayActive(false)
       setAutoplayCountdown(10)
+
+      const shouldPreRoll =
+        isFreeTier &&
+        !bonusFeature &&
+        !liveProgram &&
+        isContentEligibleForAds(content, subscriptionTier)
+      const preRoll = shouldPreRoll ? getPreRollAd(content?.id, subscriptionTier) : null
+      setActiveAd(preRoll)
+      setAdTimeElapsed(0)
+    } else {
+      setActiveAd(null)
+      setAdTimeElapsed(0)
     }
   }
 
@@ -340,6 +362,11 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   useEffect(() => {
     currentTimeRef.current = currentTime
   }, [currentTime])
+
+  // Reset mid-roll trigger flag on new session or episode
+  useEffect(() => {
+    hasTriggeredMidRollRef.current = false
+  }, [isOpen, content?.id, currentEpisode?.id])
 
   // Derived progress percentage (0 - 100)
   const progressPercent = useMemo(() => {
@@ -453,7 +480,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
 
   // ─── Continuous Playback Ticker ───
   useEffect(() => {
-    if (!isOpen || !isPlaying || isAutoplayActive) return
+    if (!isOpen || !isPlaying || isAutoplayActive || activeAd) return
 
     const intervalMs = 250
     const timer = window.setInterval(() => {
@@ -481,6 +508,26 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
           return totalDurationSeconds
         }
 
+        // Phase 6A: Check for mid-roll cue
+        if (
+          isFreeTier &&
+          !bonusFeature &&
+          !liveProgram &&
+          !hasTriggeredMidRollRef.current &&
+          isContentEligibleForAds(content, subscriptionTier)
+        ) {
+          const midRollCueSeconds = Math.min(20, Math.max(10, totalDurationSeconds * 0.25))
+          if (next >= midRollCueSeconds && next < totalDurationSeconds - 10) {
+            hasTriggeredMidRollRef.current = true
+            const midRoll = getMidRollAd(content?.id, subscriptionTier)
+            if (midRoll) {
+              setActiveAd(midRoll)
+              setAdTimeElapsed(0)
+              return next
+            }
+          }
+        }
+
         return next
       })
     }, intervalMs)
@@ -488,7 +535,51 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
     return () => {
       window.clearInterval(timer)
     }
-  }, [isOpen, isPlaying, playbackSpeed, totalDurationSeconds, isAutoplayActive, nextEpisodeData, persistProgress])
+  }, [
+    isOpen,
+    isPlaying,
+    playbackSpeed,
+    totalDurationSeconds,
+    isAutoplayActive,
+    nextEpisodeData,
+    persistProgress,
+    activeAd,
+    isFreeTier,
+    bonusFeature,
+    liveProgram,
+    content,
+    subscriptionTier,
+  ])
+
+  // ─── Phase 6A: AVOD Ad Ticker ───
+  useEffect(() => {
+    if (!isOpen || !activeAd) return
+
+    const timer = window.setInterval(() => {
+      setAdTimeElapsed((prev) => {
+        const next = prev + 1
+        if (next >= activeAd.durationSeconds) {
+          setActiveAd(null)
+          return 0
+        }
+        return next
+      })
+    }, 1000)
+
+    return () => {
+      window.clearInterval(timer)
+    }
+  }, [isOpen, activeAd])
+
+  // ─── Phase 6A: Skip Ad Handler ───
+  const handleSkipAd = useCallback(() => {
+    if (!activeAd) return
+    const skipOffset = activeAd.skipOffsetSeconds || 5
+    if (adTimeElapsed >= skipOffset) {
+      setActiveAd(null)
+      setAdTimeElapsed(0)
+    }
+  }, [activeAd, adTimeElapsed])
 
   // ─── Autoplay Countdown Ticker ───
   useEffect(() => {
@@ -543,8 +634,36 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
       currentTimeRef.current = targetSeconds
       persistProgress(targetSeconds)
       resetControlsTimer()
+
+      // Phase 6A: Check mid-roll cue on seek
+      if (
+        isFreeTier &&
+        !bonusFeature &&
+        !liveProgram &&
+        !hasTriggeredMidRollRef.current &&
+        isContentEligibleForAds(content, subscriptionTier)
+      ) {
+        const midRollCueSeconds = Math.min(20, Math.max(10, totalDurationSeconds * 0.25))
+        if (targetSeconds >= midRollCueSeconds && targetSeconds < totalDurationSeconds - 10) {
+          hasTriggeredMidRollRef.current = true
+          const midRoll = getMidRollAd(content?.id, subscriptionTier)
+          if (midRoll) {
+            setActiveAd(midRoll)
+            setAdTimeElapsed(0)
+          }
+        }
+      }
     },
-    [totalDurationSeconds, persistProgress, resetControlsTimer]
+    [
+      totalDurationSeconds,
+      persistProgress,
+      resetControlsTimer,
+      isFreeTier,
+      bonusFeature,
+      liveProgram,
+      content,
+      subscriptionTier,
+    ]
   )
 
   const handleJump = useCallback(
@@ -558,11 +677,41 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
         } else {
           triggerHud(<RotateCw className="w-8 h-8 text-[var(--accent-secondary)]" />, '+10s')
         }
+
+        // Phase 6A: Check mid-roll cue on jump
+        if (
+          isFreeTier &&
+          !bonusFeature &&
+          !liveProgram &&
+          !hasTriggeredMidRollRef.current &&
+          isContentEligibleForAds(content, subscriptionTier)
+        ) {
+          const midRollCueSeconds = Math.min(20, Math.max(10, totalDurationSeconds * 0.25))
+          if (next >= midRollCueSeconds && next < totalDurationSeconds - 10) {
+            hasTriggeredMidRollRef.current = true
+            const midRoll = getMidRollAd(content?.id, subscriptionTier)
+            if (midRoll) {
+              setActiveAd(midRoll)
+              setAdTimeElapsed(0)
+            }
+          }
+        }
+
         return next
       })
       resetControlsTimer()
     },
-    [totalDurationSeconds, persistProgress, triggerHud, resetControlsTimer]
+    [
+      totalDurationSeconds,
+      persistProgress,
+      triggerHud,
+      resetControlsTimer,
+      isFreeTier,
+      bonusFeature,
+      liveProgram,
+      content,
+      subscriptionTier,
+    ]
   )
 
   const handleToggleMute = useCallback(() => {
@@ -632,13 +781,16 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
 
   // Close player handler
   const handleExitPlayer = useCallback(() => {
-    persistProgress(currentTimeRef.current)
+    if (!activeAd) {
+      persistProgress(currentTimeRef.current)
+    }
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {})
     }
     setIsPlaying(false)
+    setActiveAd(null)
     onClose()
-  }, [persistProgress, onClose])
+  }, [activeAd, persistProgress, onClose])
 
   // ─── Keyboard Shortcuts ───
   useEffect(() => {
@@ -732,6 +884,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   if (!isOpen || !content) return null
 
   const heroImage =
+    activeAd?.mediaUrl ||
     bonusFeature?.thumbnailUrl ||
     currentEpisode?.thumbnailUrl ||
     content.backdropUrl ||
@@ -821,158 +974,269 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="flex items-center gap-3 sm:gap-4 max-w-2xl">
-          <button
-            type="button"
-            onClick={handleExitPlayer}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 active:scale-95 border border-white/20 flex items-center justify-center text-white transition-all cursor-pointer shadow-lg shrink-0"
-            title="Exit Player (Esc)"
-            aria-label="Back to content library"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-
-          {/* Live Channel Surfing Controls (only in live mode, not catch-up) */}
-          {(liveProgram || content.type === 'live') && !catchUpProgram && onPreviousChannel && onNextChannel && (
-            <div className="flex items-center gap-1 bg-black/60 border border-white/15 rounded-xl p-0.5 shrink-0">
-              <button
-                type="button"
-                onClick={onPreviousChannel}
-                className="px-2 py-1 rounded-lg hover:bg-white/15 text-white/90 text-xs font-mono transition-colors cursor-pointer"
-                title="Previous Channel (PageUp / [)"
-                aria-label="Previous channel"
-              >
-                ◀ CH
-              </button>
-              <button
-                type="button"
-                onClick={onNextChannel}
-                className="px-2 py-1 rounded-lg hover:bg-white/15 text-white/90 text-xs font-mono transition-colors cursor-pointer"
-                title="Next Channel (PageDown / ])"
-                aria-label="Next channel"
-              >
-                CH ▶
-              </button>
-            </div>
-          )}
-
-          <div className="space-y-0.5 truncate">
-            <div className="flex items-center gap-2">
-              {bonusFeature ? (
-                <span
-                  data-testid="player-bonus-badge"
-                  className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border border-[var(--accent-primary)]/40 shadow-sm flex items-center gap-1 shrink-0"
-                >
-                  <Sparkles className="w-2.5 h-2.5" />
-                  BONUS: {bonusFeature.type.toUpperCase()}
-                </span>
-              ) : catchUpProgram ? (
-                <span
-                  data-testid="player-catch-up-badge"
-                  className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1 shrink-0"
-                >
-                  <RotateCcw className="w-2.5 h-2.5" />
-                  CATCH-UP
-                </span>
-              ) : (liveProgram || content.type === 'live') ? (
-                <Badge variant="live" size="sm" className="px-2 py-0.5 animate-pulse">
-                  ● LIVE
-                </Badge>
-              ) : null}
-              <h2 className="font-display font-bold text-base sm:text-lg text-white truncate drop-shadow">
-                {bonusFeature
-                  ? bonusFeature.title
-                  : catchUpProgram
-                  ? `CH ${catchUpProgram.channelNumber}: ${catchUpProgram.channelTitle}`
-                  : liveProgram
-                  ? `CH ${liveProgram.channelNumber}: ${liveProgram.channelTitle}`
-                  : content.title}
-              </h2>
-              {content.rating && (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/15 text-white/80 border border-white/20">
-                  {content.rating}
-                </span>
-              )}
-            </div>
-
-            <p className="text-xs font-mono text-[var(--accent-secondary)] truncate">
-              {bonusFeature
-                ? `${bonusFeature.duration} • ${bonusFeature.description}`
-                : catchUpProgram
-                ? `${catchUpProgram.programTitle} • Broadcast: ${catchUpProgram.broadcastDateText}${catchUpProgram.expiryText ? ` • ${catchUpProgram.expiryText}` : ''}`
-                : liveProgram
-                ? `LIVE: ${liveProgram.programTitle}${liveProgram.programGenre ? ` • ${liveProgram.programGenre}` : ''}`
-                : currentEpisode
-                ? `Season ${currentSeasonNumber} • Episode ${currentEpisode.episodeNumber}: ${currentEpisode.title}`
-                : content.subtitle || 'PIXEL+ Stream Engine'}
-            </p>
-          </div>
-        </div>
-
-        {/* Top Right: Telemetry Watermark & Stream Indicator */}
-        <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
-          {/* Phase 5D: Explore on OTT action button */}
-          {resolvedLinkedContentId && onExploreOTT && (
+        {activeAd ? (
+          <div className="flex items-center gap-3 sm:gap-4 max-w-2xl">
             <button
               type="button"
-              data-testid="player-explore-ott-btn"
-              onClick={() => {
-                onExploreOTT(resolvedLinkedContentId)
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-contrast)] hover:scale-105 active:scale-95 transition-all text-xs font-mono font-bold shadow-lg border border-white/20 cursor-pointer"
-              title="Explore On Demand title and bonus features"
+              onClick={handleExitPlayer}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 active:scale-95 border border-white/20 flex items-center justify-center text-white transition-all cursor-pointer shadow-lg shrink-0"
+              title="Exit Player (Esc)"
+              aria-label="Back to content library"
             >
-              <Film className="w-3.5 h-3.5" />
-              <span>Explore on OTT</span>
+              <ArrowLeft className="w-5 h-5" />
             </button>
-          )}
 
-          {catchUpProgram ? (
-            <div
-              data-testid="player-catch-up-indicator"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 backdrop-blur-md"
+            <div className="flex items-center gap-2.5">
+              <span
+                data-testid="player-ad-label"
+                className="px-2.5 py-1 rounded-md text-[11px] font-mono font-bold tracking-widest uppercase bg-amber-500/25 text-amber-300 border border-amber-500/50 shadow-sm flex items-center gap-1.5"
+              >
+                <Megaphone className="w-3.5 h-3.5 text-amber-400" />
+                ADVERTISEMENT
+              </span>
+
+              <span
+                data-testid="player-ad-countdown"
+                className="text-xs font-mono text-white/90 bg-black/60 px-2.5 py-1 rounded-md border border-white/15"
+              >
+                Ad ends in {Math.max(0, activeAd.durationSeconds - adTimeElapsed)}s
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 sm:gap-4 max-w-2xl">
+            <button
+              type="button"
+              onClick={handleExitPlayer}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 active:scale-95 border border-white/20 flex items-center justify-center text-white transition-all cursor-pointer shadow-lg shrink-0"
+              title="Exit Player (Esc)"
+              aria-label="Back to content library"
             >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+
+            {/* Live Channel Surfing Controls (only in live mode, not catch-up) */}
+            {(liveProgram || content.type === 'live') && !catchUpProgram && onPreviousChannel && onNextChannel && (
+              <div className="flex items-center gap-1 bg-black/60 border border-white/15 rounded-xl p-0.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={onPreviousChannel}
+                  className="px-2 py-1 rounded-lg hover:bg-white/15 text-white/90 text-xs font-mono transition-colors cursor-pointer"
+                  title="Previous Channel (PageUp / [)"
+                  aria-label="Previous channel"
+                >
+                  ◀ CH
+                </button>
+                <button
+                  type="button"
+                  onClick={onNextChannel}
+                  className="px-2 py-1 rounded-lg hover:bg-white/15 text-white/90 text-xs font-mono transition-colors cursor-pointer"
+                  title="Next Channel (PageDown / ])"
+                  aria-label="Next channel"
+                >
+                  CH ▶
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-0.5 truncate">
+              <div className="flex items-center gap-2">
+                {bonusFeature ? (
+                  <span
+                    data-testid="player-bonus-badge"
+                    className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border border-[var(--accent-primary)]/40 shadow-sm flex items-center gap-1 shrink-0"
+                  >
+                    <Sparkles className="w-2.5 h-2.5" />
+                    BONUS: {bonusFeature.type.toUpperCase()}
+                  </span>
+                ) : catchUpProgram ? (
+                  <span
+                    data-testid="player-catch-up-badge"
+                    className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1 shrink-0"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    CATCH-UP
+                  </span>
+                ) : (liveProgram || content.type === 'live') ? (
+                  <Badge variant="live" size="sm" className="px-2 py-0.5 animate-pulse">
+                    ● LIVE
+                  </Badge>
+                ) : null}
+                <h2 className="font-display font-bold text-base sm:text-lg text-white truncate drop-shadow">
+                  {bonusFeature
+                    ? bonusFeature.title
+                    : catchUpProgram
+                    ? `CH ${catchUpProgram.channelNumber}: ${catchUpProgram.channelTitle}`
+                    : liveProgram
+                    ? `CH ${liveProgram.channelNumber}: ${liveProgram.channelTitle}`
+                    : content.title}
+                </h2>
+                {content.rating && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/15 text-white/80 border border-white/20">
+                    {content.rating}
+                  </span>
+                )}
+                {content.sponsor && (
+                  <span
+                    data-testid="player-sponsored-badge"
+                    className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                  >
+                    SPONSORED
+                  </span>
+                )}
+              </div>
+
+              <p className="text-xs font-mono text-[var(--accent-secondary)] truncate">
+                {bonusFeature
+                  ? `${bonusFeature.duration} • ${bonusFeature.description}`
+                  : catchUpProgram
+                  ? `${catchUpProgram.programTitle} • Broadcast: ${catchUpProgram.broadcastDateText}${catchUpProgram.expiryText ? ` • ${catchUpProgram.expiryText}` : ''}`
+                  : liveProgram
+                  ? `LIVE: ${liveProgram.programTitle}${liveProgram.programGenre ? ` • ${liveProgram.programGenre}` : ''}`
+                  : currentEpisode
+                  ? `Season ${currentSeasonNumber} • Episode ${currentEpisode.episodeNumber}: ${currentEpisode.title}`
+                  : content.subtitle || 'PIXEL+ Stream Engine'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Top Right: Telemetry Watermark & Stream Indicator */}
+        {activeAd ? (
+          <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-[11px] uppercase tracking-wider font-bold">
-                CATCH-UP STREAM
+                {activeAd.placement.toUpperCase()} AD
               </span>
-            </div>
-          ) : liveProgram || content.type === 'live' ? (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/60 border border-red-500/40 text-red-300 backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              <span className="text-[11px] uppercase tracking-wider font-bold">
-                BROADCAST STREAM
-              </span>
-            </div>
-          ) : (
-            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/15 text-white/80 backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] uppercase tracking-wider text-[var(--accent-secondary)]">
-                SIMULATED STREAM ENGINE
-              </span>
-            </div>
-          )}
+            </span>
+            <button
+              type="button"
+              onClick={handleToggleMute}
+              className="p-2 rounded-xl bg-black/60 hover:bg-black/80 text-white/90 border border-white/15 cursor-pointer"
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
+            {/* Phase 5D: Explore on OTT action button */}
+            {resolvedLinkedContentId && onExploreOTT && (
+              <button
+                type="button"
+                data-testid="player-explore-ott-btn"
+                onClick={() => {
+                  onExploreOTT(resolvedLinkedContentId)
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-contrast)] hover:scale-105 active:scale-95 transition-all text-xs font-mono font-bold shadow-lg border border-white/20 cursor-pointer"
+                title="Explore On Demand title and bonus features"
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>Explore on OTT</span>
+              </button>
+            )}
 
-          <Badge variant="subtle" size="sm">
-            {selectedQuality.split(' ')[0]}
-          </Badge>
-          <Badge variant="subtle" size="sm" className="hidden sm:inline-flex">
-            ATMOS 5.1
-          </Badge>
-        </div>
+            {catchUpProgram ? (
+              <div
+                data-testid="player-catch-up-indicator"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 backdrop-blur-md"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-[11px] uppercase tracking-wider font-bold">
+                  CATCH-UP STREAM
+                </span>
+              </div>
+            ) : liveProgram || content.type === 'live' ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/60 border border-red-500/40 text-red-300 backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                <span className="text-[11px] uppercase tracking-wider font-bold">
+                  BROADCAST STREAM
+                </span>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/15 text-white/80 backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] uppercase tracking-wider text-[var(--accent-secondary)]">
+                  SIMULATED STREAM ENGINE
+                </span>
+              </div>
+            )}
+
+            <Badge variant="subtle" size="sm">
+              {selectedQuality.split(' ')[0]}
+            </Badge>
+            <Badge variant="subtle" size="sm" className="hidden sm:inline-flex">
+              ATMOS 5.1
+            </Badge>
+          </div>
+        )}
       </div>
 
       {/* ─── Center Tap / Clickable Playback Surface ─── */}
       <div
         className="flex-1 w-full flex items-center justify-center relative cursor-pointer"
         onClick={(e) => {
-          if (e.target === e.currentTarget) {
+          if (e.target === e.currentTarget && !activeAd) {
             handleTogglePlay()
           }
         }}
       >
+        {/* Phase 6A: Ad Showcase Overlay in Center */}
+        {activeAd && (
+          <div
+            data-testid="player-ad-overlay"
+            onClick={(e) => e.stopPropagation()}
+            className="p-6 sm:p-8 rounded-3xl bg-black/85 border border-amber-500/40 shadow-2xl backdrop-blur-xl max-w-lg w-full mx-4 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200 select-none z-40"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <span className="px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-widest bg-amber-500/20 border border-amber-500/40 text-amber-300 font-semibold flex items-center gap-1.5 shadow-sm">
+                <Megaphone className="w-3.5 h-3.5 text-amber-400" />
+                <span>SPONSORED SHOWCASE</span>
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <h3
+                data-testid="player-ad-advertiser"
+                className="font-display font-black text-2xl sm:text-3xl text-white tracking-wide drop-shadow"
+              >
+                {activeAd.advertiserName}
+              </h3>
+              <h4 className="text-base sm:text-lg font-semibold text-amber-200/90 font-display">
+                {activeAd.campaignTitle}
+              </h4>
+              {activeAd.tagline && (
+                <p className="text-xs sm:text-sm text-white/75 font-mono max-w-sm mx-auto leading-relaxed">
+                  {activeAd.tagline}
+                </p>
+              )}
+            </div>
+
+            {activeAd.callToActionText && (
+              <div className="pt-2 flex justify-center">
+                <a
+                  data-testid="player-ad-cta-btn"
+                  href={activeAd.sponsorUrl || '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => {
+                    if (!activeAd.sponsorUrl || activeAd.sponsorUrl.includes('.fictional')) {
+                      e.preventDefault()
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-display font-bold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-2 active:scale-95 cursor-pointer"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>{activeAd.callToActionText}</span>
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Large Play Indicator when paused */}
-        {!isPlaying && !isAutoplayActive && (
+        {!isPlaying && !isAutoplayActive && !activeAd && (
           <button
             type="button"
             onClick={handleTogglePlay}
@@ -1115,7 +1379,85 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Scrubber & Time Bar */}
+        {activeAd ? (
+          <div className="space-y-3">
+            {/* Ad Progress Bar */}
+            <div className="space-y-1.5">
+              <div
+                data-testid="player-ad-progress-bar"
+                className="w-full h-2 bg-white/20 rounded-full overflow-hidden"
+              >
+                <div
+                  className="h-full bg-amber-400 rounded-full transition-all duration-300 ease-linear shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+                  style={{
+                    width: `${Math.min(100, Math.max(0, (adTimeElapsed / (activeAd.durationSeconds || 15)) * 100))}%`,
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-xs font-mono text-white/80">
+                <span className="font-semibold text-amber-300">
+                  Ad • {adTimeElapsed}s / {activeAd.durationSeconds}s
+                </span>
+                <span className="text-white/60">
+                  {Math.round((adTimeElapsed / (activeAd.durationSeconds || 15)) * 100)}%
+                </span>
+              </div>
+            </div>
+
+            {/* Ad Actions Row */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center gap-3">
+                {activeAd.callToActionText && (
+                  <a
+                    data-testid="player-ad-cta-btn"
+                    href={activeAd.sponsorUrl || '#'}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => {
+                      if (!activeAd.sponsorUrl || activeAd.sponsorUrl.includes('.fictional')) {
+                        e.preventDefault()
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-mono font-bold transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>{activeAd.callToActionText}</span>
+                  </a>
+                )}
+              </div>
+
+              <div>
+                {activeAd.canSkip && (
+                  <button
+                    type="button"
+                    data-testid="player-ad-skip-btn"
+                    disabled={adTimeElapsed < (activeAd.skipOffsetSeconds || 5)}
+                    onClick={handleSkipAd}
+                    className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      adTimeElapsed >= (activeAd.skipOffsetSeconds || 5)
+                        ? 'bg-amber-400 hover:bg-amber-300 text-black shadow-lg hover:scale-105 active:scale-95'
+                        : 'bg-white/10 text-white/40 border border-white/10 cursor-not-allowed'
+                    }`}
+                  >
+                    {adTimeElapsed >= (activeAd.skipOffsetSeconds || 5) ? (
+                      <>
+                        <span>Skip Ad</span>
+                        <SkipForward className="w-3.5 h-3.5 fill-current" />
+                      </>
+                    ) : (
+                      <span>
+                        Skip Ad in {Math.max(0, (activeAd.skipOffsetSeconds || 5) - adTimeElapsed)}s
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Scrubber & Time Bar */}
         <div className="space-y-1.5">
           <div className="relative group flex items-center">
             <input
@@ -1379,6 +1721,8 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
             </button>
           </div>
         </div>
+        </>
+      )}
       </div>
 
       {/* ─── Settings Popover Menus ─── */}

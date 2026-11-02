@@ -1,4 +1,4 @@
-import type { ContentMetadata } from './index'
+import type { ContentMetadata, SponsorInfo } from './index'
 
 export interface EPGProgram {
   id: string
@@ -13,6 +13,7 @@ export interface EPGProgram {
   rating: string
   linkedContentId?: string
   badge?: string
+  sponsor?: SponsorInfo
   // Catch-up metadata
   isCatchUpEligible?: boolean
   catchUpDays?: number
@@ -28,6 +29,7 @@ export interface EPGChannel {
   title: string
   subtitle: string
   category: string
+  sponsor?: SponsorInfo
   quality: '4K HDR' | 'HD' | 'Dolby Atmos'
   backdropUrl: string
   logoText?: string

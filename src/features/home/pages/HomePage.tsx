@@ -247,7 +247,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         <HorizontalCarousel
           title="Recently Watched"
           eyebrow="YOUR VIEWING LOG"
-          subtitle="Titles you've streamed across your sessions on JUNCTION+"
+          subtitle="Titles you've streamed across your sessions on PIXEL+"
         >
           {recentlyWatchedList.map(({ content, history: h }) => (
             <ContentCard
@@ -265,7 +265,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
       {/* ─── Section 8: Platform Staples (Premieres & Cinema) ─── */}
       <HorizontalCarousel
-        title="JUNCTION+ Premieres"
+        title="PIXEL+ Premieres"
         eyebrow="EXCLUSIVE ORIGINAL CINEMA"
         subtitle="Mastered in 4K HDR with multi-channel Dolby Atmos audio"
       >

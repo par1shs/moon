@@ -332,7 +332,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ profile, onSelectContent
           <div className="space-y-3">
             <span className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
-              <span>TRENDING SEARCHES ON JUNCTION+</span>
+              <span>TRENDING SEARCHES ON PIXEL+</span>
             </span>
             <div className="flex flex-wrap gap-2">
               {TRENDING_SEARCHES.map((term) => (

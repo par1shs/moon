@@ -232,7 +232,7 @@ export const MyListPage: React.FC<MyListPageProps> = ({
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
               {allSavedItems.length === 0
-                ? `As you explore titles across JUNCTION+, click the bookmark or plus icon on any series, movie, or channel to save it to your personal vault.`
+                ? `As you explore titles across PIXEL+, click the bookmark or plus icon on any series, movie, or channel to save it to your personal vault.`
                 : `You haven't saved any ${activeTab === 'live' ? 'Live TV channels' : activeTab} titles yet. Try switching to "All Saved" or explore our catalogue.`}
             </p>
           </div>

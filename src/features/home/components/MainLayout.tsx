@@ -178,14 +178,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       <MobileBottomNav activePage={activePage} onNavigate={handleNavigate} />
 
       {/* ─── Global Streaming Footer ─── */}
-      <footer className="w-full border-t border-[var(--border-subtle)] bg-[var(--bg-nav)] backdrop-blur-md hidden md:block py-6">
+      <footer className="w-full border-t border-[var(--border-subtle)] bg-[var(--bg-nav)] backdrop-blur-md py-6 pb-24 md:pb-6" data-testid="global-footer">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[var(--text-muted)]">
-          <div className="flex items-center gap-2">
-            <span>JUNCTION+</span>
+          <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+            <span className="font-pixel font-bold text-[var(--text-primary)] text-sm tracking-wider flex items-center">
+              PIXEL<span className="text-[var(--accent-primary)]">+</span>
+            </span>
             <span>•</span>
             <span className="text-[var(--accent-secondary)]">ONE STORY. EVERY SCREEN.</span>
-            <span>•</span>
-            <span>Phase 4A Cinema Shell</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="hidden sm:inline">Linear &amp; On-Demand Streaming</span>
           </div>
 
           <div className="flex items-center gap-4">

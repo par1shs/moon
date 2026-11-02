@@ -70,6 +70,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           handleClick()
         }
       }}
+      data-testid={`profile-card-${profile.name.toLowerCase()}`}
       aria-label={
         isManaging
           ? `Edit profile ${profile.name}`

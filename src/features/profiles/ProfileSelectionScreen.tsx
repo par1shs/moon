@@ -226,7 +226,9 @@ export const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({
 
       {/* Footer / Discrete Sound Control */}
       <footer className="w-full flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
-        <span>JUNCTION+ • ONE STORY. EVERY SCREEN.</span>
+        <span className="font-pixel font-bold tracking-wider">
+          PIXEL<span className="text-[var(--accent-primary)]">+</span> • ONE STORY. EVERY SCREEN.
+        </span>
         <SoundControl variant="inline" />
       </footer>
 

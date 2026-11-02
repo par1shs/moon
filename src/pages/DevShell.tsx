@@ -468,7 +468,7 @@ export const DevShell: React.FC<DevShellProps> = ({ onLaunchStartup }) => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selectedContent ? selectedContent.title : 'JUNCTION+ Component Preview'}
+        title={selectedContent ? selectedContent.title : 'PIXEL+ Component Preview'}
         description={selectedContent?.subtitle || 'Accessible modal dialog with restrained cinematic backdrop blur.'}
         size="lg"
       >

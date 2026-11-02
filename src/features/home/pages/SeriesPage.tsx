@@ -170,7 +170,7 @@ export const SeriesPage: React.FC<SeriesPageProps> = ({
             </div>
 
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-              {selectedContent.description || selectedContent.subtitle || 'Immerse yourself in this critically acclaimed original television series on JUNCTION+.'}
+              {selectedContent.description || selectedContent.subtitle || 'Immerse yourself in this critically acclaimed original television series on PIXEL+.'}
             </p>
 
             <div className="flex items-center gap-3 pt-2">

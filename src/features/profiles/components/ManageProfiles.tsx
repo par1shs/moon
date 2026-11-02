@@ -53,7 +53,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({
       <Modal
         isOpen={isOpen && !showAvatarStudio}
         onClose={handleClose}
-        title="Create your own JUNCTION+ profile."
+        title="Create your own PIXEL+ profile."
         description="Add a profile for another viewer to personalize stories and recommendations."
         size="md"
       >

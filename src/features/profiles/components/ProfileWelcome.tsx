@@ -7,6 +7,7 @@ import { Button } from '../../../components/common/Button'
 import { SoundControl } from '../../audio/SoundControl'
 import { AvatarRenderer } from './AvatarRenderer'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
+import { AmbientRisingPixels } from '../../startup/components/AmbientRisingPixels'
 
 export interface ProfileWelcomeProps {
   profile: Profile
@@ -67,6 +68,9 @@ export const ProfileWelcome: React.FC<ProfileWelcomeProps> = ({
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="min-h-screen w-full bg-transparent text-[var(--text-primary)] flex flex-col justify-between p-6 sm:p-10 select-none overflow-hidden relative"
     >
+      {/* Ambient Rising Pixels */}
+      <AmbientRisingPixels />
+
       {/* Permanent Brand Primary Atmospheric Glow */}
       <div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-[100%] blur-[130px] opacity-70 pointer-events-none"
@@ -156,7 +160,7 @@ export const ProfileWelcome: React.FC<ProfileWelcomeProps> = ({
             Welcome, {profile.name}.
           </h1>
           <p className="text-sm sm:text-base text-[var(--text-secondary)] font-normal max-w-md mx-auto leading-relaxed">
-            Your JUNCTION+ experience is ready.
+            Your <span className="font-pixel font-bold text-[var(--accent-primary)]">PIXEL+</span> experience is ready.
           </p>
         </motion.div>
 
@@ -174,7 +178,7 @@ export const ProfileWelcome: React.FC<ProfileWelcomeProps> = ({
             rightIcon={<ArrowRight className="w-4 h-4" />}
             className="w-full sm:w-auto min-w-[180px]"
           >
-            Enter JUNCTION+
+            Enter PIXEL+
           </Button>
 
           <Button
@@ -190,7 +194,9 @@ export const ProfileWelcome: React.FC<ProfileWelcomeProps> = ({
 
       {/* Footer / Discrete Sound Control */}
       <footer className="w-full flex items-center justify-between text-xs text-[var(--text-muted)] font-mono z-10">
-        <span>JUNCTION+ • ONE STORY. EVERY SCREEN.</span>
+        <span className="font-pixel font-bold tracking-wider">
+          PIXEL<span className="text-[var(--accent-primary)]">+</span> • ONE STORY. EVERY SCREEN.
+        </span>
         <SoundControl variant="inline" />
       </footer>
     </motion.div>

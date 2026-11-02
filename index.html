@@ -1,11 +1,23 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#0C0D0F" />
+    <script>
+      try {
+        var mode = localStorage.getItem('junction_color_mode_v1') || 'dark';
+        document.documentElement.classList.remove('dark', 'light');
+        document.documentElement.classList.add(mode);
+        document.documentElement.setAttribute('data-theme', mode);
+        var meta = document.querySelector('meta[name="color-scheme"]');
+        if (meta) meta.content = mode;
+        var themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.content = mode === 'light' ? '#EDF1F8' : '#0C0D0F';
+      } catch (e) {}
+    </script>
     <title>JUNCTION+ — One Story. Every Screen.</title>
 
     <!-- Google Fonts: Plus Jakarta Sans (Headings) & DM Sans (UI & Body) -->
@@ -16,7 +28,7 @@
       rel="stylesheet"
     />
   </head>
-  <body class="bg-[#0C0D0F] text-[#F4F0EA] antialiased selection:bg-[#C98769]/30 selection:text-white">
+  <body class="antialiased selection:bg-[var(--accent-primary)]/30 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

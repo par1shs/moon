@@ -16,7 +16,12 @@ export interface AccentTheme {
   borderFocus?: string
 }
 
+export type ColorMode = 'dark' | 'light'
+
 export interface ThemeContextValue {
+  colorMode: ColorMode
+  setColorMode: (mode: ColorMode) => void
+  toggleColorMode: () => void
   currentAccent: AccentTheme
   availableAccents: AccentTheme[]
   setAccent: (accentId: string) => void

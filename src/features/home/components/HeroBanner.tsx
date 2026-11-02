@@ -48,7 +48,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: 'radial-gradient(110% 85% at 80% 15%, rgba(36, 43, 64, 0.70) 0%, rgba(21, 27, 46, 0.75) 40%, rgba(16, 19, 29, 0.90) 70%, rgba(12, 13, 15, 0.98) 100%)',
+          background: 'var(--gradient-brand-hero)',
         }}
       />
 
@@ -60,17 +60,17 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         }}
       />
 
-      {/* Cinematic Deep Gradients: Bottom-heavy & Left-heavy protection for text */}
+      {/* Cinematic Vignette Gradients: Bottom-heavy & Left-heavy protection for text */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: 'linear-gradient(to top, #0C0D0F 0%, rgba(16, 19, 29, 0.85) 40%, rgba(12, 13, 15, 0.40) 75%, transparent 100%)',
+          background: 'var(--hero-vignette-bottom)',
         }}
       />
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: 'linear-gradient(to right, #0C0D0F 0%, rgba(16, 19, 29, 0.85) 45%, rgba(12, 13, 15, 0.30) 70%, transparent 100%)',
+          background: 'var(--hero-vignette-left)',
         }}
       />
       <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] opacity-30 pointer-events-none z-10" />
@@ -88,7 +88,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           </Badge>
         )}
         {content.rating && (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-black/70 border border-white/15 text-[var(--text-secondary)] backdrop-blur-md">
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-[var(--bg-card)]/80 border border-[var(--border-subtle)] text-[var(--text-secondary)] backdrop-blur-md">
             {content.rating}
           </span>
         )}

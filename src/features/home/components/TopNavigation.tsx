@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { Search, ChevronDown } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import { BrandLogo } from '../../../components/common/BrandLogo'
+import { ThemeToggle } from '../../../components/common/ThemeToggle'
 import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
 import { ProfileMenu } from './ProfileMenu'
 
@@ -86,7 +87,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                   className={`relative px-3 py-1.5 rounded-lg text-sm transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] ${
                     isActive
                       ? 'text-[var(--text-primary)] font-semibold'
-                      : 'text-[var(--text-secondary)] font-normal hover:text-[var(--text-primary)] hover:bg-white/5'
+                      : 'text-[var(--text-secondary)] font-normal hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)]'
                   }`}
                 >
                   {item.label}
@@ -105,8 +106,8 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
           </nav>
         </div>
 
-        {/* Right Side: Search Icon & Profile Controls */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        {/* Right Side: Search Icon, Theme Toggle & Profile Controls */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
           {/* Search Action Button */}
           <button
             type="button"
@@ -116,16 +117,20 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] ${
               activePage === 'search'
                 ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] shadow-md'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 border border-transparent hover:border-[var(--border-subtle)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] border border-transparent hover:border-[var(--border-subtle)]'
             }`}
           >
             <Search className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
           </button>
 
+          {/* Light / Dark Mode Toggle */}
+          <ThemeToggle />
+
           {/* Profile Dropdown Container */}
           <div className="relative">
             <button
               type="button"
+              data-testid="profile-menu-button"
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               aria-expanded={isProfileMenuOpen}
               aria-haspopup="menu"

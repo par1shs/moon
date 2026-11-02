@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
+import { ThemeToggle } from '../../../components/common/ThemeToggle'
 import { useAudio } from '../../audio/useAudio'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 
@@ -114,7 +115,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 onClose()
                 onManageProfile()
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 active:bg-white/10 transition-colors duration-150 cursor-pointer group"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] active:bg-[var(--border-hover)] transition-colors duration-150 cursor-pointer group"
             >
               <div className="w-7 h-7 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] group-hover:border-[var(--accent-primary)]/40 transition-colors">
                 <Pencil className="w-3.5 h-3.5" />
@@ -133,7 +134,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 onClose()
                 onSwitchProfile()
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 active:bg-white/10 transition-colors duration-150 cursor-pointer group"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] active:bg-[var(--border-hover)] transition-colors duration-150 cursor-pointer group"
             >
               <div className="w-7 h-7 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] group-hover:border-[var(--accent-primary)]/40 transition-colors">
                 <Users className="w-3.5 h-3.5" />
@@ -144,8 +145,11 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
               </div>
             </button>
 
+            {/* Light / Dark Mode Toggle */}
+            <ThemeToggle variant="row" />
+
             {/* Sound On/Off Toggle */}
-            <div className="px-3 py-2.5 rounded-lg flex items-center justify-between gap-2 hover:bg-white/5 transition-colors duration-150">
+            <div className="px-3 py-2.5 rounded-lg flex items-center justify-between gap-2 hover:bg-[var(--border-subtle)] transition-colors duration-150">
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)]">
                   {!isSoundEnabled ? (
@@ -172,7 +176,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 aria-label={!isSoundEnabled ? 'Unmute application sound' : 'Mute application sound'}
                 onClick={toggleSound}
                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] ${
-                  isSoundEnabled ? 'bg-[var(--accent-primary)]' : 'bg-white/15'
+                  isSoundEnabled ? 'bg-[var(--accent-primary)]' : 'bg-[var(--text-muted)]/30'
                 }`}
               >
                 <span
@@ -192,7 +196,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                   onClose()
                   onReplayIntro()
                 }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-colors duration-150 cursor-pointer"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] transition-colors duration-150 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Replay Startup Intro</span>
@@ -208,7 +212,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                   onClose()
                   onOpenDevShell()
                 }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-colors duration-150 cursor-pointer"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] transition-colors duration-150 cursor-pointer"
               >
                 <Code2 className="w-3.5 h-3.5" />
                 <span>Design System Dev Shell</span>

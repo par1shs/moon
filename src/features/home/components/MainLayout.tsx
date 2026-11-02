@@ -123,11 +123,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     <div className="relative min-h-screen w-full bg-transparent text-[var(--text-primary)] flex flex-col justify-between antialiased selection:bg-[var(--accent-primary)] selection:text-[var(--accent-contrast)]">
       {/* ─── Persistent Cinematic Atmospheric Brand Gradient Background ─── */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
-        {/* Top Header & Hero Deep Indigo Aura */}
+        {/* Top Header & Hero Aura (adapts to light/dark via CSS token) */}
         <div
-          className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[140vw] max-w-[1600px] h-[650px] rounded-[100%] blur-[120px] opacity-75"
+          className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[140vw] max-w-[1600px] h-[650px] rounded-[100%] blur-[120px] opacity-80 transition-all duration-500"
           style={{
-            background: 'radial-gradient(ellipse at 50% 30%, #242B40 0%, #151B2E 45%, #10131D 70%, transparent 95%)',
+            background: 'var(--gradient-brand-aura-top)',
           }}
         />
 
@@ -139,11 +139,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           }}
         />
 
-        {/* Mid-Page Atmospheric Indigo/Slate Pockets */}
+        {/* Mid-Page Atmospheric Pockets (adapts to light/dark via CSS token) */}
         <div
-          className="absolute top-[650px] -left-[200px] w-[700px] h-[700px] rounded-full blur-[170px] opacity-35"
+          className="absolute top-[650px] -left-[200px] w-[700px] h-[700px] rounded-full blur-[170px] opacity-40 transition-all duration-500"
           style={{
-            background: 'radial-gradient(circle, rgba(36, 43, 64, 0.70) 0%, rgba(16, 19, 29, 0.40) 50%, transparent 75%)',
+            background: 'var(--gradient-brand-aura-mid)',
           }}
         />
       </div>

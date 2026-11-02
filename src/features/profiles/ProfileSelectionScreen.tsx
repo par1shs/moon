@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'motion/react'
 import { Settings, Check, RotateCcw, LayoutGrid } from 'lucide-react'
 import { BrandLogo } from '../../components/common/BrandLogo'
+import { ThemeToggle } from '../../components/common/ThemeToggle'
 import { Button } from '../../components/common/Button'
 import { SoundControl } from '../audio/SoundControl'
 import { ProfileGrid } from './components/ProfileGrid'
@@ -134,13 +135,14 @@ export const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({
       {/* Ambient Brand Primary Radial Glow */}
       <div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[950px] h-[650px] rounded-[100%] blur-[130px] opacity-70 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 50%, #242B40 0%, #151B2E 45%, transparent 75%)' }}
+        style={{ background: 'var(--gradient-brand-aura-mid)' }}
       />
       {/* Top Header */}
       <header className="w-full flex items-center justify-between">
         <BrandLogo size="sm" />
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {onReplayIntro && (
             <Button
               variant="ghost"

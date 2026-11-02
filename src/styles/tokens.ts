@@ -48,6 +48,19 @@ export const BRAND_PRIMARY: BrandPrimaryTokens = {
   gradientPlayer: 'radial-gradient(ellipse 110% 80% at 50% 15%, #242B40 0%, #151B2E 40%, #10131D 70%, #0C0D0F 100%)',
 }
 
+export const BRAND_PRIMARY_LIGHT: BrandPrimaryTokens = {
+  foundation: '#EDF1F8',
+  midnight: '#E2E8F4',
+  indigo: '#C6D4F5',
+  nav: 'rgba(237, 241, 248, 0.92)',
+  gradientBase: 'linear-gradient(180deg, #D4E0F8 0%, #E2E8F4 40%, #EDF1F8 100%)',
+  gradientSubtle: 'linear-gradient(160deg, #DCE5F8 0%, #E6EDF8 50%, #EDF1F8 100%)',
+  gradientRadial: 'radial-gradient(120% 70% at 50% 0%, #BACDF8 0%, #D0DCF7 35%, #E2E8F4 65%, #EDF1F8 100%)',
+  gradientHero: 'radial-gradient(120% 85% at 80% 15%, rgba(186, 205, 248, 0.75) 0%, rgba(208, 220, 247, 0.78) 40%, rgba(226, 232, 244, 0.92) 70%, rgba(237, 241, 248, 0.98) 100%)',
+  gradientModal: 'linear-gradient(180deg, #FFFFFF 0%, #F5F7FC 45%, #EBF0F8 100%)',
+  gradientPlayer: 'radial-gradient(ellipse 110% 80% at 50% 15%, #BACDF8 0%, #D0DCF7 40%, #E2E8F4 70%, #EDF1F8 100%)',
+}
+
 export interface AccentPalette {
   id: string
   name: string
@@ -71,6 +84,18 @@ export const BASE_PALETTE: ColorPalette = {
   textMuted: '#77746F',
   borderSubtle: 'rgba(255, 255, 255, 0.09)',
   borderHover: 'rgba(255, 255, 255, 0.18)',
+}
+
+export const LIGHT_PALETTE: ColorPalette = {
+  main: '#EDF1F8',
+  secondary: '#E2E8F4',
+  card: 'rgba(255, 255, 255, 0.82)',
+  elevated: 'rgba(255, 255, 255, 0.94)',
+  textPrimary: '#0D1322',
+  textSecondary: '#3D4760',
+  textMuted: '#63708A',
+  borderSubtle: 'rgba(18, 26, 48, 0.10)',
+  borderHover: 'rgba(18, 26, 48, 0.22)',
 }
 
 /**

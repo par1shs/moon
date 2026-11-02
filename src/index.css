@@ -32,7 +32,9 @@
 }
 
 :root {
-  /* Permanent Brand Primary Base & Transitions */
+  color-scheme: light dark;
+
+  /* Permanent Brand Primary Base & Transitions (Dark Mode Default) */
   --brand-foundation: #0C0D0F;
   --brand-midnight: #10131D;
   --brand-indigo: #242B40;
@@ -45,12 +47,23 @@
   --bg-nav: rgba(16, 19, 29, 0.92);
 
   /* Permanent Brand Gradients */
-  --gradient-brand-base: linear-gradient(180deg, #151B2E 0%, #10131D 40%, #0C0D0F 100%);
-  --gradient-brand-subtle: linear-gradient(160deg, #182032 0%, #10131D 50%, #0C0D0F 100%);
-  --gradient-brand-radial: radial-gradient(120% 75% at 50% -10%, #242B40 0%, #151B2E 35%, #10131D 65%, #0C0D0F 100%);
-  --gradient-brand-hero: radial-gradient(120% 85% at 80% 15%, rgba(36, 43, 64, 0.75) 0%, rgba(21, 27, 46, 0.75) 40%, rgba(16, 19, 29, 0.90) 70%, rgba(12, 13, 15, 0.98) 100%);
-  --gradient-brand-modal: linear-gradient(180deg, #182032 0%, #10131D 45%, #0C0D0F 100%);
-  --gradient-brand-player: radial-gradient(ellipse 110% 80% at 50% 15%, #242B40 0%, #151B2E 40%, #10131D 70%, #0C0D0F 100%);
+  --bg-body-gradient: 
+    radial-gradient(125% 70% at 50% -12%, #28334F 0%, #171E32 35%, #0F1320 68%, transparent 100%),
+    radial-gradient(100% 60% at 85% 18%, rgba(40, 52, 85, 0.60) 0%, transparent 68%),
+    radial-gradient(90% 60% at 15% 42%, rgba(30, 40, 68, 0.48) 0%, transparent 68%),
+    radial-gradient(85% 55% at 80% 80%, rgba(34, 45, 75, 0.40) 0%, transparent 70%),
+    linear-gradient(180deg, #171E30 0%, #0F1321 30%, #0B0E17 70%, #111624 100%);
+
+  --gradient-brand-base: linear-gradient(180deg, #171E30 0%, #10131D 40%, #0C0D0F 100%);
+  --gradient-brand-subtle: linear-gradient(160deg, #1A2236 0%, #10131D 50%, #0C0D0F 100%);
+  --gradient-brand-radial: radial-gradient(120% 75% at 50% -10%, #28334F 0%, #171E32 35%, #10131D 65%, #0C0D0F 100%);
+  --gradient-brand-hero: radial-gradient(120% 85% at 80% 15%, rgba(40, 52, 85, 0.75) 0%, rgba(23, 30, 50, 0.78) 40%, rgba(16, 19, 29, 0.92) 70%, rgba(12, 13, 15, 0.98) 100%);
+  --gradient-brand-modal: linear-gradient(180deg, #1A2236 0%, #10131D 45%, #0C0D0F 100%);
+  --gradient-brand-player: radial-gradient(ellipse 110% 80% at 50% 15%, #28334F 0%, #171E32 40%, #10131D 70%, #0C0D0F 100%);
+  --gradient-brand-aura-top: radial-gradient(ellipse at 50% 30%, #28334F 0%, #171E32 45%, #10131D 70%, transparent 95%);
+  --gradient-brand-aura-mid: radial-gradient(circle, rgba(40, 52, 85, 0.75) 0%, rgba(16, 19, 29, 0.45) 50%, transparent 75%);
+  --hero-vignette-bottom: linear-gradient(to top, #0C0D0F 0%, rgba(16, 19, 29, 0.85) 40%, rgba(12, 13, 15, 0.40) 75%, transparent 100%);
+  --hero-vignette-left: linear-gradient(to right, #0C0D0F 0%, rgba(16, 19, 29, 0.85) 45%, rgba(12, 13, 15, 0.30) 70%, transparent 100%);
 
   /* Typography */
   --text-primary: #F4F0EA;
@@ -59,7 +72,7 @@
 
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.09);
-  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-hover: rgba(255, 255, 255, 0.20);
   --border-focus: rgba(201, 135, 105, 0.45);
 
   /* Dynamic Accent Palette (Default: Terracotta Coral #C98769) */
@@ -75,6 +88,68 @@
   --shadow-card: 0 6px 24px -4px rgba(0, 0, 0, 0.55);
   --shadow-elevated: 0 16px 36px -6px rgba(0, 0, 0, 0.75);
   --shadow-accent-glow: 0 8px 30px -8px var(--accent-glow);
+}
+
+/* ─── Light Mode Definitions ─── */
+:root.light,
+[data-theme="light"],
+:root:has(> head > meta[name="color-scheme"][content="light"]) {
+  color-scheme: light;
+
+  /* Luminous Light Foundation */
+  --brand-foundation: #EDF1F8;
+  --brand-midnight: #E2E8F4;
+  --brand-indigo: #C6D4F5;
+
+  /* Base Surfaces */
+  --bg-main: #EDF1F8;
+  --bg-secondary: #E2E8F4;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-elevated: rgba(255, 255, 255, 0.95);
+  --bg-nav: rgba(237, 241, 248, 0.92);
+
+  /* Noticeable Layered Light Mode Background Gradient */
+  --bg-body-gradient: 
+    radial-gradient(125% 70% at 50% -12%, #BACDF8 0%, #CCD9F5 35%, #DEE6F7 68%, transparent 100%),
+    radial-gradient(100% 60% at 85% 18%, rgba(176, 197, 246, 0.65) 0%, transparent 68%),
+    radial-gradient(90% 60% at 15% 42%, rgba(188, 207, 248, 0.55) 0%, transparent 68%),
+    radial-gradient(85% 55% at 80% 80%, rgba(180, 202, 248, 0.45) 0%, transparent 70%),
+    linear-gradient(180deg, #D4E0F8 0%, #E3EBF8 28%, #EDF2FA 65%, #DFE7F7 100%);
+
+  --gradient-brand-base: linear-gradient(180deg, #D4E0F8 0%, #E2E8F4 40%, #EDF1F8 100%);
+  --gradient-brand-subtle: linear-gradient(160deg, #DCE5F8 0%, #E6EDF8 50%, #EDF1F8 100%);
+  --gradient-brand-radial: radial-gradient(120% 75% at 50% -10%, #BACDF8 0%, #D0DCF7 35%, #E2E8F4 65%, #EDF1F8 100%);
+  --gradient-brand-hero: radial-gradient(120% 85% at 80% 15%, rgba(186, 205, 248, 0.75) 0%, rgba(208, 220, 247, 0.78) 40%, rgba(226, 232, 244, 0.92) 70%, rgba(237, 241, 248, 0.98) 100%);
+  --gradient-brand-modal: linear-gradient(180deg, #FFFFFF 0%, #F5F7FC 45%, #EBF0F8 100%);
+  --gradient-brand-player: radial-gradient(ellipse 110% 80% at 50% 15%, #BACDF8 0%, #D0DCF7 40%, #E2E8F4 70%, #EDF1F8 100%);
+  --gradient-brand-aura-top: radial-gradient(ellipse at 50% 30%, rgba(186, 205, 248, 0.8) 0%, rgba(208, 220, 247, 0.6) 45%, rgba(226, 232, 244, 0.4) 70%, transparent 95%);
+  --gradient-brand-aura-mid: radial-gradient(circle, rgba(186, 205, 248, 0.65) 0%, rgba(226, 232, 244, 0.4) 50%, transparent 75%);
+  --hero-vignette-bottom: linear-gradient(to top, #EDF1F8 0%, rgba(226, 232, 244, 0.85) 40%, rgba(237, 241, 248, 0.40) 75%, transparent 100%);
+  --hero-vignette-left: linear-gradient(to right, #EDF1F8 0%, rgba(226, 232, 244, 0.85) 45%, rgba(237, 241, 248, 0.30) 70%, transparent 100%);
+
+  /* Typography */
+  --text-primary: #0D1322;
+  --text-secondary: #3D4760;
+  --text-muted: #63708A;
+
+  /* Borders */
+  --border-subtle: rgba(18, 26, 48, 0.10);
+  --border-hover: rgba(18, 26, 48, 0.22);
+  --border-focus: rgba(201, 135, 105, 0.65);
+
+  /* Contrast override for accent buttons in light mode */
+  --accent-contrast: #FFFFFF;
+
+  /* Elevation Shadows */
+  --shadow-card: 0 8px 24px -4px rgba(18, 26, 48, 0.08);
+  --shadow-elevated: 0 18px 40px -8px rgba(18, 26, 48, 0.14);
+}
+
+/* ─── Explicit Dark Mode Override ─── */
+:root.dark,
+[data-theme="dark"],
+:root:has(> head > meta[name="color-scheme"][content="dark"]) {
+  color-scheme: dark;
 }
 
 /* Global Reset & Base */
@@ -94,14 +169,13 @@ body {
   padding: 0;
   min-height: 100vh;
   background-color: var(--brand-foundation);
-  background-image: 
-    radial-gradient(120% 65% at 50% -15%, #242B40 0%, #151B2E 35%, #10131D 65%, transparent 100%),
-    radial-gradient(90% 55% at 90% 15%, rgba(36, 43, 64, 0.45) 0%, transparent 65%),
-    radial-gradient(90% 55% at 10% 45%, rgba(24, 32, 50, 0.35) 0%, transparent 65%),
-    linear-gradient(180deg, #121624 0%, #0C0D0F 35%, #0C0D0F 75%, #10131D 100%);
+  background-image: var(--bg-body-gradient);
   background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: var(--text-primary);
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Custom restrained scrollbars */

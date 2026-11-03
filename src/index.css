@@ -211,3 +211,31 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─── Custom Cinema Projector Cursor Integration ─── */
+@media (pointer: fine) {
+  body.has-cinema-cursor,
+  body.has-cinema-cursor button,
+  body.has-cinema-cursor a,
+  body.has-cinema-cursor [role="button"],
+  body.has-cinema-cursor .cursor-pointer {
+    cursor: none !important;
+  }
+
+  body.has-cinema-cursor input,
+  body.has-cinema-cursor textarea,
+  body.has-cinema-cursor [contenteditable="true"] {
+    cursor: text !important;
+  }
+}
+
+/* Hover and active click states for custom cinema cursor */
+.cursor-hover-clickable svg {
+  transform: scale(1.06);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+.cursor-active-click svg {
+  transform: scale(0.94);
+}
+

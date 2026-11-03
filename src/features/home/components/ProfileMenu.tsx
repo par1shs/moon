@@ -11,6 +11,7 @@ import {
   Sparkles,
   BarChart3,
   Tv,
+  Film,
 } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
@@ -18,6 +19,7 @@ import { ThemeToggle } from '../../../components/common/ThemeToggle'
 import { useAudio } from '../../audio/useAudio'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 import { useSubscriptionTier } from '../../../hooks/useSubscriptionTier'
+import { useCustomCursorSetting } from '../../cinematic/hooks/useCustomCursorSetting'
 
 export interface ProfileMenuProps {
   isOpen: boolean
@@ -47,6 +49,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   const menuRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotionPreference()
   const { isSoundEnabled, toggleSound } = useAudio()
+  const { isCursorEnabled, toggleCursor } = useCustomCursorSetting()
   const { tier, plan, isFreeTier, toggleTier } = useSubscriptionTier(profile.id)
 
   // Handle click outside and Escape key
@@ -286,6 +289,42 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 <span
                   className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
                     isSoundEnabled ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Cinema Projector Cursor Toggle */}
+            <div className="px-3 py-2.5 rounded-lg flex items-center justify-between gap-2 hover:bg-[var(--border-subtle)] transition-colors duration-150">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--accent-primary)]">
+                  <Film className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <span className="block text-sm font-medium text-[var(--text-primary)]">
+                    Projector Cursor
+                  </span>
+                  <span className="block text-xs text-[var(--text-muted)]">
+                    {isCursorEnabled ? 'Cinema projector active' : 'Standard pointer'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Accessible Switch Button */}
+              <button
+                type="button"
+                role="switch"
+                data-testid="toggle-cinema-cursor-btn"
+                aria-checked={isCursorEnabled}
+                aria-label={isCursorEnabled ? 'Disable cinema projector cursor' : 'Enable cinema projector cursor'}
+                onClick={toggleCursor}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] ${
+                  isCursorEnabled ? 'bg-[var(--accent-primary)]' : 'bg-[var(--text-muted)]/30'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                    isCursorEnabled ? 'translate-x-4' : 'translate-x-0'
                   }`}
                 />
               </button>

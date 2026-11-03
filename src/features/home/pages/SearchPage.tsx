@@ -164,6 +164,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ profile, onSelectContent
           <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-primary)] pointer-events-none transition-transform group-focus-within:scale-110" />
           <input
             type="text"
+            data-testid="search-input"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}

@@ -64,7 +64,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       whileHover="hover"
       whileTap="tap"
       onClick={() => onInfo?.(content)}
-      className={`group relative rounded-lg overflow-hidden bg-gradient-to-b from-[var(--bg-elevated)]/90 via-[var(--bg-card)] to-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/60 transition-all duration-300 shadow-[var(--shadow-card)] hover:shadow-[0_12px_28px_-6px_rgba(36,43,64,0.45)] cursor-pointer select-none ${cfg.container} ${className}`}
+      className={`group relative rounded-lg overflow-hidden bg-gradient-to-b from-[var(--bg-elevated)]/90 via-[var(--bg-card)] to-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/70 transition-all duration-300 shadow-[var(--shadow-card)] hover:shadow-[0_14px_32px_-6px_rgba(0,0,0,0.65),0_0_20px_-6px_var(--accent-glow)] cursor-pointer select-none ${cfg.container} ${className}`}
     >
       {/* Media Container */}
       <div className={`relative w-full ${cfg.aspect} bg-[var(--bg-secondary)] overflow-hidden`}>

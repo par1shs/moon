@@ -17,6 +17,7 @@ import { MembershipPage } from '../../subscription/pages/MembershipPage'
 import { AdInsightsPage } from '../../advertising/pages/AdInsightsPage'
 import { DeviceExperiencePage } from '../../devices/pages/DeviceExperiencePage'
 import { SoundControl } from '../../audio/SoundControl'
+import { AmbientAtmosphere } from '../../cinematic/components/AmbientAtmosphere'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 
 export interface MainLayoutProps {
@@ -151,32 +152,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   return (
     <div className="relative min-h-screen w-full bg-transparent text-[var(--text-primary)] flex flex-col justify-between antialiased selection:bg-[var(--accent-primary)] selection:text-[var(--accent-contrast)]">
-      {/* ─── Persistent Cinematic Atmospheric Brand Gradient Background ─── */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
-        {/* Top Header & Hero Aura (adapts to light/dark via CSS token) */}
-        <div
-          className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[140vw] max-w-[1600px] h-[650px] rounded-[100%] blur-[120px] opacity-80 transition-all duration-500"
-          style={{
-            background: 'var(--gradient-brand-aura-top)',
-          }}
-        />
-
-        {/* Dynamic Profile Accent Subtle Secondary Glow Aura */}
-        <div
-          className="absolute top-[80px] -right-[150px] w-[600px] h-[600px] rounded-full blur-[160px] opacity-25"
-          style={{
-            background: 'radial-gradient(circle, var(--accent-glow) 0%, transparent 70%)',
-          }}
-        />
-
-        {/* Mid-Page Atmospheric Pockets (adapts to light/dark via CSS token) */}
-        <div
-          className="absolute top-[650px] -left-[200px] w-[700px] h-[700px] rounded-full blur-[170px] opacity-40 transition-all duration-500"
-          style={{
-            background: 'var(--gradient-brand-aura-mid)',
-          }}
-        />
-      </div>
+      {/* ─── Intelligent Page-Aware Ambient Atmosphere ─── */}
+      <AmbientAtmosphere
+        activePage={activePage}
+        selectedDetailContent={selectedDetailContent}
+      />
 
       {/* ─── Persistent Top Navigation ─── */}
       <TopNavigation

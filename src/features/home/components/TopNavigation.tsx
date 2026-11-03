@@ -117,6 +117,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
           {/* Search Action Button */}
           <button
             type="button"
+            data-testid="search-action-btn"
             onClick={() => onNavigate('search')}
             aria-label="Search series, movies, and channels"
             aria-pressed={activePage === 'search'}

@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Code2,
   Sparkles,
+  BarChart3,
 } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
@@ -24,6 +25,7 @@ export interface ProfileMenuProps {
   onSwitchProfile: () => void
   onManageProfile: () => void
   onNavigateToMembership?: () => void
+  onNavigateToAdInsights?: () => void
   onReplayIntro?: () => void
   onOpenDevShell?: () => void
 }
@@ -35,6 +37,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   onSwitchProfile,
   onManageProfile,
   onNavigateToMembership,
+  onNavigateToAdInsights,
   onReplayIntro,
   onOpenDevShell,
 }) => {
@@ -201,6 +204,25 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 >
                   <span>Manage Plans &amp; Billing</span>
                   <span>View All →</span>
+                </button>
+              )}
+
+              {onNavigateToAdInsights && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="profile-ad-insights-link"
+                  onClick={() => {
+                    onClose()
+                    onNavigateToAdInsights()
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-mono text-amber-300 hover:text-amber-200 hover:bg-[var(--border-subtle)] transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <BarChart3 className="w-3 h-3 text-amber-400" />
+                    Advertising Insights
+                  </span>
+                  <span>Demo →</span>
                 </button>
               )}
             </div>

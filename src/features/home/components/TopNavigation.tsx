@@ -8,7 +8,7 @@ import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
 import { ProfileMenu } from './ProfileMenu'
 import { useSubscriptionTier } from '../../../hooks/useSubscriptionTier'
 
-export type NavigationPage = 'home' | 'series' | 'movies' | 'discover' | 'livetv' | 'mylist' | 'search' | 'membership'
+export type NavigationPage = 'home' | 'series' | 'movies' | 'discover' | 'livetv' | 'mylist' | 'search' | 'membership' | 'ad-insights'
 
 export interface NavItem {
   id: NavigationPage
@@ -23,6 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'livetv', label: 'Live TV' },
   { id: 'mylist', label: 'My List' },
   { id: 'membership', label: 'Membership' },
+  { id: 'ad-insights', label: 'Ad Insights' },
 ]
 
 export interface TopNavigationProps {
@@ -181,6 +182,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
               onSwitchProfile={onSwitchProfile}
               onManageProfile={onManageProfile}
               onNavigateToMembership={() => onNavigate('membership')}
+              onNavigateToAdInsights={() => onNavigate('ad-insights')}
               onReplayIntro={onReplayIntro}
               onOpenDevShell={onOpenDevShell}
             />

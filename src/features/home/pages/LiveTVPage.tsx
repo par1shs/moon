@@ -30,6 +30,9 @@ import {
   type CatchUpProgramInfo,
 } from '../../../components/player/SimulatedPlayerModal'
 import { ALL_DISCOVERY_TITLES } from '../../../data/sampleContent'
+import { SAMPLE_SPONSORS } from '../../../data/sampleAds'
+import { SponsorInfoModal } from '../../../components/sponsorship/SponsorInfoModal'
+import type { SponsorInfo } from '../../../types'
 
 const CATEGORIES = ['All Channels', 'News', 'Sports', 'Cinema', 'Culture']
 
@@ -73,6 +76,7 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
     initialProgress: number
   } | null>(null)
   const [isCatchUpPlayerOpen, setIsCatchUpPlayerOpen] = useState(false)
+  const [selectedSponsor, setSelectedSponsor] = useState<SponsorInfo | null>(null)
 
   // ─── Profile-Isolated Viewing History Engine ───
   const {
@@ -340,6 +344,39 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
 
         {/* Spotlight Channel & Programme Info */}
         <div className="w-full md:w-1/2 space-y-3.5">
+          {/* Phase 6C: Live TV Programme Sponsorship Banner */}
+          {(tunedCurrentProgram?.sponsor || tunedChannel.sponsor || tunedChannel.channelNumber === '102' || tunedChannel.channelNumber === '101') && (
+            <div
+              data-testid="livetv-sponsor-banner"
+              className="p-3 sm:p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-xs font-mono"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-amber-500 text-black text-[10px]">
+                  SPONSORED
+                </span>
+                <span className="text-[var(--text-primary)]">
+                  Broadcast Partner: <strong>{tunedCurrentProgram?.sponsor?.name || tunedChannel.sponsor?.name || (tunedChannel.channelNumber === '102' ? 'Veloce Motors' : 'Apex Quantum Dynamics')}</strong>
+                </span>
+              </div>
+              <button
+                type="button"
+                data-testid="livetv-sponsor-cta"
+                onClick={() =>
+                  setSelectedSponsor(
+                    tunedCurrentProgram?.sponsor ||
+                      tunedChannel.sponsor ||
+                      (tunedChannel.channelNumber === '102'
+                        ? SAMPLE_SPONSORS.veloce
+                        : SAMPLE_SPONSORS.apex)
+                  )
+                }
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-semibold shrink-0 transition-colors cursor-pointer"
+              >
+                Partner Info &rarr;
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="accent">CURRENTLY TUNED</Badge>
             <span className="text-xs font-mono text-[var(--text-muted)]">
@@ -665,6 +702,14 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
                 channelCategory: tunedChannel.category,
                 linkedContentId: tunedCurrentProgram.linkedContentId,
                 programId: tunedCurrentProgram.id,
+                sponsor:
+                  tunedCurrentProgram?.sponsor ||
+                  tunedChannel.sponsor ||
+                  (tunedChannel.channelNumber === '102'
+                    ? SAMPLE_SPONSORS.veloce
+                    : tunedChannel.channelNumber === '101'
+                      ? SAMPLE_SPONSORS.apex
+                      : undefined),
               }
             : undefined
         }
@@ -690,6 +735,15 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
           onMarkCompleted={(contentId) => {
             markCompleted(contentId)
           }}
+        />
+      )}
+
+      {/* Phase 6C: Sponsor Info Modal */}
+      {selectedSponsor && (
+        <SponsorInfoModal
+          isOpen={Boolean(selectedSponsor)}
+          onClose={() => setSelectedSponsor(null)}
+          sponsor={selectedSponsor}
         />
       )}
     </div>

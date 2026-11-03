@@ -140,6 +140,7 @@ export const SAMPLE_FEATURED_CARDS: ContentMetadata[] = [
         year: '2026',
       },
     ],
+    sponsor: SAMPLE_SPONSORS.omnisynth,
     relatedIds: ['mov-5', 'mov-8', 'ser-8', 'feat-1'],
   },
   {

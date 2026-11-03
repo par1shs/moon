@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Play, Bell, BellOff, Clock, Film, Radio, RotateCcw, AlertTriangle, ShieldAlert, Sparkles } from 'lucide-react'
 import type { EPGProgram, EPGChannel, EPGProgramStatus, CatchUpStatus } from '../../../types/epg'
 import { Modal } from '../../../components/modals/Modal'
 import { Badge } from '../../../components/common/Badge'
 import { Button } from '../../../components/common/Button'
 import { getCatchUpStatus } from '../../../data/epgSchedule'
+import { SponsorInfoModal } from '../../../components/sponsorship/SponsorInfoModal'
 
 export interface ProgramInfoModalProps {
   isOpen: boolean
@@ -39,6 +40,8 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
   onOpenLinkedContent,
   formatTimeRange,
 }) => {
+  const [isSponsorModalOpen, setIsSponsorModalOpen] = useState(false)
+
   if (!program || !channel) return null
 
   const isLive = status === 'live'
@@ -47,6 +50,7 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
 
   const catchUpStatus = isEnded ? getCatchUpStatus(program) : null
   const hasCatchUpProgress = savedCatchUpProgress !== undefined && savedCatchUpProgress > 0 && savedCatchUpProgress < 95
+  const programSponsor = program.sponsor || channel.sponsor
 
   return (
     <Modal
@@ -229,6 +233,41 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
           </div>
         )}
 
+        {/* Phase 6C: Programme Sponsorship Disclosure */}
+        {programSponsor && (
+          <div
+            data-testid="modal-sponsor-section"
+            className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono"
+          >
+            <div className="flex items-center gap-2.5">
+              <span
+                data-testid="modal-sponsor-badge"
+                className="px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-amber-500 text-black text-[10px]"
+              >
+                SPONSORED PROGRAMME
+              </span>
+              <div>
+                <span className="text-[var(--text-primary)] font-semibold block">
+                  Presented by {programSponsor.name}
+                </span>
+                <span className="text-[var(--text-muted)] text-[11px]">
+                  {programSponsor.tagline}
+                </span>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              data-testid="modal-sponsor-cta"
+              onClick={() => setIsSponsorModalOpen(true)}
+              className="text-amber-300 border-amber-500/40 hover:bg-amber-500/20 shrink-0"
+            >
+              Partner Info
+            </Button>
+          </div>
+        )}
+
         {/* Description */}
         <div className="space-y-2">
           <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)]">
@@ -321,6 +360,15 @@ export const ProgramInfoModal: React.FC<ProgramInfoModalProps> = ({
             <span>Channel {channel.channelNumber}</span>
           </div>
         </div>
+
+        {/* Phase 6C: Sponsor Info Modal */}
+        {programSponsor && (
+          <SponsorInfoModal
+            isOpen={isSponsorModalOpen}
+            onClose={() => setIsSponsorModalOpen(false)}
+            sponsor={programSponsor}
+          />
+        )}
       </div>
     </Modal>
   )

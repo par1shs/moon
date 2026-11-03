@@ -331,6 +331,15 @@ export const EPGFullGuide: React.FC<EPGFullGuideProps> = ({
                                     ⚡
                                   </span>
                                 )}
+                                {(program.sponsor || ch.sponsor) && (
+                                  <span
+                                    data-testid="epg-sponsor-badge"
+                                    className="px-1 py-0 text-[8px] font-mono rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold"
+                                    title="Sponsored Programme"
+                                  >
+                                    SPONSORED
+                                  </span>
+                                )}
                                 {hasRem && (
                                   <Bell className="w-3 h-3 text-[var(--accent-primary)] fill-current" />
                                 )}

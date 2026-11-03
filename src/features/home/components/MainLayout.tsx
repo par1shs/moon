@@ -14,6 +14,7 @@ import { LiveTVPage } from '../pages/LiveTVPage'
 import { MyListPage } from '../pages/MyListPage'
 import { SearchPage } from '../pages/SearchPage'
 import { MembershipPage } from '../../subscription/pages/MembershipPage'
+import { AdInsightsPage } from '../../advertising/pages/AdInsightsPage'
 import { SoundControl } from '../../audio/SoundControl'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 
@@ -113,6 +114,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       case 'membership':
         return (
           <MembershipPage
+            profile={profile}
+            onNavigateHome={() => handleNavigate('home')}
+          />
+        )
+      case 'ad-insights':
+        return (
+          <AdInsightsPage
             profile={profile}
             onNavigateHome={() => handleNavigate('home')}
           />

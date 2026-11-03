@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
-import { Sparkles, SlidersHorizontal, Tv, Laptop, Smartphone } from 'lucide-react'
+import { Sparkles, SlidersHorizontal, Tv, Laptop, Smartphone, ExternalLink } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
-import type { ContentMetadata, EpisodeMetadata } from '../../../types'
+import type { ContentMetadata, EpisodeMetadata, SponsorInfo } from '../../../types'
 import { HeroBanner } from '../components/HeroBanner'
 import { HorizontalCarousel } from '../../../components/common/HorizontalCarousel'
 import { ContentCard } from '../../../components/cards/ContentCard'
@@ -12,6 +12,8 @@ import { useUserPreferences } from '../../../hooks/useUserPreferences'
 import { generateRecommendations } from '../../recommendations/recommendationEngine'
 import { GenrePreferencesModal } from '../../profiles/components/GenrePreferencesModal'
 import { SimulatedPlayerModal } from '../../../components/player/SimulatedPlayerModal'
+import { SponsorInfoModal } from '../../../components/sponsorship/SponsorInfoModal'
+import { SAMPLE_SPONSORS } from '../../../data/sampleAds'
 import {
   ALL_DISCOVERY_TITLES,
   SAMPLE_FEATURED_CARDS,
@@ -72,10 +74,17 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const heroContent = SAMPLE_FEATURED_CARDS[0]
 
+  const [selectedSponsor, setSelectedSponsor] = useState<SponsorInfo | null>(null)
+
   const hybridTitles = useMemo(() => {
     return ALL_DISCOVERY_TITLES.filter(
       (c) => Boolean(c.hybridBroadcast || c.broadcastSchedule)
     )
+  }, [])
+
+  const sponsoredTitles = useMemo(() => {
+    const list = ALL_DISCOVERY_TITLES.filter((c) => Boolean(c.sponsor))
+    return list.length > 0 ? list : [SAMPLE_FEATURED_CARDS[0], SAMPLE_MOVIE_CARDS[0]]
   }, [])
 
   const handleOpenDetails = (item: ContentMetadata) => {
@@ -136,6 +145,45 @@ export const HomePage: React.FC<HomePageProps> = ({
                 key={`hybrid-${item.id}`}
                 content={item}
                 variant="landscape"
+                isSaved={isInWatchlist(item.id)}
+                onPlay={() => handlePlayContent(item, 0)}
+                onInfo={() => handleOpenDetails(item)}
+                onAddToList={() => toggleWatchlist(item.id)}
+              />
+            ))}
+          </HorizontalCarousel>
+        </div>
+      )}
+
+      {/* ─── Phase 6C: Sponsored Showcase Shelf ─── */}
+      {sponsoredTitles.length > 0 && (
+        <div data-testid="sponsored-shelf" className="space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-semibold flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span>SPONSORED SHOWCASE • PRESENTED BY APEX QUANTUM DYNAMICS</span>
+            </span>
+            <button
+              type="button"
+              data-testid="sponsored-shelf-cta"
+              onClick={() => setSelectedSponsor(SAMPLE_SPONSORS.apex)}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
+            >
+              <span>Partner Info</span>
+              <ExternalLink className="w-3 h-3" />
+            </button>
+          </div>
+
+          <HorizontalCarousel
+            title="Featured Spotlight • Presented by Apex Quantum"
+            eyebrow="SPONSORED SHOWCASE"
+            subtitle="Groundbreaking cinematic storytelling presented in partnership with Apex Quantum Dynamics"
+          >
+            {sponsoredTitles.map((item) => (
+              <ContentCard
+                key={`sponsored-${item.id}`}
+                content={item}
+                variant="portrait"
                 isSaved={isInWatchlist(item.id)}
                 onPlay={() => handlePlayContent(item, 0)}
                 onInfo={() => handleOpenDetails(item)}
@@ -533,6 +581,15 @@ export const HomePage: React.FC<HomePageProps> = ({
         onProgressUpdate={updateProgress}
         onMarkCompleted={markCompleted}
       />
+
+      {/* Phase 6C: Sponsor Info Modal */}
+      {selectedSponsor && (
+        <SponsorInfoModal
+          isOpen={Boolean(selectedSponsor)}
+          onClose={() => setSelectedSponsor(null)}
+          sponsor={selectedSponsor}
+        />
+      )}
     </div>
   )
 }

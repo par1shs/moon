@@ -23,6 +23,7 @@ import { ContentCard } from '../../components/cards/ContentCard'
 import { Modal } from '../../components/modals/Modal'
 import { SimulatedPlayerModal } from '../../components/player/SimulatedPlayerModal'
 import { PlanUpgradeModal } from '../../components/subscription/PlanUpgradeModal'
+import { SponsorInfoModal } from '../../components/sponsorship/SponsorInfoModal'
 import { useSubscriptionTier } from '../../hooks/useSubscriptionTier'
 import { useWatchlist } from '../../hooks/useWatchlist'
 import { useViewingHistory } from '../../hooks/useViewingHistory'
@@ -93,6 +94,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   const [isInteractivePlayerOpen, setIsInteractivePlayerOpen] = useState(false)
   const [activePlayerEpisode, setActivePlayerEpisode] = useState<EpisodeMetadata | undefined>(undefined)
   const [prevContentId, setPrevContentId] = useState(content?.id)
+  const [isSponsorModalOpen, setIsSponsorModalOpen] = useState(false)
 
   // Phase 6B: Subscription Tier & Feature Gating
   const { tier, isFreeTier, setPlan } = useSubscriptionTier(profile.id)
@@ -543,7 +545,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
               </div>
             )}
 
-            {/* ─── Phase 6A: Sponsored Content Disclosure ─── */}
+            {/* ─── Phase 6A & 6C: Sponsored Content Disclosure & CTA ─── */}
             {content.sponsor && (
               <div
                 data-testid="details-sponsor-box"
@@ -560,11 +562,14 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                     • {content.sponsor.tagline}
                   </span>
                 </div>
-                {content.sponsor.sponsorUrl && (
-                  <span className="text-[var(--accent-secondary)] font-semibold shrink-0">
-                    Visit Sponsor &rarr;
-                  </span>
-                )}
+                <button
+                  type="button"
+                  data-testid="details-sponsor-cta"
+                  onClick={() => setIsSponsorModalOpen(true)}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-semibold shrink-0 transition-colors cursor-pointer"
+                >
+                  Sponsor Details &rarr;
+                </button>
               </div>
             )}
 
@@ -1129,6 +1134,15 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
             setPlan(planId, freq)
             setUpgradeModalState(null)
           }}
+        />
+      )}
+
+      {/* Phase 6C: Sponsor Info Modal */}
+      {content?.sponsor && (
+        <SponsorInfoModal
+          isOpen={isSponsorModalOpen}
+          onClose={() => setIsSponsorModalOpen(false)}
+          sponsor={content.sponsor}
         />
       )}
     </AnimatePresence>

@@ -26,12 +26,17 @@ import {
 } from 'lucide-react'
 import { Badge } from '../common/Badge'
 import { Button } from '../common/Button'
-import type { ContentMetadata, EpisodeMetadata, BonusFeaturette, Advertisement } from '../../types'
+import type { ContentMetadata, EpisodeMetadata, BonusFeaturette, Advertisement, SponsorInfo } from '../../types'
 import { InteractivePanel } from '../../features/live/components/interactive/InteractivePanel'
 import { SAMPLE_INTERACTIVE_ITEMS } from '../../data/interactiveContent'
 import { useSubscriptionTier } from '../../hooks/useSubscriptionTier'
 import { getPreRollAd, getMidRollAd, isContentEligibleForAds } from '../../data/sampleAds'
 import { PlanUpgradeModal } from '../subscription/PlanUpgradeModal'
+import {
+  recordAdImpression,
+  recordAdCompletion,
+  recordAdClick,
+} from '../../services/adDecisionEngine'
 
 export interface LiveProgramInfo {
   channelNumber: string
@@ -44,6 +49,7 @@ export interface LiveProgramInfo {
   channelCategory?: string
   linkedContentId?: string
   programId?: string
+  sponsor?: SponsorInfo
 }
 
 export interface CatchUpProgramInfo {
@@ -378,7 +384,10 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
         !bonusFeature &&
         !liveProgram &&
         isContentEligibleForAds(content, subscriptionTier)
-      const preRoll = shouldPreRoll ? getPreRollAd(content?.id, subscriptionTier) : null
+      const preRoll = shouldPreRoll ? getPreRollAd(content?.id, subscriptionTier, profileId) : null
+      if (preRoll) {
+        recordAdImpression(preRoll.id, profileId)
+      }
       setActiveAd(preRoll)
       setAdTimeElapsed(0)
     } else {
@@ -548,8 +557,9 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
           const midRollCueSeconds = Math.min(20, Math.max(10, totalDurationSeconds * 0.25))
           if (next >= midRollCueSeconds && next < totalDurationSeconds - 10) {
             hasTriggeredMidRollRef.current = true
-            const midRoll = getMidRollAd(content?.id, subscriptionTier)
+            const midRoll = getMidRollAd(content?.id, subscriptionTier, profileId)
             if (midRoll) {
+              recordAdImpression(midRoll.id, profileId)
               setActiveAd(midRoll)
               setAdTimeElapsed(0)
               return next
@@ -578,6 +588,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
     liveProgram,
     content,
     subscriptionTier,
+    profileId,
   ])
 
   // ─── Phase 6A: AVOD Ad Ticker ───
@@ -588,6 +599,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
       setAdTimeElapsed((prev) => {
         const next = prev + 1
         if (next >= activeAd.durationSeconds) {
+          recordAdCompletion(activeAd.id, profileId)
           setActiveAd(null)
           return 0
         }
@@ -598,7 +610,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
     return () => {
       window.clearInterval(timer)
     }
-  }, [isOpen, activeAd])
+  }, [isOpen, activeAd, profileId])
 
   // ─── Phase 6A: Skip Ad Handler ───
   const handleSkipAd = useCallback(() => {
@@ -675,8 +687,9 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
         const midRollCueSeconds = Math.min(20, Math.max(10, totalDurationSeconds * 0.25))
         if (targetSeconds >= midRollCueSeconds && targetSeconds < totalDurationSeconds - 10) {
           hasTriggeredMidRollRef.current = true
-          const midRoll = getMidRollAd(content?.id, subscriptionTier)
+          const midRoll = getMidRollAd(content?.id, subscriptionTier, profileId)
           if (midRoll) {
+            recordAdImpression(midRoll.id, profileId)
             setActiveAd(midRoll)
             setAdTimeElapsed(0)
           }
@@ -692,6 +705,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
       liveProgram,
       content,
       subscriptionTier,
+      profileId,
     ]
   )
 
@@ -718,8 +732,9 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
           const midRollCueSeconds = Math.min(20, Math.max(10, totalDurationSeconds * 0.25))
           if (next >= midRollCueSeconds && next < totalDurationSeconds - 10) {
             hasTriggeredMidRollRef.current = true
-            const midRoll = getMidRollAd(content?.id, subscriptionTier)
+            const midRoll = getMidRollAd(content?.id, subscriptionTier, profileId)
             if (midRoll) {
+              recordAdImpression(midRoll.id, profileId)
               setActiveAd(midRoll)
               setAdTimeElapsed(0)
             }
@@ -740,6 +755,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
       liveProgram,
       content,
       subscriptionTier,
+      profileId,
     ]
   )
 
@@ -1177,11 +1193,24 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
                 </span>
               </div>
             ) : liveProgram || content.type === 'live' ? (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/60 border border-red-500/40 text-red-300 backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                <span className="text-[11px] uppercase tracking-wider font-bold">
-                  BROADCAST STREAM
-                </span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/60 border border-red-500/40 text-red-300 backdrop-blur-md">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span className="text-[11px] uppercase tracking-wider font-bold">
+                    BROADCAST STREAM
+                  </span>
+                </div>
+                {liveProgram?.sponsor && (
+                  <div
+                    data-testid="player-sponsor-indicator"
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 backdrop-blur-md"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="text-[11px] uppercase tracking-wider font-bold">
+                      PRESENTED BY {liveProgram.sponsor.name.toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/15 text-white/80 backdrop-blur-md">
@@ -1250,6 +1279,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
                   target="_blank"
                   rel="noreferrer"
                   onClick={(e) => {
+                    recordAdClick(activeAd.id, profileId)
                     if (!activeAd.sponsorUrl || activeAd.sponsorUrl.includes('.fictional')) {
                       e.preventDefault()
                     }
@@ -1444,6 +1474,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
                     target="_blank"
                     rel="noreferrer"
                     onClick={(e) => {
+                      recordAdClick(activeAd.id, profileId)
                       if (!activeAd.sponsorUrl || activeAd.sponsorUrl.includes('.fictional')) {
                         e.preventDefault()
                       }

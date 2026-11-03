@@ -152,6 +152,14 @@ export const EPGNowAndNext: React.FC<EPGNowAndNextProps> = ({
                             ⚡ INTERACTIVE
                           </span>
                         )}
+                        {(currentEp.sponsor || ch.sponsor) && (
+                          <span
+                            data-testid="epg-sponsor-badge"
+                            className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs"
+                          >
+                            SPONSORED
+                          </span>
+                        )}
                       </div>
 
                       <h4 className="font-display font-semibold text-sm text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors truncate">
@@ -225,6 +233,14 @@ export const EPGNowAndNext: React.FC<EPGNowAndNextProps> = ({
                             className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border border-[var(--accent-primary)]/40 shadow-xs"
                           >
                             ⚡ INTERACTIVE
+                          </span>
+                        )}
+                        {(nextEp.sponsor || ch.sponsor) && (
+                          <span
+                            data-testid="epg-sponsor-badge"
+                            className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs"
+                          >
+                            SPONSORED
                           </span>
                         )}
                       </div>

@@ -149,6 +149,8 @@ export interface PlanFeatureComparisonRow {
   tooltip?: string
 }
 
+export * from './advertising'
+
 export type AdPlacementType = 'pre-roll' | 'mid-roll' | 'sponsored'
 
 export interface Advertisement {

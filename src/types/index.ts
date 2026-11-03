@@ -99,9 +99,55 @@ export interface HybridBroadcastInfo {
 }
 
 /**
- * Phase 6A: AVOD Advertising & Sponsorship Models
+ * Phase 6A & 6B: AVOD & SVOD Subscription & Membership Models
  */
-export type SubscriptionTier = 'free' | 'premium'
+export type SubscriptionPlanId = 'free' | 'standard' | 'premium'
+export type SubscriptionTier = SubscriptionPlanId
+
+export type BillingFrequency = 'monthly' | 'annual'
+export type SubscriptionStatus = 'active' | 'cancelled' | 'trial'
+
+export interface SubscriptionInfo {
+  planId: SubscriptionPlanId
+  planName: string
+  billingFrequency: BillingFrequency
+  status: SubscriptionStatus
+  startDateISO: string
+  renewalDateISO: string
+  cancelAtPeriodEnd: boolean
+  cancelledDateISO?: string
+  isTrial?: boolean
+  trialEndsISO?: string
+}
+
+export interface SubscriptionPlan {
+  id: SubscriptionPlanId
+  name: string
+  tagline: string
+  monthlyPrice: number
+  annualPrice: number
+  currency: string
+  badgeText?: string
+  highlightColor: string
+  adSupported: boolean
+  maxVideoQuality: '720p HD' | '1080p Full HD' | '4K HDR'
+  audioQuality: 'Stereo' | '5.1 Surround' | 'Dolby Atmos 5.1'
+  catalogueAccess: 'Selected Titles' | 'Full Catalogue' | 'Full Catalogue + Exclusives'
+  bonusContentAccess: boolean
+  interactiveAccess: boolean
+  priorityCatchUp: boolean
+  screensSimultaneous: number
+  features: string[]
+}
+
+export interface PlanFeatureComparisonRow {
+  category: string
+  feature: string
+  free: string | boolean
+  standard: string | boolean
+  premium: string | boolean
+  tooltip?: string
+}
 
 export type AdPlacementType = 'pre-roll' | 'mid-roll' | 'sponsored'
 

@@ -129,13 +129,13 @@ export const SAMPLE_ADVERTISEMENTS: Advertisement[] = [
 
 /**
  * Resolver for Pre-Roll Advertisement
- * Returns null if user is on Premium tier or if content is exempt
+ * Returns null if user is on Standard or Premium tier (ad-free SVOD) or if content is exempt
  */
 export function getPreRollAd(
   contentId?: string,
   tier: SubscriptionTier = 'free'
 ): Advertisement | null {
-  if (tier === 'premium') return null
+  if (tier !== 'free') return null
 
   const preRolls = SAMPLE_ADVERTISEMENTS.filter((ad) => ad.placement === 'pre-roll')
   if (preRolls.length === 0) return null
@@ -148,13 +148,13 @@ export function getPreRollAd(
 
 /**
  * Resolver for Mid-Roll Advertisement
- * Returns null if user is on Premium tier
+ * Returns null if user is on Standard or Premium tier (ad-free SVOD)
  */
 export function getMidRollAd(
   contentId?: string,
   tier: SubscriptionTier = 'free'
 ): Advertisement | null {
-  if (tier === 'premium') return null
+  if (tier !== 'free') return null
 
   const midRolls = SAMPLE_ADVERTISEMENTS.filter((ad) => ad.placement === 'mid-roll')
   if (midRolls.length === 0) return null
@@ -166,12 +166,14 @@ export function getMidRollAd(
 
 /**
  * Checks if on-demand content is eligible for AVOD ad insertions
+ * Free plan: ad-supported
+ * Standard & Premium plans: 100% ad-free
  */
 export function isContentEligibleForAds(
   content: ContentMetadata | null,
   tier: SubscriptionTier
 ): boolean {
-  if (tier === 'premium' || !content) return false
-  // Live broadcast channels stream their own broadcast breaks; on-demand movies & series get AVOD ads
+  if (tier !== 'free' || !content) return false
+  // Live broadcast channels stream their own broadcast breaks; on-demand movies & series get AVOD ads on Free tier
   return content.type === 'movie' || content.type === 'series'
 }

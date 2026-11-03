@@ -13,6 +13,7 @@ import { DiscoverPage } from '../pages/DiscoverPage'
 import { LiveTVPage } from '../pages/LiveTVPage'
 import { MyListPage } from '../pages/MyListPage'
 import { SearchPage } from '../pages/SearchPage'
+import { MembershipPage } from '../../subscription/pages/MembershipPage'
 import { SoundControl } from '../../audio/SoundControl'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 
@@ -107,6 +108,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           <SearchPage
             profile={profile}
             onSelectContent={(c) => setSelectedDetailContent(c)}
+          />
+        )
+      case 'membership':
+        return (
+          <MembershipPage
+            profile={profile}
+            onNavigateHome={() => handleNavigate('home')}
           />
         )
       default:

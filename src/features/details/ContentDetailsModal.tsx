@@ -22,6 +22,8 @@ import { Badge } from '../../components/common/Badge'
 import { ContentCard } from '../../components/cards/ContentCard'
 import { Modal } from '../../components/modals/Modal'
 import { SimulatedPlayerModal } from '../../components/player/SimulatedPlayerModal'
+import { PlanUpgradeModal } from '../../components/subscription/PlanUpgradeModal'
+import { useSubscriptionTier } from '../../hooks/useSubscriptionTier'
 import { useWatchlist } from '../../hooks/useWatchlist'
 import { useViewingHistory } from '../../hooks/useViewingHistory'
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference'
@@ -92,6 +94,15 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   const [activePlayerEpisode, setActivePlayerEpisode] = useState<EpisodeMetadata | undefined>(undefined)
   const [prevContentId, setPrevContentId] = useState(content?.id)
 
+  // Phase 6B: Subscription Tier & Feature Gating
+  const { tier, isFreeTier, setPlan } = useSubscriptionTier(profile.id)
+  const [upgradeModalState, setUpgradeModalState] = useState<{
+    isOpen: boolean
+    targetPlanId?: 'standard' | 'premium'
+    featureName?: string
+    featureDescription?: string
+  } | null>(null)
+
   const isSeries = Boolean(content?.type === 'series' || (content?.seasons && content.seasons.length > 0))
 
   // Dynamically calculate series progress and next episode to watch
@@ -99,6 +110,21 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
     if (!content || !isSeries) return null
     return getSeriesProgress(content)
   }, [content, isSeries, getSeriesProgress])
+
+  const handlePlayBonusFeature = (bonus: BonusFeaturette) => {
+    if (isFreeTier) {
+      setUpgradeModalState({
+        isOpen: true,
+        targetPlanId: 'standard',
+        featureName: `Bonus Feature: ${bonus.title}`,
+        featureDescription:
+          'Behind-the-scenes interviews, deleted scenes, and special featurettes require a Standard or Premium plan. Upgrade to unlock full access ad-free.',
+      })
+      return
+    }
+    setActiveBonusFeature(bonus)
+    setIsInteractivePlayerOpen(true)
+  }
 
   // Reset or initialize season when content changes during render
   if (prevContentId !== content?.id) {
@@ -340,7 +366,19 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                   <button
                     type="button"
                     data-testid="hybrid-extended-edition-btn"
-                    onClick={() => setIsExtendedEdition(!isExtendedEdition)}
+                    onClick={() => {
+                      if (isFreeTier) {
+                        setUpgradeModalState({
+                          isOpen: true,
+                          targetPlanId: 'standard',
+                          featureName: 'Extended Editions & Director’s Cuts',
+                          featureDescription:
+                            'Extended cuts, director editions, and alternate endings are available on Standard and Premium plans. Upgrade to unlock extended footage ad-free.',
+                        })
+                        return
+                      }
+                      setIsExtendedEdition(!isExtendedEdition)
+                    }}
                     className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold border transition-all cursor-pointer ${
                       isExtendedEdition
                         ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] border-[var(--accent-primary)] shadow-md ring-2 ring-[var(--accent-primary)]/40'
@@ -921,10 +959,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                     <div
                       key={bonus.id}
                       data-testid={`bonus-card-${bonus.id}`}
-                      onClick={() => {
-                        setActiveBonusFeature(bonus)
-                        setIsInteractivePlayerOpen(true)
-                      }}
+                      onClick={() => handlePlayBonusFeature(bonus)}
                       className="group relative rounded-2xl overflow-hidden bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/50 transition-all p-3 space-y-3 cursor-pointer shadow-sm hover:shadow-md"
                     >
                       <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black/60">
@@ -970,8 +1005,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                           leftIcon={<Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
                           onClick={(e) => {
                             e.stopPropagation()
-                            setActiveBonusFeature(bonus)
-                            setIsInteractivePlayerOpen(true)
+                            handlePlayBonusFeature(bonus)
                           }}
                           className="group-hover:bg-[var(--accent-primary)] group-hover:text-[var(--accent-contrast)] text-xs"
                         >
@@ -1081,6 +1115,22 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
           </div>
         </div>
       </Modal>
+
+      {/* Phase 6B: Contextual Plan Upgrade Modal */}
+      {upgradeModalState && (
+        <PlanUpgradeModal
+          isOpen={upgradeModalState.isOpen}
+          onClose={() => setUpgradeModalState(null)}
+          currentPlanId={tier}
+          targetPlanId={upgradeModalState.targetPlanId}
+          featureName={upgradeModalState.featureName}
+          featureDescription={upgradeModalState.featureDescription}
+          onConfirmPlanChange={(planId, freq) => {
+            setPlan(planId, freq)
+            setUpgradeModalState(null)
+          }}
+        />
+      )}
     </AnimatePresence>
   )
 }

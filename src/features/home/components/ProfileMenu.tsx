@@ -23,6 +23,7 @@ export interface ProfileMenuProps {
   profile: Profile
   onSwitchProfile: () => void
   onManageProfile: () => void
+  onNavigateToMembership?: () => void
   onReplayIntro?: () => void
   onOpenDevShell?: () => void
 }
@@ -33,13 +34,14 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   profile,
   onSwitchProfile,
   onManageProfile,
+  onNavigateToMembership,
   onReplayIntro,
   onOpenDevShell,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotionPreference()
   const { isSoundEnabled, toggleSound } = useAudio()
-  const { isFreeTier, toggleTier } = useSubscriptionTier(profile.id)
+  const { tier, plan, isFreeTier, toggleTier } = useSubscriptionTier(profile.id)
 
   // Handle click outside and Escape key
   useEffect(() => {
@@ -148,39 +150,60 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
               </div>
             </button>
 
-            {/* Phase 6A: Subscription Tier Switcher (Free AVOD vs Premium) */}
-            <button
-              type="button"
-              role="menuitem"
-              data-testid="toggle-subscription-tier-btn"
-              onClick={() => {
-                toggleTier()
-              }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] active:bg-[var(--border-hover)] transition-colors duration-150 cursor-pointer group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] group-hover:border-[var(--accent-primary)]/40 transition-colors">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                </div>
-                <div>
-                  <span className="block font-medium">Subscription Tier</span>
-                  <span className="block text-xs text-[var(--text-muted)]">
-                    {isFreeTier ? 'Free (Ad-Supported)' : 'Premium (Ad-Free)'}
-                  </span>
-                </div>
-              </div>
-
-              <span
-                data-testid="subscription-tier-badge"
-                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider ${
-                  isFreeTier
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                }`}
+            {/* Phase 6B: Subscription Tier & Plans Switcher */}
+            <div className="space-y-1">
+              <button
+                type="button"
+                role="menuitem"
+                data-testid="toggle-subscription-tier-btn"
+                onClick={() => {
+                  toggleTier()
+                }}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] active:bg-[var(--border-hover)] transition-colors duration-150 cursor-pointer group"
+                title="Click to cycle plans (Free -> Standard -> Premium)"
               >
-                {isFreeTier ? 'FREE' : 'PREMIUM'}
-              </span>
-            </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] group-hover:border-[var(--accent-primary)]/40 transition-colors">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  </div>
+                  <div>
+                    <span className="block font-medium">Subscription Tier</span>
+                    <span className="block text-xs text-[var(--text-muted)]">
+                      {plan.name} • {isFreeTier ? 'Ad-Supported' : '100% Ad-Free'}
+                    </span>
+                  </div>
+                </div>
+
+                <span
+                  data-testid="subscription-tier-badge"
+                  className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase ${
+                    tier === 'free'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                      : tier === 'standard'
+                      ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
+                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                  }`}
+                >
+                  {tier.toUpperCase()}
+                </span>
+              </button>
+
+              {onNavigateToMembership && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="menu-membership-btn"
+                  onClick={() => {
+                    onClose()
+                    onNavigateToMembership()
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--accent-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] transition-colors cursor-pointer"
+                >
+                  <span>Manage Plans &amp; Billing</span>
+                  <span>View All →</span>
+                </button>
+              )}
+            </div>
 
             {/* Light / Dark Mode Toggle */}
             <ThemeToggle variant="row" />

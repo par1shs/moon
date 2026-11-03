@@ -31,6 +31,7 @@ import { InteractivePanel } from '../../features/live/components/interactive/Int
 import { SAMPLE_INTERACTIVE_ITEMS } from '../../data/interactiveContent'
 import { useSubscriptionTier } from '../../hooks/useSubscriptionTier'
 import { getPreRollAd, getMidRollAd, isContentEligibleForAds } from '../../data/sampleAds'
+import { PlanUpgradeModal } from '../subscription/PlanUpgradeModal'
 
 export interface LiveProgramInfo {
   channelNumber: string
@@ -86,6 +87,7 @@ export interface SimulatedPlayerModalProps {
   onNextChannel?: () => void
   profileId?: string
   onExploreOTT?: (contentId: string) => void
+  onNavigateToMembership?: () => void
 }
 
 const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
@@ -196,6 +198,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   onNextChannel,
   profileId,
   onExploreOTT,
+  onNavigateToMembership,
 }) => {
   // ─── Active Content & Episode State ───
   const initialEpisode = useMemo(() => {
@@ -212,15 +215,36 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
   const [volume, setVolume] = useState(0.85)
   const [isMuted, setIsMuted] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [selectedQuality, setSelectedQuality] = useState('Auto (4K HDR Master)')
+
+  // ─── Phase 6A & 6B: AVOD & SVOD Subscription & Membership State ───
+  const {
+    subscriptionTier,
+    isFreeTier,
+    canAccess4K,
+    canAccess1080p,
+    canAccessInteractive,
+    setPlan,
+  } = useSubscriptionTier(profileId || 'default')
+
+  const [selectedQuality, setSelectedQuality] = useState(() => {
+    if (subscriptionTier === 'free') return '720p HD'
+    if (subscriptionTier === 'standard') return '1080p Full HD'
+    return 'Auto (4K HDR Master)'
+  })
   const [selectedAudio, setSelectedAudio] = useState('English [Original] (Dolby Atmos)')
   const [selectedSubtitle, setSelectedSubtitle] = useState('Off')
 
-  // ─── Phase 6A: AVOD Subscription Tier & Ad State ───
-  const { subscriptionTier, isFreeTier } = useSubscriptionTier(profileId || 'default')
   const [activeAd, setActiveAd] = useState<Advertisement | null>(null)
   const [adTimeElapsed, setAdTimeElapsed] = useState(0)
   const hasTriggeredMidRollRef = useRef(false)
+
+  // Contextual plan upgrade modal inside player
+  const [upgradeModalState, setUpgradeModalState] = useState<{
+    isOpen: boolean
+    targetPlanId?: 'standard' | 'premium'
+    featureName?: string
+    featureDescription?: string
+  } | null>(null)
 
   // ─── Phase 5C: Interactive Television State ───
   const [isInteractiveOpen, setIsInteractiveOpen] = useState(false)
@@ -248,6 +272,11 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
         (it) => it.channelId === content.id || it.programId === content.id
       )
       if (byId) return byId
+
+      // Phase 5D & 6B: Default tie-in for flagship on-demand title
+      if (content.id === 'feat-1') {
+        return SAMPLE_INTERACTIVE_ITEMS[0]
+      }
     }
 
     return undefined
@@ -1611,14 +1640,28 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
               <button
                 type="button"
                 data-testid="player-interactive-btn"
-                onClick={() => setIsInteractiveOpen(!isInteractiveOpen)}
+                onClick={() => {
+                  if (!canAccessInteractive) {
+                    setUpgradeModalState({
+                      isOpen: true,
+                      targetPlanId: 'premium',
+                      featureName: 'Interactive Television (Polls, Voting & Quizzes)',
+                      featureDescription:
+                        'Live broadcast polls, audience voting, and programme quizzes are exclusive to the Premium tier. Upgrade to participate in real-time interactive broadcasts.',
+                    })
+                    return
+                  }
+                  setIsInteractiveOpen(!isInteractiveOpen)
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer ${
                   isInteractiveOpen
                     ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] border-[var(--accent-primary)] shadow-lg ring-2 ring-[var(--accent-primary)]/50'
                     : 'bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] border-[var(--accent-primary)]/50 hover:bg-[var(--accent-primary)]/30'
                 }`}
                 title={
-                  linkedInteractive.type === 'poll'
+                  !canAccessInteractive
+                    ? 'Interactive Television (Requires Premium Plan)'
+                    : linkedInteractive.type === 'poll'
                     ? 'Live Poll Available'
                     : linkedInteractive.type === 'voting'
                     ? 'Audience Vote Active'
@@ -1634,6 +1677,11 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
                     ? 'Vote'
                     : 'Quiz'}
                 </span>
+                {!canAccessInteractive && (
+                  <span className="px-1.5 py-0.2 rounded text-[8px] font-mono font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    PREMIUM
+                  </span>
+                )}
                 <span className="sm:hidden">Interact</span>
               </button>
             )}
@@ -1865,25 +1913,62 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
           {/* Stream Quality Sub-menu */}
           {activeSettingsTab === 'quality' && (
             <div className="space-y-1">
-              {STREAM_QUALITIES.map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => {
-                    setSelectedQuality(q)
-                    setActiveSettingsTab('none')
-                    triggerHud(<Zap className="w-8 h-8 text-[var(--accent-primary)]" />, `Quality: ${q}`)
-                  }}
-                  className={`w-full px-3 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                    selectedQuality === q
-                      ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] font-bold'
-                      : 'hover:bg-white/10 text-white/80'
-                  }`}
-                >
-                  <span>{q}</span>
-                  {selectedQuality === q && <Check className="w-4 h-4 text-[var(--accent-primary)]" />}
-                </button>
-              ))}
+              {STREAM_QUALITIES.map((q) => {
+                const is4KRestricted = q.includes('4K') && !canAccess4K
+                const is1080pRestricted = q.includes('1080p') && !canAccess1080p
+
+                return (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => {
+                      if (is4KRestricted) {
+                        setUpgradeModalState({
+                          isOpen: true,
+                          targetPlanId: 'premium',
+                          featureName: '4K HDR Master Stream Quality',
+                          featureDescription:
+                            'Ultra HD 4K HDR stream quality and Dolby Atmos 5.1 audio require a Premium plan. Upgrade to experience master-level fidelity.',
+                        })
+                        return
+                      }
+                      if (is1080pRestricted) {
+                        setUpgradeModalState({
+                          isOpen: true,
+                          targetPlanId: 'standard',
+                          featureName: '1080p Full HD Stream Quality',
+                          featureDescription:
+                            'Full HD 1080p resolution and ad-free viewing require a Standard or Premium plan. Upgrade to stream crystal-clear video.',
+                        })
+                        return
+                      }
+                      setSelectedQuality(q)
+                      setActiveSettingsTab('none')
+                      triggerHud(<Zap className="w-8 h-8 text-[var(--accent-primary)]" />, `Quality: ${q}`)
+                    }}
+                    className={`w-full px-3 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
+                      selectedQuality === q
+                        ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-secondary)] font-bold'
+                        : 'hover:bg-white/10 text-white/80'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{q}</span>
+                      {is4KRestricted && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          Premium
+                        </span>
+                      )}
+                      {is1080pRestricted && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                          Standard
+                        </span>
+                      )}
+                    </div>
+                    {selectedQuality === q && <Check className="w-4 h-4 text-[var(--accent-primary)]" />}
+                  </button>
+                )
+              })}
             </div>
           )}
         </div>
@@ -1920,6 +2005,29 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
             />
           </div>
         </>
+      )}
+
+      {/* ─── Phase 6B: Contextual Plan Upgrade Modal ─── */}
+      {upgradeModalState && (
+        <PlanUpgradeModal
+          isOpen={upgradeModalState.isOpen}
+          onClose={() => setUpgradeModalState(null)}
+          currentPlanId={subscriptionTier}
+          targetPlanId={upgradeModalState.targetPlanId}
+          featureName={upgradeModalState.featureName}
+          featureDescription={upgradeModalState.featureDescription}
+          onConfirmPlanChange={(planId, freq) => {
+            setPlan(planId, freq)
+            setUpgradeModalState(null)
+          }}
+          onNavigateToMembership={() => {
+            setUpgradeModalState(null)
+            handleExitPlayer()
+            if (onNavigateToMembership) {
+              onNavigateToMembership()
+            }
+          }}
+        />
       )}
     </div>
   )

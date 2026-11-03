@@ -8,7 +8,7 @@ import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
 import { ProfileMenu } from './ProfileMenu'
 import { useSubscriptionTier } from '../../../hooks/useSubscriptionTier'
 
-export type NavigationPage = 'home' | 'series' | 'movies' | 'discover' | 'livetv' | 'mylist' | 'search'
+export type NavigationPage = 'home' | 'series' | 'movies' | 'discover' | 'livetv' | 'mylist' | 'search' | 'membership'
 
 export interface NavItem {
   id: NavigationPage
@@ -22,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'discover', label: 'Discover' },
   { id: 'livetv', label: 'Live TV' },
   { id: 'mylist', label: 'My List' },
+  { id: 'membership', label: 'Membership' },
 ]
 
 export interface TopNavigationProps {
@@ -45,7 +46,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-  const { subscriptionTier, isFreeTier } = useSubscriptionTier(profile.id)
+  const { subscriptionTier } = useSubscriptionTier(profile.id)
 
   // Listen for scroll to dynamically add solid background & subtle shadow
   useEffect(() => {
@@ -149,10 +150,17 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
               <span
                 data-testid="nav-subscription-badge"
-                className={`hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase ${
-                  isFreeTier
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onNavigate('membership')
+                }}
+                title="View Membership Plans"
+                className={`hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                  subscriptionTier === 'free'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
+                    : subscriptionTier === 'standard'
+                    ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30'
+                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
                 }`}
               >
                 {subscriptionTier.toUpperCase()}
@@ -172,6 +180,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
               profile={profile}
               onSwitchProfile={onSwitchProfile}
               onManageProfile={onManageProfile}
+              onNavigateToMembership={() => onNavigate('membership')}
               onReplayIntro={onReplayIntro}
               onOpenDevShell={onOpenDevShell}
             />

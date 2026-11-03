@@ -26,7 +26,7 @@ export const SoundControl: React.FC<SoundControlProps> = ({
         onClick={toggleSound}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        aria-label={isSoundEnabled ? 'Mute startup sound' : 'Enable startup sound'}
+        aria-label={isSoundEnabled ? 'Mute sound effects' : 'Enable sound effects'}
         title={isSoundEnabled ? 'Sound is on (Click to mute)' : 'Sound is muted (Click to enable)'}
         className="group flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--bg-card)]/80 hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)] backdrop-blur-md shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/50"
       >

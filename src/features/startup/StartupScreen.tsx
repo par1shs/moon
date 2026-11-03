@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
 import { Sparkles } from 'lucide-react'
-import { SoundControl } from '../audio/SoundControl'
-import { playStartupSonicIdentity } from './StartupAudio'
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference'
 import { AmbientRisingPixels } from './components/AmbientRisingPixels'
 import { PixelFormationLogo } from './components/PixelFormationLogo'
@@ -17,19 +15,9 @@ export const StartupScreen: React.FC<StartupScreenProps> = ({
   autoAdvance = true,
 }) => {
   const reducedMotion = useReducedMotionPreference()
-  const audioTriggeredRef = useRef(false)
   const timerRef = useRef<number | null>(null)
 
   useEffect(() => {
-    // Synchronize sonic logo with visual appearance (~700ms in normal mode, ~200ms in reduced motion)
-    const audioDelay = reducedMotion ? 200 : 700
-    const audioTimer = window.setTimeout(() => {
-      if (!audioTriggeredRef.current) {
-        audioTriggeredRef.current = true
-        playStartupSonicIdentity()
-      }
-    }, audioDelay)
-
     // Complete sequence after 3.6 seconds (or 1.8 seconds if reduced motion)
     if (autoAdvance) {
       const completionDuration = reducedMotion ? 1800 : 3600
@@ -39,7 +27,6 @@ export const StartupScreen: React.FC<StartupScreenProps> = ({
     }
 
     return () => {
-      window.clearTimeout(audioTimer)
       if (timerRef.current) {
         window.clearTimeout(timerRef.current)
       }
@@ -134,9 +121,6 @@ export const StartupScreen: React.FC<StartupScreenProps> = ({
           Skip Intro
         </button>
       </div>
-
-      {/* Discreet Bottom-Right Sound Control */}
-      <SoundControl variant="floating" />
     </motion.section>
   )
 }

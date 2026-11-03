@@ -11,7 +11,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const next = audioManager.toggleSound()
     setIsSoundEnabledState(next)
     if (next) {
-      audioManager.playStartupSound(true)
+      audioManager.playProfileSelectSound(true)
     }
   }, [])
 

@@ -45,7 +45,10 @@ export const AdInsightsPage: React.FC<AdInsightsPageProps> = ({ profile, onNavig
   const totalFormatImpressions = Object.values(formatCounts).reduce((a, b) => a + b, 0) || 1
 
   return (
-    <div className="relative min-h-[calc(100vh-5rem)] w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in duration-300">
+    <div
+      data-testid="ad-insights-dashboard"
+      className="relative min-h-[calc(100vh-5rem)] w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in duration-300"
+    >
       {/* ─── Page Header & Prototype Notice ─── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
         <div className="space-y-2">

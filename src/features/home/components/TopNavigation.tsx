@@ -24,7 +24,6 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'mylist', label: 'My List' },
   { id: 'devices', label: 'Devices' },
   { id: 'membership', label: 'Membership' },
-  { id: 'ad-insights', label: 'Ad Insights' },
 ]
 
 export interface TopNavigationProps {

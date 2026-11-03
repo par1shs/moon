@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import { BarChart3 } from 'lucide-react'
 import type { Profile, AvatarConfig } from '../../profiles/types'
 import type { ContentMetadata } from '../../../types'
 import { TopNavigation, type NavigationPage } from './TopNavigation'
@@ -200,7 +201,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             <span className="hidden sm:inline">Linear &amp; On-Demand Streaming</span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap justify-center">
+            <button
+              type="button"
+              data-testid="footer-ad-insights-btn"
+              onClick={() => handleNavigate('ad-insights')}
+              className="hover:text-[var(--text-primary)] hover:underline flex items-center gap-1.5 cursor-pointer transition-colors text-amber-300 hover:text-amber-200"
+              title="Open Advertising &amp; Sponsorship Insights"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+              <span>Ad Insights</span>
+            </button>
+            <span>•</span>
             <span>
               Profile: <strong className="text-[var(--text-primary)]">{profile.name}</strong>
             </span>

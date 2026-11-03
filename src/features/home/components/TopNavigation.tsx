@@ -8,7 +8,7 @@ import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
 import { ProfileMenu } from './ProfileMenu'
 import { useSubscriptionTier } from '../../../hooks/useSubscriptionTier'
 
-export type NavigationPage = 'home' | 'series' | 'movies' | 'discover' | 'livetv' | 'mylist' | 'search' | 'membership' | 'ad-insights'
+export type NavigationPage = 'home' | 'series' | 'movies' | 'discover' | 'livetv' | 'mylist' | 'search' | 'membership' | 'ad-insights' | 'devices'
 
 export interface NavItem {
   id: NavigationPage
@@ -22,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'discover', label: 'Discover' },
   { id: 'livetv', label: 'Live TV' },
   { id: 'mylist', label: 'My List' },
+  { id: 'devices', label: 'Devices' },
   { id: 'membership', label: 'Membership' },
   { id: 'ad-insights', label: 'Ad Insights' },
 ]
@@ -87,6 +88,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                 <button
                   key={item.id}
                   type="button"
+                  data-testid={`nav-${item.id}`}
                   onClick={() => onNavigate(item.id)}
                   className={`relative px-3 py-1.5 rounded-lg text-sm transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] ${
                     isActive
@@ -183,6 +185,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
               onManageProfile={onManageProfile}
               onNavigateToMembership={() => onNavigate('membership')}
               onNavigateToAdInsights={() => onNavigate('ad-insights')}
+              onNavigateToDevices={() => onNavigate('devices')}
               onReplayIntro={onReplayIntro}
               onOpenDevShell={onOpenDevShell}
             />

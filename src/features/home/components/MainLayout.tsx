@@ -15,6 +15,7 @@ import { MyListPage } from '../pages/MyListPage'
 import { SearchPage } from '../pages/SearchPage'
 import { MembershipPage } from '../../subscription/pages/MembershipPage'
 import { AdInsightsPage } from '../../advertising/pages/AdInsightsPage'
+import { DeviceExperiencePage } from '../../devices/pages/DeviceExperiencePage'
 import { SoundControl } from '../../audio/SoundControl'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 
@@ -125,6 +126,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           <AdInsightsPage
             profile={profile}
             onNavigateHome={() => handleNavigate('home')}
+          />
+        )
+      case 'devices':
+        return (
+          <DeviceExperiencePage
+            profile={profile}
+            onNavigateToMembership={() => handleNavigate('membership')}
+            onSelectContent={(c) => setSelectedDetailContent(c)}
+            onPlayContent={(c) => setSelectedDetailContent(c)}
           />
         )
       default:

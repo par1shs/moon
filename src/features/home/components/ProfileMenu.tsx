@@ -10,6 +10,7 @@ import {
   Code2,
   Sparkles,
   BarChart3,
+  Tv,
 } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import { AvatarRenderer } from '../../profiles/components/AvatarRenderer'
@@ -26,6 +27,7 @@ export interface ProfileMenuProps {
   onManageProfile: () => void
   onNavigateToMembership?: () => void
   onNavigateToAdInsights?: () => void
+  onNavigateToDevices?: () => void
   onReplayIntro?: () => void
   onOpenDevShell?: () => void
 }
@@ -38,6 +40,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   onManageProfile,
   onNavigateToMembership,
   onNavigateToAdInsights,
+  onNavigateToDevices,
   onReplayIntro,
   onOpenDevShell,
 }) => {
@@ -223,6 +226,25 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                     Advertising Insights
                   </span>
                   <span>Demo →</span>
+                </button>
+              )}
+
+              {onNavigateToDevices && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="profile-devices-link"
+                  onClick={() => {
+                    onClose()
+                    onNavigateToDevices()
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-mono text-sky-300 hover:text-sky-200 hover:bg-[var(--border-subtle)] transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Tv className="w-3 h-3 text-sky-400" />
+                    Devices &amp; Screens
+                  </span>
+                  <span>Manage →</span>
                 </button>
               )}
             </div>

@@ -192,6 +192,15 @@ export const PLAN_COMPARISON_MATRIX: PlanFeatureComparisonRow[] = [
     free: '1 Screen',
     standard: '2 Screens',
     premium: '4 Screens',
+    tooltip: 'Maximum number of household devices streaming concurrently.',
+  },
+  {
+    category: 'Devices',
+    feature: 'Registered Devices',
+    free: 'Unlimited',
+    standard: 'Unlimited',
+    premium: 'Unlimited',
+    tooltip: 'Number of authorized phones, tablets, smart TVs, or PCs linked to your account.',
   },
 ]
 
@@ -243,6 +252,8 @@ export type RestrictedFeatureId =
   | 'bonus-content'
   | 'extended-editions'
   | 'ad-free'
+  | 'multi-screen-2'
+  | 'multi-screen-4'
 
 export interface RestrictedFeatureConfig {
   id: RestrictedFeatureId
@@ -301,6 +312,22 @@ export const RESTRICTED_FEATURES_CONFIG: Record<RestrictedFeatureId, RestrictedF
     getRestrictionReason: (_currentPlan) =>
       `Your Free plan includes advertising-supported playback. Standard or Premium removes all on-demand commercial interruptions.`,
   },
+  'multi-screen-2': {
+    id: 'multi-screen-2',
+    featureName: '2 Simultaneous Screens',
+    lowestPlanRequired: 'standard',
+    benefitDescription: 'Stream concurrently on two household screens at the same time (e.g. Living Room TV and Mobile).',
+    getRestrictionReason: (currentPlan) =>
+      `Your current ${getPlanById(currentPlan).name} plan allows 1 screen. Standard unlocks 2 simultaneous screens.`,
+  },
+  'multi-screen-4': {
+    id: 'multi-screen-4',
+    featureName: '4 Simultaneous Screens (Family Multi-Screen)',
+    lowestPlanRequired: 'premium',
+    benefitDescription: 'Stream concurrently on up to four screens across all household televisions, tablets, and phones.',
+    getRestrictionReason: (currentPlan) =>
+      `Your current ${getPlanById(currentPlan).name} plan allows up to ${SUBSCRIPTION_PLANS[currentPlan].screensSimultaneous} screen(s). Premium unlocks 4 simultaneous screens.`,
+  },
 }
 
 /**
@@ -316,7 +343,8 @@ export function isFeatureIncluded(
       featureId === 'video-1080p' ||
       featureId === 'bonus-content' ||
       featureId === 'extended-editions' ||
-      featureId === 'ad-free'
+      featureId === 'ad-free' ||
+      featureId === 'multi-screen-2'
     )
   }
   return false

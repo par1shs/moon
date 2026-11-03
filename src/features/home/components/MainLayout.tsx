@@ -62,6 +62,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             onExploreSeries={() => handleNavigate('series')}
             onExploreMovies={() => handleNavigate('movies')}
             onSelectContent={(c) => setSelectedDetailContent(c)}
+            onNavigateToMembership={() => handleNavigate('membership')}
           />
         )
       case 'series':
@@ -93,6 +94,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             profile={profile}
             initialChannelId={liveTunedChannelId}
             onSelectContent={(c) => setSelectedDetailContent(c)}
+            onNavigateToMembership={() => handleNavigate('membership')}
           />
         )
       case 'mylist':
@@ -233,6 +235,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           setSelectedDetailContent(null)
           setLiveTunedChannelId(channelId)
           handleNavigate('livetv')
+        }}
+        onNavigateToMembership={() => {
+          setSelectedDetailContent(null)
+          handleNavigate('membership')
         }}
       />
 

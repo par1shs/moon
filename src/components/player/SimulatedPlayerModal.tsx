@@ -30,6 +30,10 @@ import type { ContentMetadata, EpisodeMetadata, BonusFeaturette, Advertisement, 
 import { InteractivePanel } from '../../features/live/components/interactive/InteractivePanel'
 import { SAMPLE_INTERACTIVE_ITEMS } from '../../data/interactiveContent'
 import { useSubscriptionTier } from '../../hooks/useSubscriptionTier'
+import {
+  getFeatureUpgradePrompt,
+  isFeatureIncluded,
+} from '../../data/subscriptionPlans'
 import { getPreRollAd, getMidRollAd, isContentEligibleForAds } from '../../data/sampleAds'
 import { PlanUpgradeModal } from '../subscription/PlanUpgradeModal'
 import {
@@ -896,7 +900,9 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
           break
         case 'Escape':
           e.preventDefault()
-          if (activeSettingsTab !== 'none') {
+          if (upgradeModalState) {
+            setUpgradeModalState(null)
+          } else if (activeSettingsTab !== 'none') {
             setActiveSettingsTab('none')
           } else if (document.fullscreenElement) {
             document.exitFullscreen().catch(() => {})
@@ -924,6 +930,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
     onPreviousChannel,
     onNextChannel,
     triggerHud,
+    upgradeModalState,
   ])
 
   if (!isOpen || !content) return null
@@ -1672,13 +1679,13 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
                 type="button"
                 data-testid="player-interactive-btn"
                 onClick={() => {
-                  if (!canAccessInteractive) {
+                  if (!canAccessInteractive || !isFeatureIncluded('interactive-tv', subscriptionTier)) {
+                    const prompt = getFeatureUpgradePrompt('interactive-tv', subscriptionTier)
                     setUpgradeModalState({
                       isOpen: true,
-                      targetPlanId: 'premium',
-                      featureName: 'Interactive Television (Polls, Voting & Quizzes)',
-                      featureDescription:
-                        'Live broadcast polls, audience voting, and programme quizzes are exclusive to the Premium tier. Upgrade to participate in real-time interactive broadcasts.',
+                      targetPlanId: prompt.targetPlanId as 'standard' | 'premium',
+                      featureName: prompt.featureName,
+                      featureDescription: prompt.featureDescription,
                     })
                     return
                   }
@@ -1750,6 +1757,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
             {/* General Settings Menu */}
             <button
               type="button"
+              data-testid="player-settings-btn"
               onClick={() => setActiveSettingsTab(activeSettingsTab === 'menu' ? 'none' : 'menu')}
               className={`p-2 rounded-xl text-xs font-mono border transition-all cursor-pointer ${
                 activeSettingsTab === 'menu'
@@ -1859,6 +1867,7 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
               </button>
               <button
                 type="button"
+                data-testid="player-settings-quality-btn"
                 onClick={() => setActiveSettingsTab('quality')}
                 className="w-full px-3 py-2 rounded-xl hover:bg-white/10 flex items-center justify-between transition-colors cursor-pointer"
               >
@@ -1945,31 +1954,33 @@ export const SimulatedPlayerModal: React.FC<SimulatedPlayerModalProps> = ({
           {activeSettingsTab === 'quality' && (
             <div className="space-y-1">
               {STREAM_QUALITIES.map((q) => {
-                const is4KRestricted = q.includes('4K') && !canAccess4K
-                const is1080pRestricted = q.includes('1080p') && !canAccess1080p
+                const is4KRestricted = q.includes('4K') && (!canAccess4K || !isFeatureIncluded('video-4k', subscriptionTier))
+                const is1080pRestricted = q.includes('1080p') && (!canAccess1080p || !isFeatureIncluded('video-1080p', subscriptionTier))
+                const qualityKey = q.includes('4K') ? '4k' : q.includes('1080p') ? '1080p' : '720p'
 
                 return (
                   <button
                     key={q}
                     type="button"
+                    data-testid={`player-quality-btn-${qualityKey}`}
                     onClick={() => {
                       if (is4KRestricted) {
+                        const prompt = getFeatureUpgradePrompt('video-4k', subscriptionTier)
                         setUpgradeModalState({
                           isOpen: true,
-                          targetPlanId: 'premium',
-                          featureName: '4K HDR Master Stream Quality',
-                          featureDescription:
-                            'Ultra HD 4K HDR stream quality and Dolby Atmos 5.1 audio require a Premium plan. Upgrade to experience master-level fidelity.',
+                          targetPlanId: prompt.targetPlanId as 'standard' | 'premium',
+                          featureName: prompt.featureName,
+                          featureDescription: prompt.featureDescription,
                         })
                         return
                       }
                       if (is1080pRestricted) {
+                        const prompt = getFeatureUpgradePrompt('video-1080p', subscriptionTier)
                         setUpgradeModalState({
                           isOpen: true,
-                          targetPlanId: 'standard',
-                          featureName: '1080p Full HD Stream Quality',
-                          featureDescription:
-                            'Full HD 1080p resolution and ad-free viewing require a Standard or Premium plan. Upgrade to stream crystal-clear video.',
+                          targetPlanId: prompt.targetPlanId as 'standard' | 'premium',
+                          featureName: prompt.featureName,
+                          featureDescription: prompt.featureDescription,
                         })
                         return
                       }

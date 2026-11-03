@@ -25,6 +25,10 @@ import { SimulatedPlayerModal } from '../../components/player/SimulatedPlayerMod
 import { PlanUpgradeModal } from '../../components/subscription/PlanUpgradeModal'
 import { SponsorInfoModal } from '../../components/sponsorship/SponsorInfoModal'
 import { useSubscriptionTier } from '../../hooks/useSubscriptionTier'
+import {
+  getFeatureUpgradePrompt,
+  isFeatureIncluded,
+} from '../../data/subscriptionPlans'
 import { useWatchlist } from '../../hooks/useWatchlist'
 import { useViewingHistory } from '../../hooks/useViewingHistory'
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference'
@@ -60,6 +64,7 @@ export interface ContentDetailsModalProps {
   onPlay?: (content: ContentMetadata, episode?: EpisodeMetadata) => void
   onWatchLive?: (channelId: string) => void
   onWatchCatchUp?: (programId: string, channelId: string) => void
+  onNavigateToMembership?: () => void
 }
 
 export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
@@ -71,6 +76,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   onPlay,
   onWatchLive,
   onWatchCatchUp,
+  onNavigateToMembership,
 }) => {
   const reducedMotion = useReducedMotionPreference()
   const { isInWatchlist, toggleWatchlist } = useWatchlist(
@@ -97,7 +103,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   const [isSponsorModalOpen, setIsSponsorModalOpen] = useState(false)
 
   // Phase 6B: Subscription Tier & Feature Gating
-  const { tier, isFreeTier, setPlan } = useSubscriptionTier(profile.id)
+  const { tier, setPlan } = useSubscriptionTier(profile.id)
   const [upgradeModalState, setUpgradeModalState] = useState<{
     isOpen: boolean
     targetPlanId?: 'standard' | 'premium'
@@ -114,13 +120,13 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   }, [content, isSeries, getSeriesProgress])
 
   const handlePlayBonusFeature = (bonus: BonusFeaturette) => {
-    if (isFreeTier) {
+    if (!isFeatureIncluded('bonus-content', tier)) {
+      const prompt = getFeatureUpgradePrompt('bonus-content', tier)
       setUpgradeModalState({
         isOpen: true,
-        targetPlanId: 'standard',
-        featureName: `Bonus Feature: ${bonus.title}`,
-        featureDescription:
-          'Behind-the-scenes interviews, deleted scenes, and special featurettes require a Standard or Premium plan. Upgrade to unlock full access ad-free.',
+        targetPlanId: prompt.targetPlanId as 'standard' | 'premium',
+        featureName: `${prompt.featureName}: ${bonus.title}`,
+        featureDescription: prompt.featureDescription,
       })
       return
     }
@@ -369,13 +375,13 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                     type="button"
                     data-testid="hybrid-extended-edition-btn"
                     onClick={() => {
-                      if (isFreeTier) {
+                      if (!isFeatureIncluded('extended-editions', tier)) {
+                        const prompt = getFeatureUpgradePrompt('extended-editions', tier)
                         setUpgradeModalState({
                           isOpen: true,
-                          targetPlanId: 'standard',
-                          featureName: 'Extended Editions & Director’s Cuts',
-                          featureDescription:
-                            'Extended cuts, director editions, and alternate endings are available on Standard and Premium plans. Upgrade to unlock extended footage ad-free.',
+                          targetPlanId: prompt.targetPlanId as 'standard' | 'premium',
+                          featureName: prompt.featureName,
+                          featureDescription: prompt.featureDescription,
                         })
                         return
                       }
@@ -1079,6 +1085,13 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
           setActivePlayerEpisode(undefined)
           setActiveBonusFeature(null)
         }}
+        onNavigateToMembership={() => {
+          setIsInteractivePlayerOpen(false)
+          setActivePlayerEpisode(undefined)
+          setActiveBonusFeature(null)
+          onClose()
+          onNavigateToMembership?.()
+        }}
         onNextEpisode={(nextEp) => setActivePlayerEpisode(nextEp)}
         onProgressUpdate={updateProgress}
         onMarkCompleted={markCompleted}
@@ -1121,7 +1134,7 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
         </div>
       </Modal>
 
-      {/* Phase 6B: Contextual Plan Upgrade Modal */}
+      {/* Phase 6B & 6D: Contextual Plan Upgrade Modal */}
       {upgradeModalState && (
         <PlanUpgradeModal
           isOpen={upgradeModalState.isOpen}
@@ -1133,6 +1146,13 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
           onConfirmPlanChange={(planId, freq) => {
             setPlan(planId, freq)
             setUpgradeModalState(null)
+          }}
+          onNavigateToMembership={() => {
+            setUpgradeModalState(null)
+            onClose()
+            if (onNavigateToMembership) {
+              onNavigateToMembership()
+            }
           }}
         />
       )}

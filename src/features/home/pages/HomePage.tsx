@@ -26,6 +26,7 @@ export interface HomePageProps {
   onExploreSeries?: () => void
   onExploreMovies?: () => void
   onSelectContent?: (content: ContentMetadata) => void
+  onNavigateToMembership?: () => void
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -33,6 +34,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onExploreSeries,
   onExploreMovies,
   onSelectContent,
+  onNavigateToMembership,
 }) => {
   // 1. Data hooks per profile (profile-isolated)
   const { isInWatchlist, toggleWatchlist, watchlistIds } = useWatchlist(
@@ -569,6 +571,10 @@ export const HomePage: React.FC<HomePageProps> = ({
         episode={activePlayback?.episode}
         initialProgress={activePlayback?.progress || 0}
         onClose={() => setActivePlayback(null)}
+        onNavigateToMembership={() => {
+          setActivePlayback(null)
+          onNavigateToMembership?.()
+        }}
         onNextEpisode={(nextEp) => {
           if (activePlayback) {
             setActivePlayback({

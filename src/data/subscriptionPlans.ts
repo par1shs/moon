@@ -232,3 +232,122 @@ export const SUBSCRIPTION_FAQS: SubscriptionFAQ[] = [
       '4K HDR and Dolby Atmos are available on compatible Smart TVs, 4K desktop displays, and mobile devices equipped with HDR10/Dolby Vision hardware decoders. Our video stream engine automatically adapts bitrate for seamless playback.',
   },
 ]
+
+/**
+ * ─── Phase 6D: Centralised Restricted Features & Upgrade Prompt Configuration ───
+ */
+export type RestrictedFeatureId =
+  | 'video-1080p'
+  | 'video-4k'
+  | 'interactive-tv'
+  | 'bonus-content'
+  | 'extended-editions'
+  | 'ad-free'
+
+export interface RestrictedFeatureConfig {
+  id: RestrictedFeatureId
+  featureName: string
+  lowestPlanRequired: 'standard' | 'premium'
+  benefitDescription: string
+  getRestrictionReason: (currentPlan: SubscriptionPlanId) => string
+}
+
+export const RESTRICTED_FEATURES_CONFIG: Record<RestrictedFeatureId, RestrictedFeatureConfig> = {
+  'video-1080p': {
+    id: 'video-1080p',
+    featureName: '1080p Full HD Video Quality',
+    lowestPlanRequired: 'standard',
+    benefitDescription: 'Stream crystal-clear 1080p Full HD resolution with enhanced dynamic bitrate and 5.1 spatial surround sound.',
+    getRestrictionReason: (currentPlan) =>
+      `Your current ${getPlanById(currentPlan).name} plan streams in standard 720p HD. Standard or Premium is required for 1080p Full HD streaming.`,
+  },
+  'video-4k': {
+    id: 'video-4k',
+    featureName: '4K HDR Master & Dolby Atmos',
+    lowestPlanRequired: 'premium',
+    benefitDescription: 'Experience master-grade 4K Ultra-HD HDR cinema paired with multi-channel Dolby Atmos 5.1 spatial acoustics.',
+    getRestrictionReason: (currentPlan) =>
+      `Your current ${getPlanById(currentPlan).name} plan is capped at 1080p. The Premium plan is required to unlock native 4K HDR and spatial audio.`,
+  },
+  'interactive-tv': {
+    id: 'interactive-tv',
+    featureName: 'Interactive Television (Polls, Voting & Quizzes)',
+    lowestPlanRequired: 'premium',
+    benefitDescription: 'Vote in live audience polls, participate in real-time contestant voting, and compete on programme trivia quizzes.',
+    getRestrictionReason: (currentPlan) =>
+      `Your current ${getPlanById(currentPlan).name} plan does not include interactive broadcast telemetry. Premium unlocks live audience participation.`,
+  },
+  'bonus-content': {
+    id: 'bonus-content',
+    featureName: 'Behind-the-Scenes & Bonus Featurettes',
+    lowestPlanRequired: 'standard',
+    benefitDescription: 'Unlock behind-the-scenes production footage, deleted scenes, gag reels, and exclusive creator commentary.',
+    getRestrictionReason: (_currentPlan) =>
+      `Bonus featurettes are exclusive to Standard and Premium memberships with ad-free on-demand playback.`,
+  },
+  'extended-editions': {
+    id: 'extended-editions',
+    featureName: "Extended Editions & Director's Cuts",
+    lowestPlanRequired: 'standard',
+    benefitDescription: 'Watch unabridged director cuts, alternate endings, and IMAX-enhanced editions with expanded aspect ratios.',
+    getRestrictionReason: (_currentPlan) =>
+      `Extended editions and director cuts require a Standard or Premium membership with unlimited on-demand streaming.`,
+  },
+  'ad-free': {
+    id: 'ad-free',
+    featureName: '100% Ad-Free Streaming',
+    lowestPlanRequired: 'standard',
+    benefitDescription: 'Eliminate all conventional pre-roll and mid-roll video advertisements for continuous, uninterrupted viewing.',
+    getRestrictionReason: (_currentPlan) =>
+      `Your Free plan includes advertising-supported playback. Standard or Premium removes all on-demand commercial interruptions.`,
+  },
+}
+
+/**
+ * Checks whether a restricted feature is already included in a plan
+ */
+export function isFeatureIncluded(
+  featureId: RestrictedFeatureId,
+  currentPlan: SubscriptionPlanId
+): boolean {
+  if (currentPlan === 'premium') return true
+  if (currentPlan === 'standard') {
+    return (
+      featureId === 'video-1080p' ||
+      featureId === 'bonus-content' ||
+      featureId === 'extended-editions' ||
+      featureId === 'ad-free'
+    )
+  }
+  return false
+}
+
+/**
+ * Returns contextual upgrade prompt details for a restricted feature
+ */
+export function getFeatureUpgradePrompt(
+  featureId: RestrictedFeatureId,
+  currentPlan: SubscriptionPlanId
+): {
+  targetPlanId: SubscriptionPlanId
+  featureName: string
+  featureDescription: string
+  benefitDescription: string
+} {
+  const config = RESTRICTED_FEATURES_CONFIG[featureId]
+  if (!config) {
+    return {
+      targetPlanId: 'premium',
+      featureName: 'Premium Feature',
+      featureDescription: 'Upgrade your plan to unlock this feature.',
+      benefitDescription: 'Unlock all features with Premium.',
+    }
+  }
+
+  return {
+    targetPlanId: config.lowestPlanRequired,
+    featureName: config.featureName,
+    featureDescription: config.getRestrictionReason(currentPlan),
+    benefitDescription: config.benefitDescription,
+  }
+}

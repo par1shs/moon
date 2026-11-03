@@ -40,12 +40,14 @@ export interface LiveTVPageProps {
   profile?: Profile
   onSelectContent?: (content: ContentMetadata) => void
   initialChannelId?: string
+  onNavigateToMembership?: () => void
 }
 
 export const LiveTVPage: React.FC<LiveTVPageProps> = ({
   profile,
   onSelectContent,
   initialChannelId,
+  onNavigateToMembership,
 }) => {
   // Navigation & Filter state
   const [selectedCategory, setSelectedCategory] = useState('All Channels')
@@ -717,6 +719,10 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
         onNextChannel={handleNextChannel}
         profileId={profile?.id || 'default'}
         onExploreOTT={handleOpenLinkedContent}
+        onNavigateToMembership={() => {
+          setIsLivePlayerOpen(false)
+          onNavigateToMembership?.()
+        }}
       />
 
       {/* ─── Full-Screen Catch-Up Video Player Experience ─── */}
@@ -728,6 +734,10 @@ export const LiveTVPage: React.FC<LiveTVPageProps> = ({
           catchUpProgram={catchUpPlayerState.catchUpProgram}
           profileId={profile?.id || 'default'}
           onClose={() => setIsCatchUpPlayerOpen(false)}
+          onNavigateToMembership={() => {
+            setIsCatchUpPlayerOpen(false)
+            onNavigateToMembership?.()
+          }}
           onExploreOTT={handleOpenLinkedContent}
           onProgressUpdate={(contentId, progress, details) => {
             updateProgress(contentId, progress, details)

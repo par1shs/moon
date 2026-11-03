@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   Sparkles,
@@ -38,6 +38,17 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotionPreference()
+  const [selectedFrequency, setSelectedFrequency] = useState<BillingFrequency>(
+    targetBillingFrequency || 'monthly'
+  )
+  const [prevBillingProp, setPrevBillingProp] = useState(targetBillingFrequency)
+
+  if (targetBillingFrequency !== prevBillingProp) {
+    setPrevBillingProp(targetBillingFrequency)
+    setSelectedFrequency(targetBillingFrequency || 'monthly')
+  }
+
+  const currentPlan = getPlanById(currentPlanId)
   const targetPlan = getPlanById(targetPlanId)
   const isDowngrade =
     (currentPlanId === 'premium' && targetPlanId !== 'premium') ||
@@ -50,18 +61,25 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     if (!isOpen) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        onClose()
+      }
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
   }, [isOpen, onClose])
 
   if (!isOpen) return null
 
   const handleConfirm = () => {
-    onConfirmPlanChange(targetPlanId, targetBillingFrequency)
+    onConfirmPlanChange(targetPlanId, selectedFrequency)
     onClose()
   }
+
+  const displayPrice =
+    selectedFrequency === 'annual' ? targetPlan.annualPrice : targetPlan.monthlyPrice
+  const pricePeriod = selectedFrequency === 'annual' ? '/yr' : '/mo'
 
   return (
     <AnimatePresence>
@@ -81,7 +99,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: reducedMotion ? 1 : 0.95, y: reducedMotion ? 0 : 16 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="relative w-full max-w-lg rounded-3xl bg-[var(--bg-card)]/95 border border-[var(--border-subtle)] shadow-[0_24px_60px_rgba(0,0,0,0.85)] p-6 sm:p-8 space-y-6 overflow-hidden select-none"
+          className="relative w-full max-w-lg rounded-3xl bg-[var(--bg-card)]/95 border border-[var(--border-subtle)] shadow-[0_24px_60px_rgba(0,0,0,0.85)] p-6 sm:p-8 space-y-5 overflow-hidden select-none"
         >
           {/* Ambient Corner Aura */}
           <div
@@ -92,6 +110,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           {/* Close Icon Button */}
           <button
             type="button"
+            data-testid="upgrade-modal-close-btn"
             onClick={onClose}
             aria-label="Close dialog"
             className="absolute top-5 right-5 p-2 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
@@ -99,11 +118,12 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             <X className="w-4 h-4" />
           </button>
 
-          {/* Header Icon & Title */}
+          {/* Header Icon & Plan Badges */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span
-                className="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider border flex items-center gap-1.5"
+                data-testid="upgrade-badge-recommended"
+                className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border flex items-center gap-1.5"
                 style={{
                   backgroundColor: `${targetPlan.highlightColor}20`,
                   borderColor: `${targetPlan.highlightColor}50`,
@@ -112,22 +132,23 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
               >
                 {isDowngrade ? (
                   <>
-                    <Sliders className="w-3.5 h-3.5" />
-                    <span>Change Plan</span>
+                    <Sliders className="w-3 h-3" />
+                    <span>Plan Switch: {targetPlan.name.toUpperCase()}</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Plan Upgrade Required</span>
+                    <Sparkles className="w-3 h-3" />
+                    <span>Recommended Upgrade: {targetPlan.name.toUpperCase()}</span>
                   </>
                 )}
               </span>
 
-              {targetPlan.badgeText && !isDowngrade && (
-                <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-wider">
-                  {targetPlan.badgeText}
-                </span>
-              )}
+              <span
+                data-testid="upgrade-badge-current"
+                className="text-[10px] font-mono text-[var(--text-muted)]"
+              >
+                Current: <strong className="text-[var(--text-primary)]">{currentPlan.name}</strong>
+              </span>
             </div>
 
             <h3
@@ -138,17 +159,22 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 ? `Switch to ${targetPlan.name} Plan`
                 : featureName
                 ? `Unlock with ${targetPlan.name}`
-                : `Upgrade to PIXEL+ ${targetPlan.name}`}
+                : `Upgrade to ${targetPlan.name}`}
             </h3>
 
             {/* Contextual description of the restricted feature */}
             {featureName ? (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs font-mono flex items-start gap-2.5">
-                <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold text-amber-300 block">{featureName}</span>
-                  <span>{featureDescription || 'This feature requires a higher tier plan to access.'}</span>
+              <div
+                data-testid="upgrade-feature-callout"
+                className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs font-mono space-y-1"
+              >
+                <div className="flex items-center gap-2 font-bold text-amber-300">
+                  <ShieldAlert className="w-4 h-4 shrink-0" />
+                  <span>{featureName}</span>
                 </div>
+                <p className="leading-relaxed pl-6 text-amber-200/90">
+                  {featureDescription || 'This feature requires a higher tier plan to access.'}
+                </p>
               </div>
             ) : (
               <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
@@ -157,12 +183,45 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             )}
           </div>
 
+          {/* Billing Frequency Toggle */}
+          {targetPlan.monthlyPrice > 0 && (
+            <div className="flex items-center justify-between p-1 rounded-xl bg-[var(--bg-main)]/80 border border-[var(--border-subtle)]">
+              <button
+                type="button"
+                data-testid="billing-toggle-monthly"
+                onClick={() => setSelectedFrequency('monthly')}
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
+                  selectedFrequency === 'monthly'
+                    ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] shadow-xs'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                Monthly (₹{targetPlan.monthlyPrice}/mo)
+              </button>
+              <button
+                type="button"
+                data-testid="billing-toggle-annual"
+                onClick={() => setSelectedFrequency('annual')}
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  selectedFrequency === 'annual'
+                    ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] shadow-xs'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                <span>Annual (₹{targetPlan.annualPrice.toLocaleString('en-IN')}/yr)</span>
+                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">
+                  Save ~17%
+                </span>
+              </button>
+            </div>
+          )}
+
           {/* Plan Summary Card */}
           <div className="p-4 sm:p-5 rounded-2xl bg-[var(--bg-elevated)]/70 border border-[var(--border-subtle)] space-y-4">
             <div className="flex items-baseline justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <span className="text-xs font-mono text-[var(--text-muted)] block uppercase">
-                  Selected Plan
+                <span className="text-[11px] font-mono text-[var(--text-muted)] block uppercase">
+                  Target Plan
                 </span>
                 <span className="font-display font-bold text-xl text-[var(--text-primary)]">
                   {targetPlan.name}
@@ -171,17 +230,14 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
               <div className="text-right">
                 <div className="font-display font-black text-2xl sm:text-3xl text-[var(--text-primary)]">
-                  {targetPlan.currency}
-                  {targetBillingFrequency === 'annual'
-                    ? targetPlan.annualPrice
-                    : targetPlan.monthlyPrice}
+                  {targetPlan.currency}{displayPrice.toLocaleString('en-IN')}
                   <span className="text-xs font-mono text-[var(--text-muted)] font-normal">
-                    {targetBillingFrequency === 'annual' ? '/yr' : '/mo'}
+                    {pricePeriod}
                   </span>
                 </div>
-                {targetBillingFrequency === 'annual' && targetPlan.monthlyPrice > 0 && (
-                  <span className="text-[11px] font-mono text-emerald-400 block font-semibold">
-                    ~{targetPlan.currency}{monthlyEquivalent}/mo • Save {targetPlan.currency}{savingsAmount}
+                {selectedFrequency === 'annual' && targetPlan.monthlyPrice > 0 && (
+                  <span className="text-[10px] font-mono text-emerald-400 block font-semibold">
+                    ~{targetPlan.currency}{monthlyEquivalent}/mo • Save {targetPlan.currency}{savingsAmount} (2 months free)
                   </span>
                 )}
               </div>
@@ -189,7 +245,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
             {/* Key benefits list */}
             <div className="space-y-2">
-              <span className="text-xs font-mono text-[var(--accent-secondary)] uppercase tracking-wider block">
+              <span className="text-xs font-mono text-[var(--accent-secondary)] uppercase tracking-wider block font-semibold">
                 What changes with this plan:
               </span>
               <ul className="space-y-1.5 text-xs text-[var(--text-secondary)]">
@@ -206,18 +262,18 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           {/* Prototype disclaimer pill */}
           <div className="p-2.5 rounded-xl bg-[var(--bg-main)]/60 border border-[var(--border-subtle)] text-center">
             <span className="text-[11px] font-mono text-[var(--text-muted)]">
-              Prototype Simulation: Changes update your profile immediately. No real billing or payment method needed.
+              Interactive Prototype: Plan changes update your profile immediately without payment processing or recurring fees.
             </span>
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
             <Button
               variant="primary"
               size="md"
               data-testid="confirm-plan-change-btn"
               onClick={handleConfirm}
-              className="w-full sm:flex-1 justify-center py-3 font-display font-bold text-sm tracking-wide"
+              className="w-full sm:flex-1 justify-center py-2.5 font-display font-bold text-sm tracking-wide"
             >
               {isDowngrade ? `Confirm Switch to ${targetPlan.name}` : `Upgrade to ${targetPlan.name} Now`}
             </Button>

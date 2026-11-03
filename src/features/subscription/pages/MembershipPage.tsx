@@ -42,6 +42,7 @@ export const MembershipPage: React.FC<MembershipPageProps> = ({
     setPlan,
     cancelSubscription,
     reactivateSubscription,
+    resetToFree,
   } = useSubscriptionTier(profile.id)
 
   const [selectedBillingFrequency, setSelectedBillingFrequency] =
@@ -214,6 +215,12 @@ export const MembershipPage: React.FC<MembershipPageProps> = ({
                     >
                       Active Plan
                     </span>
+                  ) : plan.id === 'standard' ? (
+                    <span
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-sky-500/15 border border-sky-500/40 text-sky-300 shadow-xs"
+                    >
+                      RECOMMENDED
+                    </span>
                   ) : plan.badgeText ? (
                     <span
                       className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border"
@@ -342,7 +349,7 @@ export const MembershipPage: React.FC<MembershipPageProps> = ({
 
           {/* Cancellation / Reactivation action */}
           {tier !== 'free' && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               {subscription.status === 'cancelled' ? (
                 <Button
                   variant="primary"
@@ -365,6 +372,16 @@ export const MembershipPage: React.FC<MembershipPageProps> = ({
                   Cancel Plan
                 </Button>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                data-testid="debug-reset-free-btn"
+                onClick={resetToFree}
+                className="text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-dashed border-[var(--border-subtle)]"
+                title="Prototype simulation: immediately revert to Free tier"
+              >
+                Reset to Free (Debug)
+              </Button>
             </div>
           )}
         </div>

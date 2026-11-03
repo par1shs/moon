@@ -195,7 +195,7 @@ export function useSubscriptionTier(profileId?: string) {
     setPlan(nextTier)
   }, [subscription.planId, setPlan])
 
-  // Cancel subscription action
+  // Cancel subscription action (retains benefits until renewal date)
   const cancelSubscription = useCallback(() => {
     const updated: SubscriptionInfo = {
       ...subscription,
@@ -216,7 +216,28 @@ export function useSubscriptionTier(profileId?: string) {
     persistSubscription(updated)
   }, [subscription, persistSubscription])
 
+  // Explicit prototype/debug reset to Free
+  const resetToFree = useCallback(() => {
+    setPlan('free', 'monthly')
+  }, [setPlan])
+
   const plan = useMemo(() => getPlanById(subscription.planId), [subscription.planId])
+
+  const [currentTimestamp] = useState(() => Date.now())
+
+  const isCancellationPending = Boolean(
+    subscription.cancelAtPeriodEnd && subscription.planId !== 'free'
+  )
+
+  const daysUntilRenewal = useMemo(() => {
+    if (!subscription.renewalDateISO) return 30
+    try {
+      const msDiff = new Date(subscription.renewalDateISO).getTime() - currentTimestamp
+      return Math.max(0, Math.ceil(msDiff / (1000 * 60 * 60 * 24)))
+    } catch {
+      return 30
+    }
+  }, [subscription.renewalDateISO, currentTimestamp])
 
   return {
     subscription,
@@ -233,10 +254,13 @@ export function useSubscriptionTier(profileId?: string) {
     canAccessInteractive: subscription.planId === 'premium',
     canAccessBonus: subscription.planId !== 'free',
     canAccessFullCatalogue: subscription.planId !== 'free',
+    isCancellationPending,
+    daysUntilRenewal,
     setPlan,
     setTier,
     toggleTier,
     cancelSubscription,
     reactivateSubscription,
+    resetToFree,
   }
 }

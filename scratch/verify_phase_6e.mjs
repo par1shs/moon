@@ -20,6 +20,7 @@ async function waitForSelector(cdp, selector, maxRetries = 30) {
 }
 
 async function clickNavDevices(cdp) {
+  await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' }); window.dispatchEvent(new Event('scroll'));`)
   const ready = await waitForSelector(cdp, '[data-testid="nav-devices"]', 30)
   if (!ready) throw new Error('Could not find [data-testid="nav-devices"]')
   await cdp.eval(`document.querySelector('[data-testid="nav-devices"]').click()`)

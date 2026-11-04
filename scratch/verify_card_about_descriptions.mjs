@@ -140,7 +140,7 @@ async function run() {
     if (!hasNav) throw new Error('Top navigation failed to load')
 
     // Helper to test a card's About section
-    async function testCardAbout(cardId, expectedTitleFragment) {
+    async function testCardAbout(cardId, _expectedTitleFragment) {
       console.log(`\nTesting card [${cardId}]...`)
       // Click details button on card
       const clicked = await client.eval(`(() => {

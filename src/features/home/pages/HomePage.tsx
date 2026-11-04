@@ -13,6 +13,7 @@ import { generateRecommendations } from '../../recommendations/recommendationEng
 import { GenrePreferencesModal } from '../../profiles/components/GenrePreferencesModal'
 import { SimulatedPlayerModal } from '../../../components/player/SimulatedPlayerModal'
 import { SponsorInfoModal } from '../../../components/sponsorship/SponsorInfoModal'
+import { SectionReveal } from '../../cinematic/components/SectionReveal'
 import { SAMPLE_SPONSORS } from '../../../data/sampleAds'
 import {
   ALL_DISCOVERY_TITLES,
@@ -103,87 +104,139 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div className="space-y-8 sm:space-y-10 pb-12 select-none">
       {/* ─── Hero Cinematic Showcase Banner ─── */}
-      <HeroBanner
-        content={heroContent}
-        onPlay={(item) => handlePlayContent(item, 0)}
-        onInfo={(item) => handleOpenDetails(item)}
-        onAddToList={(item) => toggleWatchlist(item.id)}
-        isSaved={isInWatchlist(heroContent.id)}
-      />
+      <SectionReveal data-testid="reveal-hero">
+        <HeroBanner
+          content={heroContent}
+          onPlay={(item) => handlePlayContent(item, 0)}
+          onInfo={(item) => handleOpenDetails(item)}
+          onAddToList={(item) => toggleWatchlist(item.id)}
+          isSaved={isInWatchlist(heroContent.id)}
+        />
+      </SectionReveal>
 
       {/* ─── Section 1: Continue Watching (Landscape) ─── */}
       {continueWatchingList.length > 0 && (
-        <HorizontalCarousel
-          title="Continue Watching"
-          eyebrow="RESUME PLAYBACK"
-          subtitle={`Jump back in where you left off, ${profile.name}`}
-        >
-          {continueWatchingList.map(({ content, history: h, remainingTime }) => (
-            <ContentCard
-              key={`cw-${content.id}`}
-              content={content}
-              variant="landscape"
-              remainingTime={remainingTime}
-              isSaved={isInWatchlist(content.id)}
-              onPlay={() => handlePlayContent(content, h.progress)}
-              onInfo={() => handleOpenDetails(content)}
-              onAddToList={() => toggleWatchlist(content.id)}
-              onRemove={() => removeFromHistory(content.id)}
-            />
-          ))}
-        </HorizontalCarousel>
+        <SectionReveal data-testid="reveal-continue-watching">
+          <HorizontalCarousel
+            title="Continue Watching"
+            eyebrow="RESUME PLAYBACK"
+            subtitle={`Jump back in where you left off, ${profile.name}`}
+          >
+            {continueWatchingList.map(({ content, history: h, remainingTime }) => (
+              <ContentCard
+                key={`cw-${content.id}`}
+                content={content}
+                variant="landscape"
+                remainingTime={remainingTime}
+                isSaved={isInWatchlist(content.id)}
+                onPlay={() => handlePlayContent(content, h.progress)}
+                onInfo={() => handleOpenDetails(content)}
+                onAddToList={() => toggleWatchlist(content.id)}
+                onRemove={() => removeFromHistory(content.id)}
+              />
+            ))}
+          </HorizontalCarousel>
+        </SectionReveal>
       )}
 
       {/* ─── Phase 5D: Airing on Live TV & Catch-up Hybrid Shelf ─── */}
       {hybridTitles.length > 0 && (
-        <div data-testid="hybrid-discovery-shelf">
-          <HorizontalCarousel
-            title="Airing on Live TV & Catch-up"
-            eyebrow="HYBRID BROADCAST"
-            subtitle="Titles currently broadcasting or available on Catch-up television"
-          >
-            {hybridTitles.map((item) => (
-              <ContentCard
-                key={`hybrid-${item.id}`}
-                content={item}
-                variant="landscape"
-                isSaved={isInWatchlist(item.id)}
-                onPlay={() => handlePlayContent(item, 0)}
-                onInfo={() => handleOpenDetails(item)}
-                onAddToList={() => toggleWatchlist(item.id)}
-              />
-            ))}
-          </HorizontalCarousel>
-        </div>
+        <SectionReveal data-testid="reveal-hybrid">
+          <div data-testid="hybrid-discovery-shelf">
+            <HorizontalCarousel
+              title="Airing on Live TV & Catch-up"
+              eyebrow="HYBRID BROADCAST"
+              subtitle="Titles currently broadcasting or available on Catch-up television"
+            >
+              {hybridTitles.map((item) => (
+                <ContentCard
+                  key={`hybrid-${item.id}`}
+                  content={item}
+                  variant="landscape"
+                  isSaved={isInWatchlist(item.id)}
+                  onPlay={() => handlePlayContent(item, 0)}
+                  onInfo={() => handleOpenDetails(item)}
+                  onAddToList={() => toggleWatchlist(item.id)}
+                />
+              ))}
+            </HorizontalCarousel>
+          </div>
+        </SectionReveal>
       )}
 
       {/* ─── Phase 6C: Sponsored Showcase Shelf ─── */}
       {sponsoredTitles.length > 0 && (
-        <div data-testid="sponsored-shelf" className="space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-semibold flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span>SPONSORED SHOWCASE • PRESENTED BY APEX QUANTUM DYNAMICS</span>
-            </span>
-            <button
-              type="button"
-              data-testid="sponsored-shelf-cta"
-              onClick={() => setSelectedSponsor(SAMPLE_SPONSORS.apex)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
+        <SectionReveal data-testid="reveal-sponsored">
+          <div data-testid="sponsored-shelf" className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-semibold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span>SPONSORED SHOWCASE • PRESENTED BY APEX QUANTUM DYNAMICS</span>
+              </span>
+              <button
+                type="button"
+                data-testid="sponsored-shelf-cta"
+                onClick={() => setSelectedSponsor(SAMPLE_SPONSORS.apex)}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
+              >
+                <span>Partner Info</span>
+                <ExternalLink className="w-3 h-3" />
+              </button>
+            </div>
+
+            <HorizontalCarousel
+              title="Featured Spotlight • Presented by Apex Quantum"
+              eyebrow="SPONSORED SHOWCASE"
+              subtitle="Groundbreaking cinematic storytelling presented in partnership with Apex Quantum Dynamics"
             >
-              <span>Partner Info</span>
-              <ExternalLink className="w-3 h-3" />
-            </button>
+              {sponsoredTitles.map((item) => (
+                <ContentCard
+                  key={`sponsored-${item.id}`}
+                  content={item}
+                  variant="portrait"
+                  isSaved={isInWatchlist(item.id)}
+                  onPlay={() => handlePlayContent(item, 0)}
+                  onInfo={() => handleOpenDetails(item)}
+                  onAddToList={() => toggleWatchlist(item.id)}
+                />
+              ))}
+            </HorizontalCarousel>
+          </div>
+        </SectionReveal>
+      )}
+
+      {/* ─── Section 2: Top Picks for [Profile Name] ─── */}
+      <SectionReveal data-testid="reveal-top-picks">
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--accent-secondary)] font-semibold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+                <span>PERSONALISED FOR YOU</span>
+              </span>
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+                Top Picks for {profile.name}
+              </h2>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPreferencesModalOpen(true)}
+              leftIcon={<SlidersHorizontal className="w-3.5 h-3.5 text-[var(--accent-primary)]" />}
+            >
+              <span>Interests: {preferredGenres.slice(0, 2).join(', ')}</span>
+            </Button>
           </div>
 
           <HorizontalCarousel
-            title="Featured Spotlight • Presented by Apex Quantum"
-            eyebrow="SPONSORED SHOWCASE"
-            subtitle="Groundbreaking cinematic storytelling presented in partnership with Apex Quantum Dynamics"
+            title=""
+            eyebrow=""
+            subtitle=""
           >
-            {sponsoredTitles.map((item) => (
+            {recommendations.topPicks.map((item) => (
               <ContentCard
-                key={`sponsored-${item.id}`}
+                key={`top-${item.id}`}
                 content={item}
                 variant="portrait"
                 isSaved={isInWatchlist(item.id)}
@@ -194,103 +247,87 @@ export const HomePage: React.FC<HomePageProps> = ({
             ))}
           </HorizontalCarousel>
         </div>
-      )}
-
-      {/* ─── Section 2: Top Picks for [Profile Name] ─── */}
-      <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
-          <div>
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--accent-secondary)] font-semibold flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-              <span>PERSONALISED FOR YOU</span>
-            </span>
-            <h2 className="font-display text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
-              Top Picks for {profile.name}
-            </h2>
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsPreferencesModalOpen(true)}
-            leftIcon={<SlidersHorizontal className="w-3.5 h-3.5 text-[var(--accent-primary)]" />}
-          >
-            <span>Interests: {preferredGenres.slice(0, 2).join(', ')}</span>
-          </Button>
-        </div>
-
-        <HorizontalCarousel
-          title=""
-          eyebrow=""
-          subtitle=""
-        >
-          {recommendations.topPicks.map((item) => (
-            <ContentCard
-              key={`top-${item.id}`}
-              content={item}
-              variant="portrait"
-              isSaved={isInWatchlist(item.id)}
-              onPlay={() => handlePlayContent(item, 0)}
-              onInfo={() => handleOpenDetails(item)}
-              onAddToList={() => toggleWatchlist(item.id)}
-            />
-          ))}
-        </HorizontalCarousel>
-      </div>
+      </SectionReveal>
 
       {/* ─── Section 3: Because You Watched... (Dynamic Similarity) ─── */}
       {recommendations.becauseYouWatched && (
-        <HorizontalCarousel
-          title={`Because You Watched ${recommendations.becauseYouWatched.sourceTitle.title}`}
-          eyebrow="MORE LIKE THIS"
-          subtitle={`Similar storytelling, worldbuilding, and themes tailored to your taste`}
-        >
-          {recommendations.becauseYouWatched.recommendations.map((item) => (
-            <ContentCard
-              key={`byw-${item.id}`}
-              content={item}
-              variant="portrait"
-              isSaved={isInWatchlist(item.id)}
-              onPlay={() => handlePlayContent(item, 0)}
-              onInfo={() => handleOpenDetails(item)}
-              onAddToList={() => toggleWatchlist(item.id)}
-            />
-          ))}
-        </HorizontalCarousel>
+        <SectionReveal data-testid="reveal-because-you-watched">
+          <HorizontalCarousel
+            title={`Because You Watched ${recommendations.becauseYouWatched.sourceTitle.title}`}
+            eyebrow="MORE LIKE THIS"
+            subtitle={`Similar storytelling, worldbuilding, and themes tailored to your taste`}
+          >
+            {recommendations.becauseYouWatched.recommendations.map((item) => (
+              <ContentCard
+                key={`byw-${item.id}`}
+                content={item}
+                variant="portrait"
+                isSaved={isInWatchlist(item.id)}
+                onPlay={() => handlePlayContent(item, 0)}
+                onInfo={() => handleOpenDetails(item)}
+                onAddToList={() => toggleWatchlist(item.id)}
+              />
+            ))}
+          </HorizontalCarousel>
+        </SectionReveal>
       )}
 
       {/* ─── Section 4: Trending in Your Interests ─── */}
       {recommendations.trendingInInterests && (
-        <HorizontalCarousel
-          title={`Trending in ${recommendations.trendingInInterests.genreName}`}
-          eyebrow="HOT IN YOUR TASTE PROFILE"
-          subtitle={`The most watched titles in your top preferred category this week`}
-        >
-          {recommendations.trendingInInterests.titles.map((item) => (
-            <ContentCard
-              key={`trend-${item.id}`}
-              content={item}
-              variant="portrait"
-              isSaved={isInWatchlist(item.id)}
-              onPlay={() => handlePlayContent(item, 0)}
-              onInfo={() => handleOpenDetails(item)}
-              onAddToList={() => toggleWatchlist(item.id)}
-            />
-          ))}
-        </HorizontalCarousel>
+        <SectionReveal data-testid="reveal-trending">
+          <HorizontalCarousel
+            title={`Trending in ${recommendations.trendingInInterests.genreName}`}
+            eyebrow="HOT IN YOUR TASTE PROFILE"
+            subtitle={`The most watched titles in your top preferred category this week`}
+          >
+            {recommendations.trendingInInterests.titles.map((item) => (
+              <ContentCard
+                key={`trend-${item.id}`}
+                content={item}
+                variant="portrait"
+                isSaved={isInWatchlist(item.id)}
+                onPlay={() => handlePlayContent(item, 0)}
+                onInfo={() => handleOpenDetails(item)}
+                onAddToList={() => toggleWatchlist(item.id)}
+              />
+            ))}
+          </HorizontalCarousel>
+        </SectionReveal>
       )}
 
       {/* ─── Section 5: Favourite Genre Shelves ─── */}
       {recommendations.favouriteGenreShelves.map((shelf) => (
+        <SectionReveal key={`fav-${shelf.genre}`} data-testid="reveal-genre-shelf">
+          <HorizontalCarousel
+            title={shelf.title}
+            eyebrow={shelf.eyebrow}
+            subtitle={`Curated selections from our ${shelf.genre} library`}
+          >
+            {shelf.titles.map((item) => (
+              <ContentCard
+                key={`fav-${shelf.genre}-${item.id}`}
+                content={item}
+                variant="portrait"
+                isSaved={isInWatchlist(item.id)}
+                onPlay={() => handlePlayContent(item, 0)}
+                onInfo={() => handleOpenDetails(item)}
+                onAddToList={() => toggleWatchlist(item.id)}
+              />
+            ))}
+          </HorizontalCarousel>
+        </SectionReveal>
+      ))}
+
+      {/* ─── Section 6: Recommended for You (Diverse Discovery) ─── */}
+      <SectionReveal data-testid="reveal-recommended">
         <HorizontalCarousel
-          key={`fav-${shelf.genre}`}
-          title={shelf.title}
-          eyebrow={shelf.eyebrow}
-          subtitle={`Curated selections from our ${shelf.genre} library`}
+          title="Recommended for You"
+          eyebrow="EXPAND YOUR HORIZONS"
+          subtitle="Unexplored stories matched to your viewing history and watchlist"
         >
-          {shelf.titles.map((item) => (
+          {recommendations.recommendedForYou.map((item) => (
             <ContentCard
-              key={`fav-${shelf.genre}-${item.id}`}
+              key={`rec-${item.id}`}
               content={item}
               variant="portrait"
               isSaved={isInWatchlist(item.id)}
@@ -300,108 +337,98 @@ export const HomePage: React.FC<HomePageProps> = ({
             />
           ))}
         </HorizontalCarousel>
-      ))}
-
-      {/* ─── Section 6: Recommended for You (Diverse Discovery) ─── */}
-      <HorizontalCarousel
-        title="Recommended for You"
-        eyebrow="EXPAND YOUR HORIZONS"
-        subtitle="Unexplored stories matched to your viewing history and watchlist"
-      >
-        {recommendations.recommendedForYou.map((item) => (
-          <ContentCard
-            key={`rec-${item.id}`}
-            content={item}
-            variant="portrait"
-            isSaved={isInWatchlist(item.id)}
-            onPlay={() => handlePlayContent(item, 0)}
-            onInfo={() => handleOpenDetails(item)}
-            onAddToList={() => toggleWatchlist(item.id)}
-          />
-        ))}
-      </HorizontalCarousel>
+      </SectionReveal>
 
       {/* ─── Section 7: Recently Watched & Finished ─── */}
       {recentlyWatchedList.length > 0 && (
-        <HorizontalCarousel
-          title="Recently Watched"
-          eyebrow="YOUR VIEWING LOG"
-          subtitle="Titles you've streamed across your sessions on PIXEL+"
-        >
-          {recentlyWatchedList.map(({ content, history: h }) => (
-            <ContentCard
-              key={`rw-${content.id}`}
-              content={content}
-              variant="landscape"
-              isSaved={isInWatchlist(content.id)}
-              onPlay={() => handlePlayContent(content, h.progress)}
-              onInfo={() => handleOpenDetails(content)}
-              onAddToList={() => toggleWatchlist(content.id)}
-            />
-          ))}
-        </HorizontalCarousel>
+        <SectionReveal data-testid="reveal-recently-watched">
+          <HorizontalCarousel
+            title="Recently Watched"
+            eyebrow="YOUR VIEWING LOG"
+            subtitle="Titles you've streamed across your sessions on PIXEL+"
+          >
+            {recentlyWatchedList.map(({ content, history: h }) => (
+              <ContentCard
+                key={`rw-${content.id}`}
+                content={content}
+                variant="landscape"
+                isSaved={isInWatchlist(content.id)}
+                onPlay={() => handlePlayContent(content, h.progress)}
+                onInfo={() => handleOpenDetails(content)}
+                onAddToList={() => toggleWatchlist(content.id)}
+              />
+            ))}
+          </HorizontalCarousel>
+        </SectionReveal>
       )}
 
       {/* ─── Section 8: Platform Staples (Premieres & Cinema) ─── */}
-      <HorizontalCarousel
-        title="PIXEL+ Premieres"
-        eyebrow="EXCLUSIVE ORIGINAL CINEMA"
-        subtitle="Mastered in 4K HDR with multi-channel Dolby Atmos audio"
-      >
-        {SAMPLE_FEATURED_CARDS.slice(1).map((item) => (
-          <ContentCard
-            key={`prem-${item.id}`}
-            content={item}
-            variant="featured"
-            isSaved={isInWatchlist(item.id)}
-            onPlay={() => handlePlayContent(item, 0)}
-            onInfo={() => handleOpenDetails(item)}
-            onAddToList={() => toggleWatchlist(item.id)}
-          />
-        ))}
-      </HorizontalCarousel>
+      <SectionReveal data-testid="reveal-premieres">
+        <HorizontalCarousel
+          title="PIXEL+ Premieres"
+          eyebrow="EXCLUSIVE ORIGINAL CINEMA"
+          subtitle="Mastered in 4K HDR with multi-channel Dolby Atmos audio"
+        >
+          {SAMPLE_FEATURED_CARDS.slice(1).map((item) => (
+            <ContentCard
+              key={`prem-${item.id}`}
+              content={item}
+              variant="featured"
+              isSaved={isInWatchlist(item.id)}
+              onPlay={() => handlePlayContent(item, 0)}
+              onInfo={() => handleOpenDetails(item)}
+              onAddToList={() => toggleWatchlist(item.id)}
+            />
+          ))}
+        </HorizontalCarousel>
+      </SectionReveal>
 
-      <HorizontalCarousel
-        title="Trending Series & Episodes"
-        eyebrow="POPULAR TELEVISION"
-        subtitle="The most-streamed original seasons across the platform"
-      >
-        {SAMPLE_SERIES_CARDS.map((item) => (
-          <ContentCard
-            key={`ser-${item.id}`}
-            content={item}
-            variant="portrait"
-            isSaved={isInWatchlist(item.id)}
-            onPlay={() => handlePlayContent(item, 0)}
-            onInfo={() => handleOpenDetails(item)}
-            onAddToList={() => toggleWatchlist(item.id)}
-          />
-        ))}
-      </HorizontalCarousel>
+      <SectionReveal data-testid="reveal-series">
+        <HorizontalCarousel
+          title="Trending Series & Episodes"
+          eyebrow="POPULAR TELEVISION"
+          subtitle="The most-streamed original seasons across the platform"
+        >
+          {SAMPLE_SERIES_CARDS.map((item) => (
+            <ContentCard
+              key={`ser-${item.id}`}
+              content={item}
+              variant="portrait"
+              isSaved={isInWatchlist(item.id)}
+              onPlay={() => handlePlayContent(item, 0)}
+              onInfo={() => handleOpenDetails(item)}
+              onAddToList={() => toggleWatchlist(item.id)}
+            />
+          ))}
+        </HorizontalCarousel>
+      </SectionReveal>
 
-      <HorizontalCarousel
-        title="Blockbuster Feature Films"
-        eyebrow="CINEMA ARCHIVE"
-        subtitle="Theatrical releases, festival favorites, and restored classics"
-      >
-        {SAMPLE_MOVIE_CARDS.map((item) => (
-          <ContentCard
-            key={`mov-${item.id}`}
-            content={item}
-            variant="portrait"
-            isSaved={isInWatchlist(item.id)}
-            onPlay={() => handlePlayContent(item, 0)}
-            onInfo={() => handleOpenDetails(item)}
-            onAddToList={() => toggleWatchlist(item.id)}
-          />
-        ))}
-      </HorizontalCarousel>
+      <SectionReveal data-testid="reveal-blockbusters">
+        <HorizontalCarousel
+          title="Blockbuster Feature Films"
+          eyebrow="CINEMA ARCHIVE"
+          subtitle="Theatrical releases, festival favorites, and restored classics"
+        >
+          {SAMPLE_MOVIE_CARDS.map((item) => (
+            <ContentCard
+              key={`mov-${item.id}`}
+              content={item}
+              variant="portrait"
+              isSaved={isInWatchlist(item.id)}
+              onPlay={() => handlePlayContent(item, 0)}
+              onInfo={() => handleOpenDetails(item)}
+              onAddToList={() => toggleWatchlist(item.id)}
+            />
+          ))}
+        </HorizontalCarousel>
+      </SectionReveal>
 
       {/* ─── Phase 5D: Seamless Cross-Platform Device Continuity ─── */}
-      <section
-        data-testid="device-continuity-section"
-        className="p-6 sm:p-8 rounded-3xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-6 shadow-md"
-      >
+      <SectionReveal data-testid="reveal-device-continuity">
+        <section
+          data-testid="device-continuity-section"
+          className="p-6 sm:p-8 rounded-3xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-6 shadow-md"
+        >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -515,8 +542,10 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         </div>
       </section>
+      </SectionReveal>
 
       {/* ─── Navigation Shortcut Footer Banners ─── */}
+      <SectionReveal data-testid="reveal-nav-shortcuts">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
         {onExploreSeries && (
           <div
@@ -552,6 +581,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         )}
       </div>
+      </SectionReveal>
 
       {/* ─── Genre Preferences Customizer Modal ─── */}
       <GenrePreferencesModal

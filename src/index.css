@@ -239,3 +239,22 @@ body {
   transform: scale(0.94);
 }
 
+/* ─── Phase 6F: Atmospheric Navigation Full-Width Gradient Depth ─── */
+.nav-scrolled-atmospheric {
+  background: linear-gradient(
+    180deg,
+    var(--bg-main) 0%,
+    color-mix(in srgb, var(--bg-main) 88%, transparent) 40%,
+    color-mix(in srgb, var(--bg-main) 45%, transparent) 75%,
+    transparent 100%
+  ) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none !important;
+  border-bottom: none !important;
+  border-bottom-width: 0px !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+

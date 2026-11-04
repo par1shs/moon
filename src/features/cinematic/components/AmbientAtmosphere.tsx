@@ -185,7 +185,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
     <div
       ref={containerRef}
       data-testid="ambient-atmosphere"
-      className="fixed inset-0 pointer-events-none -z-10 overflow-hidden"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
       aria-hidden="true"
     >
       {/* ─── Layer 1: Top Header & Hero Aura (Deep Indigo & Midnight Slate) ─── */}

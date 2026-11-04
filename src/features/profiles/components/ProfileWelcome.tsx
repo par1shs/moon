@@ -8,6 +8,7 @@ import { SoundControl } from '../../audio/SoundControl'
 import { AvatarRenderer } from './AvatarRenderer'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 import { AmbientRisingPixels } from '../../startup/components/AmbientRisingPixels'
+import { AmbientAtmosphere } from '../../cinematic/components/AmbientAtmosphere'
 
 export interface ProfileWelcomeProps {
   profile: Profile
@@ -68,6 +69,9 @@ export const ProfileWelcome: React.FC<ProfileWelcomeProps> = ({
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="min-h-screen w-full bg-transparent text-[var(--text-primary)] flex flex-col justify-between p-6 sm:p-10 select-none overflow-hidden relative"
     >
+      {/* ─── Cinematic Ambient Atmosphere & Starfield ─── */}
+      <AmbientAtmosphere activePage="home" />
+
       {/* Ambient Rising Pixels */}
       <AmbientRisingPixels />
 

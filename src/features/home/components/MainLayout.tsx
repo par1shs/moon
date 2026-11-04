@@ -174,7 +174,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       />
 
       {/* ─── Main Content Container with Transitions ─── */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:pb-12 pb-24">
+      <main className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:pb-12 pb-24">
         <AnimatePresence mode="wait">
           <motion.div
             key={activePage}

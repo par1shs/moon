@@ -13,6 +13,7 @@ interface StarItem {
   r: number
   baseOpacity: number
   colorType: 'cool' | 'white' | 'ivory' | 'indigo' | 'accent'
+  hasGlow?: boolean
   twinkle?: {
     duration: number
     delay: number
@@ -36,8 +37,8 @@ function createPrng(seed: number) {
 
 /**
  * Pre-generate the 3 celestial starfield depth layers once at module level.
- * Total: 156 stars (88 distant, 48 mid, 20 foreground).
- * Twinkling: 11 stars total (~7.1%), individually delayed with 3.3s–6.8s cycles.
+ * Total: 160 stars (88 distant, 48 mid, 24 foreground).
+ * Twinkling: 12 stars (~7.5%), individually delayed with 3.2s–6.8s cycles.
  */
 function generateStarLayers(): {
   layer1: StarItem[]
@@ -47,21 +48,22 @@ function generateStarLayers(): {
   const rng = createPrng(1337)
 
   // ─── Layer 1: Distant Stars (88 stars: 11 cols x 8 rows) ───
-  // Highest density, smallest sizes (0.8–1.3px), faint opacity (0.22–0.44), slowest parallax (~8px)
+  // High density, crisp small sizes (~1.6–2.4px diameter), clear opacity (0.55–0.78), slowest parallax (~8px)
   const layer1: StarItem[] = []
-  const twinkleL1 = new Set([7, 23, 49, 71])
-  const l1Durations = [4.8, 5.6, 6.2, 6.8]
-  const l1Delays = [0.5, 1.8, 3.1, 4.4]
+  const twinkleL1 = new Set([7, 23, 41, 57, 75])
+  const l1Durations = [4.6, 5.4, 6.0, 6.6, 5.0]
+  const l1Delays = [0.4, 1.6, 2.8, 4.0, 1.0]
   let t1 = 0
 
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 11; c++) {
       const idx = r * 11 + c
-      const x = ((c + 0.12 + rng() * 0.76) / 11) * 1600
-      const y = ((r + 0.12 + rng() * 0.76) / 8) * 1000
-      const radius = 0.45 + rng() * 0.25 // diameter ~0.9–1.4px
-      const baseOpacity = 0.22 + rng() * 0.22
-      const colorType: StarItem['colorType'] = rng() > 0.28 ? 'cool' : 'white'
+      // Natural jittered grid covering full screen including top sky (y from 10px to 990px)
+      const x = ((c + 0.06 + rng() * 0.88) / 11) * 1600
+      const y = ((r + 0.05 + rng() * 0.90) / 8) * 1000
+      const radius = 0.82 + rng() * 0.38 // diameter ~1.64–2.40px (crisp pinpoints)
+      const baseOpacity = 0.55 + rng() * 0.23 // 0.55–0.78 (clearly visible!)
+      const colorType: StarItem['colorType'] = rng() > 0.3 ? 'cool' : 'white'
       const isTwinkle = twinkleL1.has(idx)
 
       layer1.push({
@@ -83,23 +85,23 @@ function generateStarLayers(): {
   }
 
   // ─── Layer 2: Mid-Distance Stars (48 stars: 8 cols x 6 rows) ───
-  // Medium density, medium sizes (1.4–2.0px), moderate opacity (0.44–0.68), medium parallax (~16px)
+  // Medium density, medium sizes (~2.6–3.4px diameter), bright opacity (0.72–0.90), medium parallax (~16px)
   const layer2: StarItem[] = []
-  const twinkleL2 = new Set([5, 18, 31, 42])
+  const twinkleL2 = new Set([5, 18, 29, 42])
   const l2Durations = [3.8, 4.5, 5.2, 5.9]
-  const l2Delays = [0.8, 1.9, 2.7, 4.1]
+  const l2Delays = [0.7, 1.8, 2.6, 3.9]
   let t2 = 0
 
   for (let r = 0; r < 6; r++) {
     for (let c = 0; c < 8; c++) {
       const idx = r * 8 + c
-      const x = ((c + 0.10 + rng() * 0.80) / 8) * 1600
-      const y = ((r + 0.10 + rng() * 0.80) / 6) * 1000
-      const radius = 0.72 + rng() * 0.30 // diameter ~1.4–2.0px
-      const baseOpacity = 0.44 + rng() * 0.24
+      const x = ((c + 0.06 + rng() * 0.88) / 8) * 1600
+      const y = ((r + 0.05 + rng() * 0.90) / 6) * 1000
+      const radius = 1.30 + rng() * 0.40 // diameter ~2.60–3.40px
+      const baseOpacity = 0.72 + rng() * 0.18 // 0.72–0.90
       const colorRoll = rng()
       const colorType: StarItem['colorType'] =
-        colorRoll < 0.6 ? 'white' : colorRoll < 0.82 ? 'ivory' : 'indigo'
+        colorRoll < 0.55 ? 'white' : colorRoll < 0.80 ? 'ivory' : 'indigo'
       const isTwinkle = twinkleL2.has(idx)
 
       layer2.push({
@@ -120,24 +122,25 @@ function generateStarLayers(): {
     }
   }
 
-  // ─── Layer 3: Foreground Stars (20 stars: 5 cols x 4 rows) ───
-  // Lower density, brighter stars (2.1–2.6px), bright opacity (0.65–0.85), faster parallax (~24px)
+  // ─── Layer 3: Foreground Stars (24 stars: 6 cols x 4 rows) ───
+  // Lower density, radiant stars (~3.5–4.8px diameter), luminous opacity (0.85–1.0), faster parallax (~24px)
   const layer3: StarItem[] = []
-  const twinkleL3 = new Set([4, 12, 19])
-  const accentL3 = new Set([3, 11, 17])
-  const l3Durations = [3.3, 4.1, 4.7]
-  const l3Delays = [0.3, 1.4, 2.6]
+  const twinkleL3 = new Set([3, 11, 20])
+  const accentL3 = new Set([4, 10, 16, 22])
+  const l3Durations = [3.4, 4.2, 4.8]
+  const l3Delays = [0.3, 1.5, 2.7]
   let t3 = 0
 
   for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 5; c++) {
-      const idx = r * 5 + c
-      const x = ((c + 0.08 + rng() * 0.84) / 5) * 1600
-      const y = ((r + 0.08 + rng() * 0.84) / 4) * 1000
-      const radius = 1.05 + rng() * 0.25 // diameter ~2.1–2.6px
-      const baseOpacity = 0.65 + rng() * 0.20
+    for (let c = 0; c < 6; c++) {
+      const idx = r * 6 + c
+      const x = ((c + 0.05 + rng() * 0.90) / 6) * 1600
+      const y = ((r + 0.05 + rng() * 0.90) / 4) * 1000
+      const radius = 1.75 + rng() * 0.55 // diameter ~3.5–4.6px
+      const baseOpacity = 0.86 + rng() * 0.14 // 0.86–1.0
       const isAccent = accentL3.has(idx)
       const isTwinkle = twinkleL3.has(idx)
+      const hasGlow = radius > 2.0
 
       let colorType: StarItem['colorType'] = 'white'
       if (isAccent) {
@@ -151,13 +154,14 @@ function generateStarLayers(): {
         x: Math.round(x * 10) / 10,
         y: Math.round(y * 10) / 10,
         r: Math.round(radius * 100) / 100,
-        baseOpacity: isAccent ? 0.62 : Math.round(baseOpacity * 100) / 100,
+        baseOpacity: isAccent ? 0.85 : Math.round(baseOpacity * 100) / 100,
         colorType,
+        hasGlow,
         twinkle: isTwinkle
           ? {
               duration: l3Durations[t3],
               delay: l3Delays[t3++],
-              dimOpacity: Math.round(baseOpacity * 0.30 * 100) / 100,
+              dimOpacity: Math.round(baseOpacity * 0.22 * 100) / 100,
             }
           : undefined,
       })
@@ -203,6 +207,9 @@ const StarSvgLayer: React.FC<{
         const isTwinkle = Boolean(star.twinkle)
         const style: React.CSSProperties = {
           opacity: star.baseOpacity,
+          ...(star.hasGlow && {
+            filter: 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.75))',
+          }),
         }
 
         if (star.twinkle) {
@@ -240,7 +247,7 @@ StarSvgLayer.displayName = 'StarSvgLayer'
  * Key features:
  * - 3 independent depth layers (Distant, Mid-Distance, Foreground)
  * - Restrained 8–24px smooth transform-based parallax driven by scrollCoordinator
- * - 11 gently twinkling stars (~7.1%) with irregular 3.3–6.8s cycles and varied delays
+ * - 12 gently twinkling stars (~7.5%) with irregular 3.2s–6.8s cycles and varied delays
  * - 100% GPU composited translate3d without React re-renders or layout reflows
  * - Seamless theme support: luminous celestial points in dark mode, soft slate/indigo in light mode
  * - Restrained active profile accent tint on subtle foreground stars
@@ -278,7 +285,7 @@ export const CinematicStarfield: React.FC<CinematicStarfieldProps> = memo(
     return (
       <div
         data-testid="cinematic-starfield"
-        className="absolute -top-[36px] -bottom-[36px] left-0 right-0 pointer-events-none overflow-hidden transition-opacity duration-700 ease-out"
+        className="absolute -top-[36px] -bottom-[36px] left-0 right-0 pointer-events-none overflow-hidden transition-opacity duration-700 ease-out z-[3]"
         style={{
           opacity: isPlayerOpen ? 0.15 : 'var(--starfield-layer-opacity, 1)',
         }}

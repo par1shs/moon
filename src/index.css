@@ -91,11 +91,11 @@
   --shadow-accent-glow: 0 8px 30px -8px var(--accent-glow);
 
   /* Starfield Theme Variables (Dark Mode Default) */
-  --star-color-cool: rgba(225, 235, 255, 0.72);
-  --star-color-white: rgba(255, 255, 255, 0.85);
-  --star-color-ivory: rgba(255, 248, 235, 0.78);
-  --star-color-indigo: rgba(185, 205, 245, 0.72);
-  --starfield-layer-opacity: 0.95;
+  --star-color-cool: #E2ECF8;
+  --star-color-white: #FFFFFF;
+  --star-color-ivory: #FFF8EB;
+  --star-color-indigo: #C2D4F8;
+  --starfield-layer-opacity: 1;
 }
 
 /* ─── Light Mode Definitions ─── */
@@ -153,11 +153,11 @@
   --shadow-elevated: 0 18px 40px -8px rgba(18, 26, 48, 0.14);
 
   /* Starfield Theme Variables (Luminous Light Mode) */
-  --star-color-cool: rgba(55, 72, 105, 0.45);
-  --star-color-white: rgba(45, 60, 92, 0.52);
-  --star-color-ivory: rgba(70, 80, 110, 0.42);
-  --star-color-indigo: rgba(50, 65, 98, 0.48);
-  --starfield-layer-opacity: 0.38;
+  --star-color-cool: #3A4A6B;
+  --star-color-white: #283754;
+  --star-color-ivory: #485777;
+  --star-color-indigo: #304062;
+  --starfield-layer-opacity: 0.55;
 }
 
 /* ─── Explicit Dark Mode Override ─── */

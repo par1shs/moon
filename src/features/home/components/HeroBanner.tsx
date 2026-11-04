@@ -26,24 +26,31 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 }) => {
   const reducedMotion = useReducedMotionPreference()
   const bannerImage = content.backdropUrl || content.posterUrl
+  const cardRef = useRef<HTMLElement>(null)
   const artworkRef = useRef<HTMLDivElement>(null)
   const rafIdRef = useRef<number | null>(null)
 
-  // Subtle Hero Parallax: 8-12px transform-based vertical shift on artwork only
+  // Card Parallax: Entire hero card scrolls slightly slower than standard content
   useEffect(() => {
     if (reducedMotion) return
 
-    // Disable on touch devices
     const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
     if (isTouch) return
 
     const updateParallax = () => {
-      if (!artworkRef.current) return
       const scrollY = window.scrollY || document.documentElement.scrollTop || 0
 
-      // Subtly translate artwork vertically: capped at 10px (within 8-12px range)
-      const offset = Math.min(10, Math.max(0, scrollY * 0.035))
-      artworkRef.current.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0) scale(1.04)`
+      // The whole hero card lags slightly behind scroll (e.g. shifts down by ~18% of scroll up to 45px)
+      if (cardRef.current) {
+        const cardOffset = Math.min(45, scrollY * 0.18)
+        cardRef.current.style.transform = `translate3d(0, ${cardOffset.toFixed(1)}px, 0)`
+      }
+
+      // Inside the card, the backdrop image also shifts with subtle inner depth
+      if (artworkRef.current) {
+        const artOffset = Math.min(25, scrollY * 0.08)
+        artworkRef.current.style.transform = `translate3d(0, ${artOffset.toFixed(1)}px, 0) scale(1.06)`
+      }
     }
 
     const onScroll = () => {
@@ -69,58 +76,62 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
   return (
     <section
+      ref={cardRef}
       aria-label={`Featured: ${content.title}`}
-      className={`relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)] min-h-[380px] sm:min-h-[440px] lg:min-h-[500px] flex flex-col justify-end p-5 sm:p-10 lg:p-14 select-none shadow-[var(--shadow-elevated)] ${className}`}
+      className={`relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)] min-h-[380px] sm:min-h-[440px] lg:min-h-[500px] flex flex-col justify-end p-5 sm:p-10 lg:p-14 select-none shadow-[var(--shadow-elevated)] will-change-transform ${className}`}
+      style={{
+        transform: 'translate3d(0, 0px, 0)',
+      }}
     >
-      {/* Background Image with subtle hero parallax (8-12px transform) */}
+      {/* Background Image: Brightness increased so the cinematic artwork is clearly visible */}
       {bannerImage && (
         <div
           ref={artworkRef}
           data-testid="hero-parallax-artwork"
           className="absolute inset-0 z-0 overflow-hidden will-change-transform"
           style={{
-            transform: 'translate3d(0, 0px, 0) scale(1.04)',
+            transform: 'translate3d(0, 0px, 0) scale(1.06)',
           }}
         >
           <img
             src={bannerImage}
             alt={content.title}
-            className="w-full h-full object-cover object-center filter brightness-[0.8] contrast-[1.08]"
+            className="w-full h-full object-cover object-center filter brightness-[0.95] contrast-[1.12]"
             loading="eager"
           />
         </div>
       )}
 
-      {/* Permanent Brand Primary Radial Gradient with Deep Indigo & Midnight Slate depth */}
+      {/* Balanced Radial Gradient: Protects readability without blacking out the image */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: 'var(--gradient-brand-hero)',
+          background: 'radial-gradient(120% 85% at 75% 20%, rgba(40, 52, 85, 0.40) 0%, rgba(16, 19, 29, 0.65) 50%, rgba(12, 13, 15, 0.88) 100%)',
         }}
       />
 
       {/* Dynamic Accent Ambient Glow blob */}
       <div
-        className="absolute top-0 right-0 w-[350px] sm:w-[550px] h-[350px] sm:h-[550px] rounded-full pointer-events-none blur-3xl opacity-30 transition-all duration-700 z-10"
+        className="absolute top-0 right-0 w-[350px] sm:w-[550px] h-[350px] sm:h-[550px] rounded-full pointer-events-none blur-3xl opacity-35 transition-all duration-700 z-10"
         style={{
           background: 'radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%)',
         }}
       />
 
-      {/* Cinematic Vignette Gradients: Bottom-heavy & Left-heavy protection for text */}
+      {/* Cinematic Vignette Gradients: Soft text legibility protection */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: 'var(--hero-vignette-bottom)',
+          background: 'linear-gradient(to top, rgba(12, 13, 15, 0.92) 0%, rgba(16, 19, 29, 0.60) 40%, transparent 100%)',
         }}
       />
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: 'var(--hero-vignette-left)',
+          background: 'linear-gradient(to right, rgba(12, 13, 15, 0.92) 0%, rgba(16, 19, 29, 0.55) 45%, transparent 100%)',
         }}
       />
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] opacity-30 pointer-events-none z-10" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] opacity-25 pointer-events-none z-10" />
 
       {/* Top Right Badges */}
       <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20 flex items-center gap-2">
@@ -165,61 +176,50 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               • {content.duration}
             </span>
           )}
+          {content.genres && content.genres.length > 0 && (
+            <span className="text-xs font-mono text-[var(--text-muted)] hidden sm:inline">
+              • {content.genres.slice(0, 2).join(' / ')}
+            </span>
+          )}
         </div>
 
-        {/* Hero Title */}
-        <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--text-primary)] leading-[1.1] drop-shadow-md">
+        {/* Title */}
+        <h1 className="font-display font-extrabold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-[var(--text-primary)] tracking-tight leading-[1.08] drop-shadow-md">
           {content.title}
         </h1>
 
         {/* Subtitle / Description */}
-        <p className="text-xs sm:text-sm lg:text-base text-[var(--text-secondary)] font-normal leading-relaxed max-w-xl line-clamp-2 sm:line-clamp-3 drop-shadow">
+        <p className="text-sm sm:text-base md:text-lg text-[var(--text-secondary)] max-w-2xl line-clamp-2 sm:line-clamp-3 leading-relaxed drop-shadow">
           {content.description || content.subtitle}
         </p>
 
-        {/* Progress Bar (if in progress) */}
-        {content.progress !== undefined && content.progress > 0 && (
-          <div className="space-y-1 max-w-xs sm:max-w-md pt-1">
-            <div className="flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
-              <span>Resume Playback</span>
-              <span className="text-[var(--accent-primary)] font-semibold">{content.progress}% watched</span>
-            </div>
-            <div className="w-full h-1.5 bg-white/15 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-300"
-                style={{ width: `${content.progress}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons Row */}
-        <div className="flex flex-wrap items-center gap-2.5 pt-2">
+        {/* Primary Call to Action Button Row */}
+        <div className="pt-2 sm:pt-4 flex flex-wrap items-center gap-3 sm:gap-4">
           <Button
             variant="primary"
-            size="md"
-            leftIcon={<Play className="w-4 h-4 fill-current ml-0.5" />}
+            size="lg"
             onClick={() => onPlay?.(content)}
+            leftIcon={<Play className="w-5 h-5 fill-current" />}
+            className="shadow-lg shadow-[var(--accent-primary)]/20"
           >
-            Play Now
+            Play Preview
           </Button>
 
           <Button
             variant="secondary"
-            size="md"
-            leftIcon={<Info className="w-4 h-4" />}
+            size="lg"
             onClick={() => onInfo?.(content)}
+            leftIcon={<Info className="w-5 h-5" />}
           >
             More Info
           </Button>
 
           <IconButton
-            icon={isSaved ? <Check className="w-4 h-4 text-[var(--accent-primary)]" /> : <Plus className="w-4 h-4" />}
-            aria-label={isSaved ? "Saved to My List" : "Add to My List"}
-            variant="elevated"
-            size="sm"
+            icon={isSaved ? <Check className="w-5 h-5 text-[var(--accent-primary)]" /> : <Plus className="w-5 h-5" />}
+            aria-label={isSaved ? 'Remove from My List' : 'Add to My List'}
             onClick={() => onAddToList?.(content)}
-            className="rounded-xl border border-[var(--border-subtle)]"
+            variant={isSaved ? 'outline' : 'ghost'}
+            className="rounded-full w-11 h-11 border border-white/20 bg-black/40 hover:bg-black/60 backdrop-blur-md"
           />
         </div>
       </motion.div>

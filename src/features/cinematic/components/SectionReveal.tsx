@@ -13,9 +13,9 @@ export interface SectionRevealProps {
 /**
  * SectionReveal
  *
- * Cinematic reveal wrapper using IntersectionObserver.
- * Fades section container from opacity 0 -> 1 and translates upward by 12px
- * with a 380ms ease-out curve once it enters viewport.
+ * Noticeable cinematic reveal wrapper using IntersectionObserver.
+ * Triggers when the section is substantially inside the viewport (threshold: 0.18)
+ * so users can clearly see the shelf glide up 24px and fade in smoothly over 700ms.
  * Disconnects/unobserves after triggering once.
  * Immediately visible when prefers-reduced-motion is enabled.
  */
@@ -23,8 +23,8 @@ export const SectionReveal: React.FC<SectionRevealProps> = ({
   children,
   className = '',
   delay = 0,
-  threshold = 0.02,
-  rootMargin = '0px 0px -20px 0px',
+  threshold = 0.18,
+  rootMargin = '0px 0px -50px 0px',
   'data-testid': testId,
 }) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -69,10 +69,10 @@ export const SectionReveal: React.FC<SectionRevealProps> = ({
       className={className}
       style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(14px)',
+        transform: isVisible ? 'translateY(0)' : 'translateY(24px)',
         transition: reducedMotion
           ? 'none'
-          : `opacity 400ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 400ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
+          : `opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
         willChange: isVisible ? 'auto' : 'opacity, transform',
       }}
     >

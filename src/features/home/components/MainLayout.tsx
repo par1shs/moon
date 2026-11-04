@@ -1,25 +1,28 @@
-import React, { useState } from 'react'
+import React, { useState, Suspense, lazy } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { BarChart3 } from 'lucide-react'
 import type { Profile, AvatarConfig } from '../../profiles/types'
 import type { ContentMetadata } from '../../../types'
 import { TopNavigation, type NavigationPage } from './TopNavigation'
 import { MobileBottomNav } from './MobileBottomNav'
-import { EditProfileModal } from '../../profiles/components/ManageProfiles'
-import { ContentDetailsModal } from '../../details/ContentDetailsModal'
 import { HomePage } from '../pages/HomePage'
-import { SeriesPage } from '../pages/SeriesPage'
-import { MoviesPage } from '../pages/MoviesPage'
-import { DiscoverPage } from '../pages/DiscoverPage'
-import { LiveTVPage } from '../pages/LiveTVPage'
-import { MyListPage } from '../pages/MyListPage'
-import { SearchPage } from '../pages/SearchPage'
-import { MembershipPage } from '../../subscription/pages/MembershipPage'
-import { AdInsightsPage } from '../../advertising/pages/AdInsightsPage'
-import { DeviceExperiencePage } from '../../devices/pages/DeviceExperiencePage'
 import { SoundControl } from '../../audio/SoundControl'
 import { AmbientAtmosphere } from '../../cinematic/components/AmbientAtmosphere'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
+
+import { EditProfileModal } from '../../profiles/components/ManageProfiles'
+
+// Code-split non-initial routes & heavy modals for rapid initial startup & low memory footprint
+const SeriesPage = lazy(() => import('../pages/SeriesPage').then((m) => ({ default: m.SeriesPage })))
+const MoviesPage = lazy(() => import('../pages/MoviesPage').then((m) => ({ default: m.MoviesPage })))
+const DiscoverPage = lazy(() => import('../pages/DiscoverPage').then((m) => ({ default: m.DiscoverPage })))
+const LiveTVPage = lazy(() => import('../pages/LiveTVPage').then((m) => ({ default: m.LiveTVPage })))
+const MyListPage = lazy(() => import('../pages/MyListPage').then((m) => ({ default: m.MyListPage })))
+const SearchPage = lazy(() => import('../pages/SearchPage').then((m) => ({ default: m.SearchPage })))
+const MembershipPage = lazy(() => import('../../subscription/pages/MembershipPage').then((m) => ({ default: m.MembershipPage })))
+const AdInsightsPage = lazy(() => import('../../advertising/pages/AdInsightsPage').then((m) => ({ default: m.AdInsightsPage })))
+const DeviceExperiencePage = lazy(() => import('../../devices/pages/DeviceExperiencePage').then((m) => ({ default: m.DeviceExperiencePage })))
+const ContentDetailsModal = lazy(() => import('../../details/ContentDetailsModal').then((m) => ({ default: m.ContentDetailsModal })))
 
 export interface MainLayoutProps {
   profile: Profile
@@ -180,7 +183,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             exit={{ opacity: 0, y: reducedMotion ? 0 : -8 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
           >
-            {renderCurrentPage()}
+            <Suspense
+              fallback={
+                <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
+                  <div className="w-8 h-8 rounded-full border-2 border-[var(--accent-primary)]/30 border-t-[var(--accent-primary)] animate-spin" />
+                  <span className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)]">
+                    Loading Section...
+                  </span>
+                </div>
+              }
+            >
+              {renderCurrentPage()}
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>
@@ -222,27 +236,31 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       </footer>
 
       {/* ─── Dedicated Content Details Experience ─── */}
-      <ContentDetailsModal
-        isOpen={Boolean(selectedDetailContent)}
-        content={selectedDetailContent}
-        onClose={() => setSelectedDetailContent(null)}
-        profile={profile}
-        onSelectRelated={(c) => setSelectedDetailContent(c)}
-        onWatchLive={(channelId) => {
-          setSelectedDetailContent(null)
-          setLiveTunedChannelId(channelId)
-          handleNavigate('livetv')
-        }}
-        onWatchCatchUp={(_programId, channelId) => {
-          setSelectedDetailContent(null)
-          setLiveTunedChannelId(channelId)
-          handleNavigate('livetv')
-        }}
-        onNavigateToMembership={() => {
-          setSelectedDetailContent(null)
-          handleNavigate('membership')
-        }}
-      />
+      {selectedDetailContent && (
+        <Suspense fallback={null}>
+          <ContentDetailsModal
+            isOpen={Boolean(selectedDetailContent)}
+            content={selectedDetailContent}
+            onClose={() => setSelectedDetailContent(null)}
+            profile={profile}
+            onSelectRelated={(c) => setSelectedDetailContent(c)}
+            onWatchLive={(channelId) => {
+              setSelectedDetailContent(null)
+              setLiveTunedChannelId(channelId)
+              handleNavigate('livetv')
+            }}
+            onWatchCatchUp={(_programId, channelId) => {
+              setSelectedDetailContent(null)
+              setLiveTunedChannelId(channelId)
+              handleNavigate('livetv')
+            }}
+            onNavigateToMembership={() => {
+              setSelectedDetailContent(null)
+              handleNavigate('membership')
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* ─── Edit Active Profile Modal ─── */}
       <EditProfileModal

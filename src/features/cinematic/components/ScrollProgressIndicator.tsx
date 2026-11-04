@@ -1,50 +1,23 @@
 import React, { useEffect, useRef } from 'react'
+import { scrollCoordinator } from '../../../utils/scrollCoordinator'
 
 /**
  * ScrollProgressIndicator
  *
  * Pinned to the top of the viewport (2px height).
  * Smoothly expands using direct DOM transform: scaleX(progress) driven by
- * a passive scroll listener and requestAnimationFrame to ensure zero React re-renders.
+ * the unified high-performance scrollCoordinator to eliminate forced reflows.
  * Styled with active profile accent color and ambient glow.
  */
 export const ScrollProgressIndicator: React.FC = () => {
   const barRef = useRef<HTMLDivElement>(null)
-  const rafIdRef = useRef<number | null>(null)
 
   useEffect(() => {
-    const updateProgress = () => {
+    return scrollCoordinator.subscribe((scrollTop, maxScroll) => {
       if (!barRef.current) return
-
-      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
-
-      const progress = scrollHeight > 0 ? Math.min(Math.max(scrollTop / scrollHeight, 0), 1) : 0
-
+      const progress = maxScroll > 0 ? Math.min(Math.max(scrollTop / maxScroll, 0), 1) : 0
       barRef.current.style.transform = `scaleX(${progress})`
-    }
-
-    const onScroll = () => {
-      if (rafIdRef.current !== null) return
-      rafIdRef.current = requestAnimationFrame(() => {
-        updateProgress()
-        rafIdRef.current = null
-      })
-    }
-
-    // Initial calculation
-    updateProgress()
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current)
-      }
-    }
+    })
   }, [])
 
   return (

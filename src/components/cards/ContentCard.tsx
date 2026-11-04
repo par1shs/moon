@@ -20,7 +20,25 @@ export interface ContentCardProps {
   remainingTime?: string
 }
 
-export const ContentCard: React.FC<ContentCardProps> = ({
+const ASPECT_CONFIG = {
+  portrait: {
+    grid: 'w-full',
+    carousel: 'w-44 sm:w-52 md:w-60 flex-none',
+    aspect: 'aspect-[2/3]',
+  },
+  landscape: {
+    grid: 'w-full',
+    carousel: 'w-64 sm:w-80 md:w-96 flex-none',
+    aspect: 'aspect-video',
+  },
+  featured: {
+    grid: 'w-full',
+    carousel: 'w-[86vw] sm:w-[480px] md:w-[580px] flex-none',
+    aspect: 'aspect-[16/9] sm:aspect-[21/9]',
+  },
+} as const
+
+export const ContentCard: React.FC<ContentCardProps> = React.memo(({
   content,
   variant = 'portrait',
   onPlay,
@@ -34,23 +52,8 @@ export const ContentCard: React.FC<ContentCardProps> = ({
 }) => {
   const reducedMotion = useReducedMotionPreference()
 
-  // Aspect ratio & layout depending on variant
-  const aspectConfig = {
-    portrait: {
-      container: isGrid ? 'w-full' : 'w-44 sm:w-52 md:w-60 flex-none',
-      aspect: 'aspect-[2/3]',
-    },
-    landscape: {
-      container: isGrid ? 'w-full' : 'w-64 sm:w-80 md:w-96 flex-none',
-      aspect: 'aspect-video',
-    },
-    featured: {
-      container: isGrid ? 'w-full' : 'w-[86vw] sm:w-[480px] md:w-[580px] flex-none',
-      aspect: 'aspect-[16/9] sm:aspect-[21/9]',
-    },
-  }
-
-  const cfg = aspectConfig[variant]
+  const cfg = ASPECT_CONFIG[variant]
+  const containerClass = isGrid ? cfg.grid : cfg.carousel
   const imageSrc =
     variant === 'portrait'
       ? content.posterUrl || content.backdropUrl
@@ -64,7 +67,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       whileHover="hover"
       whileTap="tap"
       onClick={() => onInfo?.(content)}
-      className={`group relative rounded-lg overflow-hidden bg-gradient-to-b from-[var(--bg-elevated)]/90 via-[var(--bg-card)] to-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/70 transition-all duration-300 shadow-[var(--shadow-card)] hover:shadow-[0_14px_32px_-6px_rgba(0,0,0,0.65),0_0_20px_-6px_var(--accent-glow)] cursor-pointer select-none ${cfg.container} ${className}`}
+      className={`group relative rounded-lg overflow-hidden bg-gradient-to-b from-[var(--bg-elevated)]/90 via-[var(--bg-card)] to-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/70 transition-all duration-300 shadow-[var(--shadow-card)] hover:shadow-[0_14px_32px_-6px_rgba(0,0,0,0.65),0_0_20px_-6px_var(--accent-glow)] cursor-pointer select-none ${containerClass} ${className}`}
     >
       {/* Media Container */}
       <div className={`relative w-full ${cfg.aspect} bg-[var(--bg-secondary)] overflow-hidden`}>
@@ -74,6 +77,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
             alt={content.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           /* Premium cinematic gradient placeholder */
@@ -215,4 +219,6 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       </div>
     </motion.div>
   )
-}
+})
+
+ContentCard.displayName = 'ContentCard'

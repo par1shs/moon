@@ -2,6 +2,7 @@ import React, { useMemo, useEffect, useRef } from 'react'
 import type { NavigationPage } from '../../home/components/TopNavigation'
 import type { ContentMetadata } from '../../../types'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
+import { scrollCoordinator } from '../../../utils/scrollCoordinator'
 
 export interface AmbientAtmosphereProps {
   activePage?: NavigationPage
@@ -121,7 +122,10 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
   isPlayerOpen = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const rafIdRef = useRef<number | null>(null)
+  const l1Ref = useRef<HTMLDivElement>(null)
+  const l2Ref = useRef<HTMLDivElement>(null)
+  const l3Ref = useRef<HTMLDivElement>(null)
+  const l4Ref = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotionPreference()
 
   const config = useMemo<AtmospherePresetConfig>(() => {
@@ -150,48 +154,31 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
     return PAGE_ATMOSPHERE_PRESETS[activePage] || PAGE_ATMOSPHERE_PRESETS.home
   }, [activePage, selectedDetailContent, isPlayerOpen])
 
-  // Scroll-reactive layer movement (visible 25-55px vertical shift)
+  // Scroll-reactive layer movement: driven by unified scrollCoordinator
+  // Directly updates compositor transforms without CSS variable style recalculation
   useEffect(() => {
     if (reducedMotion) return
 
-    const updateScrollParallax = () => {
-      if (!containerRef.current) return
-
-      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0
-
-      // Clearly noticeable vertical displacement as you scroll
+    return scrollCoordinator.subscribe((scrollTop) => {
       const offset1 = Math.min(28, scrollTop * 0.06).toFixed(1)
       const offset2 = Math.min(42, scrollTop * 0.08).toFixed(1)
       const offset3 = Math.min(55, scrollTop * 0.10).toFixed(1)
       const offset4 = Math.min(45, scrollTop * 0.09).toFixed(1)
 
-      containerRef.current.style.setProperty('--atmos-offset-1', `${offset1}px`)
-      containerRef.current.style.setProperty('--atmos-offset-2', `${offset2}px`)
-      containerRef.current.style.setProperty('--atmos-offset-3', `${offset3}px`)
-      containerRef.current.style.setProperty('--atmos-offset-4', `${offset4}px`)
-    }
-
-    const onScroll = () => {
-      if (rafIdRef.current !== null) return
-      rafIdRef.current = requestAnimationFrame(() => {
-        updateScrollParallax()
-        rafIdRef.current = null
-      })
-    }
-
-    updateScrollParallax()
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current)
+      if (l1Ref.current) {
+        l1Ref.current.style.transform = `translate3d(-50%, ${offset1}px, 0) scale(${config.accentScale})`
       }
-    }
-  }, [reducedMotion])
+      if (l2Ref.current) {
+        l2Ref.current.style.transform = `translate3d(0, ${offset2}px, 0) scale(${config.accentScale})`
+      }
+      if (l3Ref.current) {
+        l3Ref.current.style.transform = `translate3d(0, ${offset3}px, 0)`
+      }
+      if (l4Ref.current) {
+        l4Ref.current.style.transform = `translate3d(0, ${offset4}px, 0)`
+      }
+    })
+  }, [reducedMotion, config.accentScale])
 
   return (
     <div
@@ -199,49 +186,40 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
       data-testid="ambient-atmosphere"
       className="fixed inset-0 pointer-events-none -z-10 overflow-hidden"
       aria-hidden="true"
-      style={
-        {
-          '--atmos-offset-1': '0px',
-          '--atmos-offset-2': '0px',
-          '--atmos-offset-3': '0px',
-          '--atmos-offset-4': '0px',
-        } as React.CSSProperties
-      }
     >
-      {/* ─── Static Film Grain Texture Overlay ─── */}
+      {/* ─── Static Film Grain Texture Overlay (GPU Composited) ─── */}
       <div
         data-testid="cinematic-grain-overlay"
-        className="absolute inset-0 pointer-events-none opacity-[0.035] mix-blend-overlay z-10"
+        className="absolute inset-0 pointer-events-none opacity-[0.035] mix-blend-overlay z-10 will-change-transform"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'repeat',
+          transform: 'translateZ(0)',
         }}
       />
 
       {/* ─── Layer 1: Top Header & Hero Aura (Deep Indigo & Midnight Slate) ─── */}
       <div
+        ref={l1Ref}
         data-testid="atmos-layer-1"
         className="absolute -top-[12%] left-1/2 w-[130vw] max-w-[1500px] h-[550px] rounded-[100%] blur-[70px] transition-opacity duration-700 ease-out will-change-transform"
         style={{
           background: 'radial-gradient(ellipse at 50% 30%, #32436D 0%, #1D263D 45%, #10131D 75%, transparent 95%)',
           opacity: config.topOpacity,
-          transform: reducedMotion
-            ? 'translateX(-50%)'
-            : `translate3d(-50%, var(--atmos-offset-1), 0) scale(${config.accentScale})`,
+          transform: `translate3d(-50%, 0px, 0) scale(${config.accentScale})`,
         }}
       />
 
       {/* ─── Layer 2: Profile Accent Primary Ambient Aura (Upper Right Glow) ─── */}
       <div
+        ref={l2Ref}
         data-testid="atmos-layer-2"
         className="absolute w-[560px] h-[560px] rounded-full blur-[80px] transition-opacity duration-700 ease-out will-change-transform"
         style={{
           top: `${config.accentYOffset}px`,
           right: `${config.accentXOffset}px`,
           opacity: config.accentOpacity,
-          transform: reducedMotion
-            ? 'none'
-            : `translate3d(0, var(--atmos-offset-2), 0) scale(${config.accentScale})`,
+          transform: `translate3d(0, 0px, 0) scale(${config.accentScale})`,
           background: 'radial-gradient(circle, var(--accent-glow) 0%, var(--accent-primary) 30%, transparent 70%)',
         }}
       />
@@ -259,27 +237,25 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
 
       {/* ─── Layer 3: Mid-Page Deep Indigo Radial Pocket (Mid Left) ─── */}
       <div
+        ref={l3Ref}
         data-testid="atmos-layer-3"
         className="absolute top-[35%] -left-[100px] w-[660px] h-[660px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform"
         style={{
           background: 'radial-gradient(circle, #2D3A5D 0%, #1A2238 45%, #10131D 75%, transparent 88%)',
           opacity: config.midOpacity,
-          transform: reducedMotion
-            ? 'none'
-            : 'translate3d(0, var(--atmos-offset-3), 0)',
+          transform: 'translate3d(0, 0px, 0)',
         }}
       />
 
       {/* ─── Layer 4: Lower-Page Accent & Indigo Pocket (Mid-Lower Right) ─── */}
       <div
+        ref={l4Ref}
         data-testid="atmos-layer-4"
         className="absolute top-[65%] -right-[120px] w-[580px] h-[580px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform pointer-events-none"
         style={{
           background: 'radial-gradient(circle, var(--accent-glow) 0%, #293452 45%, transparent 75%)',
           opacity: config.accentOpacity * 0.85,
-          transform: reducedMotion
-            ? 'none'
-            : 'translate3d(0, var(--atmos-offset-4), 0)',
+          transform: 'translate3d(0, 0px, 0)',
         }}
       />
 

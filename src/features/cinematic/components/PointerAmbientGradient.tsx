@@ -7,7 +7,7 @@ import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPrefe
  * Automatically adapts to active profile accent and respects fine pointer/reduced motion.
  */
 export const PointerAmbientGradient: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const lightRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotionPreference()
 
   useEffect(() => {
@@ -16,9 +16,8 @@ export const PointerAmbientGradient: React.FC = () => {
 
     // If coarse touch device or reduced motion is preferred, use a static centered ambient aura
     if (!isFinePointer || reducedMotion) {
-      if (containerRef.current) {
-        containerRef.current.style.setProperty('--pointer-x', '50vw')
-        containerRef.current.style.setProperty('--pointer-y', '35vh')
+      if (lightRef.current) {
+        lightRef.current.style.transform = `translate3d(${window.innerWidth * 0.5}px, ${window.innerHeight * 0.35}px, 0)`
       }
       return
     }
@@ -31,9 +30,8 @@ export const PointerAmbientGradient: React.FC = () => {
     let rafId: number | null = null
 
     // Initialize starting position
-    if (containerRef.current) {
-      containerRef.current.style.setProperty('--pointer-x', `${currentX}px`)
-      containerRef.current.style.setProperty('--pointer-y', `${currentY}px`)
+    if (lightRef.current) {
+      lightRef.current.style.transform = `translate3d(${currentX.toFixed(1)}px, ${currentY.toFixed(1)}px, 0)`
     }
 
     const updatePosition = () => {
@@ -45,9 +43,9 @@ export const PointerAmbientGradient: React.FC = () => {
       currentX += dx * ease
       currentY += dy * ease
 
-      if (containerRef.current) {
-        containerRef.current.style.setProperty('--pointer-x', `${currentX.toFixed(1)}px`)
-        containerRef.current.style.setProperty('--pointer-y', `${currentY.toFixed(1)}px`)
+      if (lightRef.current) {
+        // High-performance compositor transform (bypasses CSS variable recalculation & style invalidation)
+        lightRef.current.style.transform = `translate3d(${currentX.toFixed(1)}px, ${currentY.toFixed(1)}px, 0)`
       }
 
       // Automatically halt the rAF loop when movement settles to preserve CPU & GPU
@@ -78,26 +76,21 @@ export const PointerAmbientGradient: React.FC = () => {
 
   return (
     <div
-      ref={containerRef}
       data-testid="pointer-ambient-gradient"
       className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
       aria-hidden="true"
-      style={
-        {
-          '--pointer-x': '50vw',
-          '--pointer-y': '35vh',
-        } as React.CSSProperties
-      }
     >
       {/* 
         Subtle pointer-following ambient cinematic illumination.
         Blends active profile accent with soft exponential falloff into Midnight Slate.
+        Composited via GPU hardware transform: translate3d for 60/120fps fluid responsiveness.
       */}
       <div
-        className="absolute inset-0 transition-opacity duration-500 opacity-24"
+        ref={lightRef}
+        className="absolute top-0 left-0 w-[800px] h-[800px] -ml-[400px] -mt-[400px] rounded-full pointer-events-none transition-opacity duration-500 opacity-24 will-change-transform"
         style={{
           background:
-            'radial-gradient(750px circle at var(--pointer-x) var(--pointer-y), var(--accent-glow) 0%, rgba(36, 43, 64, 0.28) 32%, transparent 70%)',
+            'radial-gradient(circle at center, var(--accent-glow) 0%, rgba(36, 43, 64, 0.28) 32%, transparent 70%)',
         }}
       />
     </div>

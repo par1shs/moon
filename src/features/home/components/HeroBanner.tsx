@@ -7,6 +7,8 @@ import { IconButton } from '../../../components/common/IconButton'
 import { Badge } from '../../../components/common/Badge'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 
+import { scrollCoordinator } from '../../../utils/scrollCoordinator'
+
 export interface HeroBannerProps {
   content: ContentMetadata
   onPlay?: (content: ContentMetadata) => void
@@ -27,28 +29,23 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   const reducedMotion = useReducedMotionPreference()
   const bannerImage = content.backdropUrl || content.posterUrl
   const cardRef = useRef<HTMLElement>(null)
-  const rafIdRef = useRef<number | null>(null)
 
   // Hero Card Cinematic Scroll Experience:
-  // 1. Resists rapid upward scrolling by damping vertical translation (moves up at ~38% of scroll speed).
-  // 2. Gradually minimizes (scales down noticeably from 1.0 down to ~0.78 into deep space).
-  // 3. Smoothly fades away (opacity from 1.0 down to 0.0) over the first ~360px of scroll.
+  // Driven by unified scrollCoordinator for 60/120fps smooth performance
   useEffect(() => {
     if (reducedMotion) return
 
-    const updateScrollEffect = () => {
+    return scrollCoordinator.subscribe((scrollY) => {
       if (!cardRef.current) return
-      const scrollY = window.scrollY || document.documentElement.scrollTop || 0
 
       // Over 0 to 360px of scroll:
       const maxScroll = 360
       const progress = Math.min(1, Math.max(0, scrollY / maxScroll))
 
       // Resists upward scroll so the hero card does NOT fly away rapidly
-      // Translates down by 62% of scroll distance up to maxScroll
       const yOffset = (Math.min(scrollY, maxScroll) * 0.62).toFixed(1)
 
-      // Gradually minimizes from 1.0 down to 0.78 (noticeable, cinematic perspective shrink)
+      // Gradually minimizes from 1.0 down to 0.78 (cinematic perspective shrink)
       const scale = (1 - progress * 0.22).toFixed(3)
 
       // Smooth gradual fade from 1.0 down to 0.0
@@ -57,27 +54,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       cardRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale(${scale})`
       cardRef.current.style.opacity = opacity
       cardRef.current.style.pointerEvents = progress > 0.6 ? 'none' : 'auto'
-    }
-
-    const onScroll = () => {
-      if (rafIdRef.current !== null) return
-      rafIdRef.current = requestAnimationFrame(() => {
-        updateScrollEffect()
-        rafIdRef.current = null
-      })
-    }
-
-    updateScrollEffect()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current)
-      }
-    }
+    })
   }, [reducedMotion])
 
   return (

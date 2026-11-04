@@ -11,7 +11,7 @@ export interface HorizontalCarouselProps {
   scrollStep?: number // pixels to scroll per click, defaults to 600
 }
 
-export const HorizontalCarousel: React.FC<HorizontalCarouselProps> = ({
+export const HorizontalCarousel: React.FC<HorizontalCarouselProps> = React.memo(({
   children,
   title,
   eyebrow,
@@ -137,4 +137,6 @@ export const HorizontalCarousel: React.FC<HorizontalCarouselProps> = ({
       </div>
     </div>
   )
-}
+})
+
+HorizontalCarousel.displayName = 'HorizontalCarousel'

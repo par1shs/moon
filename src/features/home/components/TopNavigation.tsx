@@ -37,6 +37,8 @@ const FULL_NAV_ITEMS: NavItem[] = [
   { id: 'membership', label: 'Membership' },
 ]
 
+import { scrollCoordinator } from '../../../utils/scrollCoordinator'
+
 export interface TopNavigationProps {
   activePage: NavigationPage
   onNavigate: (page: NavigationPage) => void
@@ -56,18 +58,22 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   onReplayIntro,
   onOpenDevShell,
 }) => {
-  const [isScrolled, setIsScrolled] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(() =>
+    typeof window !== 'undefined' ? scrollCoordinator.getScrollY() > 20 : false
+  )
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const { subscriptionTier } = useSubscriptionTier(profile.id)
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
+    let wasScrolled = scrollCoordinator.getScrollY() > 20
 
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return scrollCoordinator.subscribe((scrollY) => {
+      const scrolled = scrollY > 20
+      if (scrolled !== wasScrolled) {
+        wasScrolled = scrolled
+        setIsScrolled(scrolled)
+      }
+    })
   }, [])
 
   return (

@@ -62,6 +62,7 @@ export const CinemaProjectorCursor: React.FC = () => {
     let isHoveringTextInput = false
     let isVisible = false
     let reelRotation = 0
+    let lastTarget: EventTarget | null = null
     let rafId: number | null = null
 
     const updateTransform = () => {
@@ -104,34 +105,38 @@ export const CinemaProjectorCursor: React.FC = () => {
         }
       }
 
-      // Check element under pointer
-      const target = e.target as HTMLElement | null
-      if (target) {
-        const textInputElem = target.closest(
-          'input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable="true"]'
-        )
-        const isNowTextInput = Boolean(textInputElem)
-
-        if (isNowTextInput !== isHoveringTextInput) {
-          isHoveringTextInput = isNowTextInput
-          if (cursorRef.current) {
-            cursorRef.current.style.opacity = isNowTextInput ? '0' : '1'
-          }
-        }
-
-        if (!isNowTextInput) {
-          const clickableElem = target.closest(
-            'button, a, [role="button"], [tabindex="0"], .cursor-pointer, input[type="button"], input[type="submit"], [data-clickable="true"]'
+      // Check element under pointer ONLY when the event target changes
+      // Bypasses repeated DOM traversal across consecutive mousemove events
+      if (e.target !== lastTarget) {
+        lastTarget = e.target
+        const target = e.target as HTMLElement | null
+        if (target) {
+          const textInputElem = target.closest(
+            'input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable="true"]'
           )
-          const isNowClickable = Boolean(clickableElem)
+          const isNowTextInput = Boolean(textInputElem)
 
-          if (isNowClickable !== isHoveringClickable) {
-            isHoveringClickable = isNowClickable
+          if (isNowTextInput !== isHoveringTextInput) {
+            isHoveringTextInput = isNowTextInput
             if (cursorRef.current) {
-              cursorRef.current.classList.toggle('cursor-hover-clickable', isNowClickable)
+              cursorRef.current.style.opacity = isNowTextInput ? '0' : '1'
             }
-            if (beamRef.current) {
-              beamRef.current.style.opacity = isNowClickable ? '0.70' : '0.28'
+          }
+
+          if (!isNowTextInput) {
+            const clickableElem = target.closest(
+              'button, a, [role="button"], [tabindex="0"], .cursor-pointer, input[type="button"], input[type="submit"], [data-clickable="true"]'
+            )
+            const isNowClickable = Boolean(clickableElem)
+
+            if (isNowClickable !== isHoveringClickable) {
+              isHoveringClickable = isNowClickable
+              if (cursorRef.current) {
+                cursorRef.current.classList.toggle('cursor-hover-clickable', isNowClickable)
+              }
+              if (beamRef.current) {
+                beamRef.current.style.opacity = isNowClickable ? '0.70' : '0.28'
+              }
             }
           }
         }

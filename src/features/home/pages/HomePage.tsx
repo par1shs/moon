@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { Sparkles, SlidersHorizontal, Tv, Laptop, Smartphone, ExternalLink } from 'lucide-react'
 import type { Profile } from '../../profiles/types'
 import type { ContentMetadata, EpisodeMetadata, SponsorInfo } from '../../../types'
@@ -10,11 +10,13 @@ import { useWatchlist } from '../../../hooks/useWatchlist'
 import { useViewingHistory } from '../../../hooks/useViewingHistory'
 import { useUserPreferences } from '../../../hooks/useUserPreferences'
 import { generateRecommendations } from '../../recommendations/recommendationEngine'
-import { GenrePreferencesModal } from '../../profiles/components/GenrePreferencesModal'
-import { SimulatedPlayerModal } from '../../../components/player/SimulatedPlayerModal'
-import { SponsorInfoModal } from '../../../components/sponsorship/SponsorInfoModal'
 import { SectionReveal } from '../../cinematic/components/SectionReveal'
 import { SAMPLE_SPONSORS } from '../../../data/sampleAds'
+
+// Lazy load modals to eliminate startup weight
+const GenrePreferencesModal = React.lazy(() => import('../../profiles/components/GenrePreferencesModal').then((m) => ({ default: m.GenrePreferencesModal })))
+const SimulatedPlayerModal = React.lazy(() => import('../../../components/player/SimulatedPlayerModal').then((m) => ({ default: m.SimulatedPlayerModal })))
+const SponsorInfoModal = React.lazy(() => import('../../../components/sponsorship/SponsorInfoModal').then((m) => ({ default: m.SponsorInfoModal })))
 import {
   ALL_DISCOVERY_TITLES,
   SAMPLE_FEATURED_CARDS,
@@ -38,7 +40,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onNavigateToMembership,
 }) => {
   // 1. Data hooks per profile (profile-isolated)
-  const { isInWatchlist, toggleWatchlist, watchlistIds } = useWatchlist(
+  const { toggleWatchlist, watchlistIds } = useWatchlist(
     profile.id,
     profile.isKidsProfile
   )
@@ -90,16 +92,30 @@ export const HomePage: React.FC<HomePageProps> = ({
     return list.length > 0 ? list : [SAMPLE_FEATURED_CARDS[0], SAMPLE_MOVIE_CARDS[0]]
   }, [])
 
-  const handleOpenDetails = (item: ContentMetadata) => {
-    onSelectContent?.(item)
-  }
+  const watchlistSet = useMemo(() => new Set(watchlistIds), [watchlistIds])
 
-  const handlePlayContent = (item: ContentMetadata, savedProgress: number = 0) => {
+  const handleOpenDetails = useCallback((item: ContentMetadata) => {
+    onSelectContent?.(item)
+  }, [onSelectContent])
+
+  const handlePlayContent = useCallback((item: ContentMetadata, savedProgress: number = 0) => {
     setActivePlayback({
       content: item,
       progress: savedProgress,
     })
-  }
+  }, [])
+
+  const handlePlaySimple = useCallback((item: ContentMetadata) => {
+    handlePlayContent(item, 0)
+  }, [handlePlayContent])
+
+  const handleToggleWatchlist = useCallback((item: ContentMetadata) => {
+    toggleWatchlist(item.id)
+  }, [toggleWatchlist])
+
+  const handleRemoveHistory = useCallback((item: ContentMetadata) => {
+    removeFromHistory(item.id)
+  }, [removeFromHistory])
 
   return (
     <div className="space-y-8 sm:space-y-10 pb-12 select-none">
@@ -107,10 +123,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       <SectionReveal data-testid="reveal-hero" className="relative z-0">
         <HeroBanner
           content={heroContent}
-          onPlay={(item) => handlePlayContent(item, 0)}
-          onInfo={(item) => handleOpenDetails(item)}
-          onAddToList={(item) => toggleWatchlist(item.id)}
-          isSaved={isInWatchlist(heroContent.id)}
+          onPlay={handlePlaySimple}
+          onInfo={handleOpenDetails}
+          onAddToList={handleToggleWatchlist}
+          isSaved={watchlistSet.has(heroContent.id)}
         />
       </SectionReveal>
 
@@ -128,11 +144,11 @@ export const HomePage: React.FC<HomePageProps> = ({
                 content={content}
                 variant="landscape"
                 remainingTime={remainingTime}
-                isSaved={isInWatchlist(content.id)}
+                isSaved={watchlistSet.has(content.id)}
                 onPlay={() => handlePlayContent(content, h.progress)}
-                onInfo={() => handleOpenDetails(content)}
-                onAddToList={() => toggleWatchlist(content.id)}
-                onRemove={() => removeFromHistory(content.id)}
+                onInfo={handleOpenDetails}
+                onAddToList={handleToggleWatchlist}
+                onRemove={handleRemoveHistory}
               />
             ))}
           </HorizontalCarousel>
@@ -153,10 +169,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                   key={`hybrid-${item.id}`}
                   content={item}
                   variant="landscape"
-                  isSaved={isInWatchlist(item.id)}
-                  onPlay={() => handlePlayContent(item, 0)}
-                  onInfo={() => handleOpenDetails(item)}
-                  onAddToList={() => toggleWatchlist(item.id)}
+                  isSaved={watchlistSet.has(item.id)}
+                  onPlay={handlePlaySimple}
+                  onInfo={handleOpenDetails}
+                  onAddToList={handleToggleWatchlist}
                 />
               ))}
             </HorizontalCarousel>
@@ -194,10 +210,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                   key={`sponsored-${item.id}`}
                   content={item}
                   variant="portrait"
-                  isSaved={isInWatchlist(item.id)}
-                  onPlay={() => handlePlayContent(item, 0)}
-                  onInfo={() => handleOpenDetails(item)}
-                  onAddToList={() => toggleWatchlist(item.id)}
+                  isSaved={watchlistSet.has(item.id)}
+                  onPlay={handlePlaySimple}
+                  onInfo={handleOpenDetails}
+                  onAddToList={handleToggleWatchlist}
                 />
               ))}
             </HorizontalCarousel>
@@ -239,10 +255,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                 key={`top-${item.id}`}
                 content={item}
                 variant="portrait"
-                isSaved={isInWatchlist(item.id)}
-                onPlay={() => handlePlayContent(item, 0)}
-                onInfo={() => handleOpenDetails(item)}
-                onAddToList={() => toggleWatchlist(item.id)}
+                isSaved={watchlistSet.has(item.id)}
+                onPlay={handlePlaySimple}
+                onInfo={handleOpenDetails}
+                onAddToList={handleToggleWatchlist}
               />
             ))}
           </HorizontalCarousel>
@@ -262,10 +278,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                 key={`byw-${item.id}`}
                 content={item}
                 variant="portrait"
-                isSaved={isInWatchlist(item.id)}
-                onPlay={() => handlePlayContent(item, 0)}
-                onInfo={() => handleOpenDetails(item)}
-                onAddToList={() => toggleWatchlist(item.id)}
+                isSaved={watchlistSet.has(item.id)}
+                onPlay={handlePlaySimple}
+                onInfo={handleOpenDetails}
+                onAddToList={handleToggleWatchlist}
               />
             ))}
           </HorizontalCarousel>
@@ -285,10 +301,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                 key={`trend-${item.id}`}
                 content={item}
                 variant="portrait"
-                isSaved={isInWatchlist(item.id)}
-                onPlay={() => handlePlayContent(item, 0)}
-                onInfo={() => handleOpenDetails(item)}
-                onAddToList={() => toggleWatchlist(item.id)}
+                isSaved={watchlistSet.has(item.id)}
+                onPlay={handlePlaySimple}
+                onInfo={handleOpenDetails}
+                onAddToList={handleToggleWatchlist}
               />
             ))}
           </HorizontalCarousel>
@@ -308,10 +324,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                 key={`fav-${shelf.genre}-${item.id}`}
                 content={item}
                 variant="portrait"
-                isSaved={isInWatchlist(item.id)}
-                onPlay={() => handlePlayContent(item, 0)}
-                onInfo={() => handleOpenDetails(item)}
-                onAddToList={() => toggleWatchlist(item.id)}
+                isSaved={watchlistSet.has(item.id)}
+                onPlay={handlePlaySimple}
+                onInfo={handleOpenDetails}
+                onAddToList={handleToggleWatchlist}
               />
             ))}
           </HorizontalCarousel>
@@ -330,10 +346,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               key={`rec-${item.id}`}
               content={item}
               variant="portrait"
-              isSaved={isInWatchlist(item.id)}
-              onPlay={() => handlePlayContent(item, 0)}
-              onInfo={() => handleOpenDetails(item)}
-              onAddToList={() => toggleWatchlist(item.id)}
+              isSaved={watchlistSet.has(item.id)}
+              onPlay={handlePlaySimple}
+              onInfo={handleOpenDetails}
+              onAddToList={handleToggleWatchlist}
             />
           ))}
         </HorizontalCarousel>
@@ -352,10 +368,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                 key={`rw-${content.id}`}
                 content={content}
                 variant="landscape"
-                isSaved={isInWatchlist(content.id)}
+                isSaved={watchlistSet.has(content.id)}
                 onPlay={() => handlePlayContent(content, h.progress)}
-                onInfo={() => handleOpenDetails(content)}
-                onAddToList={() => toggleWatchlist(content.id)}
+                onInfo={handleOpenDetails}
+                onAddToList={handleToggleWatchlist}
               />
             ))}
           </HorizontalCarousel>
@@ -374,10 +390,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               key={`prem-${item.id}`}
               content={item}
               variant="featured"
-              isSaved={isInWatchlist(item.id)}
-              onPlay={() => handlePlayContent(item, 0)}
-              onInfo={() => handleOpenDetails(item)}
-              onAddToList={() => toggleWatchlist(item.id)}
+              isSaved={watchlistSet.has(item.id)}
+              onPlay={handlePlaySimple}
+              onInfo={handleOpenDetails}
+              onAddToList={handleToggleWatchlist}
             />
           ))}
         </HorizontalCarousel>
@@ -394,10 +410,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               key={`ser-${item.id}`}
               content={item}
               variant="portrait"
-              isSaved={isInWatchlist(item.id)}
-              onPlay={() => handlePlayContent(item, 0)}
-              onInfo={() => handleOpenDetails(item)}
-              onAddToList={() => toggleWatchlist(item.id)}
+              isSaved={watchlistSet.has(item.id)}
+              onPlay={handlePlaySimple}
+              onInfo={handleOpenDetails}
+              onAddToList={handleToggleWatchlist}
             />
           ))}
         </HorizontalCarousel>
@@ -414,10 +430,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               key={`mov-${item.id}`}
               content={item}
               variant="portrait"
-              isSaved={isInWatchlist(item.id)}
-              onPlay={() => handlePlayContent(item, 0)}
-              onInfo={() => handleOpenDetails(item)}
-              onAddToList={() => toggleWatchlist(item.id)}
+              isSaved={watchlistSet.has(item.id)}
+              onPlay={handlePlaySimple}
+              onInfo={handleOpenDetails}
+              onAddToList={handleToggleWatchlist}
             />
           ))}
         </HorizontalCarousel>
@@ -584,47 +600,57 @@ export const HomePage: React.FC<HomePageProps> = ({
       </SectionReveal>
 
       {/* ─── Genre Preferences Customizer Modal ─── */}
-      <GenrePreferencesModal
-        isOpen={isPreferencesModalOpen}
-        onClose={() => setIsPreferencesModalOpen(false)}
-        profile={profile}
-        currentGenres={preferredGenres}
-        onSave={updatePreferredGenres}
-        onReset={resetPreferences}
-      />
+      {isPreferencesModalOpen && (
+        <React.Suspense fallback={null}>
+          <GenrePreferencesModal
+            isOpen={isPreferencesModalOpen}
+            onClose={() => setIsPreferencesModalOpen(false)}
+            profile={profile}
+            currentGenres={preferredGenres}
+            onSave={updatePreferredGenres}
+            onReset={resetPreferences}
+          />
+        </React.Suspense>
+      )}
 
       {/* ─── Interactive Simulated Playback Engine Modal ─── */}
-      <SimulatedPlayerModal
-        isOpen={Boolean(activePlayback)}
-        content={activePlayback?.content || null}
-        profileId={profile.id}
-        episode={activePlayback?.episode}
-        initialProgress={activePlayback?.progress || 0}
-        onClose={() => setActivePlayback(null)}
-        onNavigateToMembership={() => {
-          setActivePlayback(null)
-          onNavigateToMembership?.()
-        }}
-        onNextEpisode={(nextEp) => {
-          if (activePlayback) {
-            setActivePlayback({
-              ...activePlayback,
-              episode: nextEp,
-              progress: 0,
-            })
-          }
-        }}
-        onProgressUpdate={updateProgress}
-        onMarkCompleted={markCompleted}
-      />
+      {Boolean(activePlayback) && (
+        <React.Suspense fallback={null}>
+          <SimulatedPlayerModal
+            isOpen={Boolean(activePlayback)}
+            content={activePlayback?.content || null}
+            profileId={profile.id}
+            episode={activePlayback?.episode}
+            initialProgress={activePlayback?.progress || 0}
+            onClose={() => setActivePlayback(null)}
+            onNavigateToMembership={() => {
+              setActivePlayback(null)
+              onNavigateToMembership?.()
+            }}
+            onNextEpisode={(nextEp) => {
+              if (activePlayback) {
+                setActivePlayback({
+                  ...activePlayback,
+                  episode: nextEp,
+                  progress: 0,
+                })
+              }
+            }}
+            onProgressUpdate={updateProgress}
+            onMarkCompleted={markCompleted}
+          />
+        </React.Suspense>
+      )}
 
       {/* Phase 6C: Sponsor Info Modal */}
       {selectedSponsor && (
-        <SponsorInfoModal
-          isOpen={Boolean(selectedSponsor)}
-          onClose={() => setSelectedSponsor(null)}
-          sponsor={selectedSponsor}
-        />
+        <React.Suspense fallback={null}>
+          <SponsorInfoModal
+            isOpen={Boolean(selectedSponsor)}
+            onClose={() => setSelectedSponsor(null)}
+            sponsor={selectedSponsor}
+          />
+        </React.Suspense>
       )}
     </div>
   )

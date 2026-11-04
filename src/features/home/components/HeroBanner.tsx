@@ -29,9 +29,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   const cardRef = useRef<HTMLElement>(null)
   const rafIdRef = useRef<number | null>(null)
 
-  // Hero Card Scale-Down & Fade-Out Effect:
-  // As the user scrolls down, the hero card gradually shrinks (scale 1.0 -> 0.92)
-  // and smoothly fades away (opacity 1.0 -> 0.15) over the first 450px of scroll.
+  // Hero Card Cinematic Scroll Experience:
+  // 1. Resists rapid upward scrolling by damping vertical translation (moves up at ~38% of scroll speed).
+  // 2. Gradually minimizes (scales down noticeably from 1.0 down to ~0.78 into deep space).
+  // 3. Smoothly fades away (opacity from 1.0 down to 0.0) over the first ~360px of scroll.
   useEffect(() => {
     if (reducedMotion) return
 
@@ -39,15 +40,23 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       if (!cardRef.current) return
       const scrollY = window.scrollY || document.documentElement.scrollTop || 0
 
-      // Over 0 to 450px of scroll:
-      // scale goes from 1.0 down to 0.92
-      // opacity goes from 1.0 down to 0.15
-      const progress = Math.min(1, Math.max(0, scrollY / 450))
-      const scale = (1 - progress * 0.08).toFixed(3)
-      const opacity = (1 - progress * 0.85).toFixed(3)
+      // Over 0 to 360px of scroll:
+      const maxScroll = 360
+      const progress = Math.min(1, Math.max(0, scrollY / maxScroll))
 
-      cardRef.current.style.transform = `scale(${scale})`
+      // Resists upward scroll so the hero card does NOT fly away rapidly
+      // Translates down by 62% of scroll distance up to maxScroll
+      const yOffset = (Math.min(scrollY, maxScroll) * 0.62).toFixed(1)
+
+      // Gradually minimizes from 1.0 down to 0.78 (noticeable, cinematic perspective shrink)
+      const scale = (1 - progress * 0.22).toFixed(3)
+
+      // Smooth gradual fade from 1.0 down to 0.0
+      const opacity = Math.max(0, 1 - Math.pow(progress, 1.2)).toFixed(3)
+
+      cardRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale(${scale})`
       cardRef.current.style.opacity = opacity
+      cardRef.current.style.pointerEvents = progress > 0.6 ? 'none' : 'auto'
     }
 
     const onScroll = () => {
@@ -77,10 +86,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       aria-label={`Featured: ${content.title}`}
       className={`relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)] min-h-[380px] sm:min-h-[440px] lg:min-h-[500px] flex flex-col justify-end p-5 sm:p-10 lg:p-14 select-none shadow-[var(--shadow-elevated)] will-change-transform ${className}`}
       style={{
-        transformOrigin: '50% 30%',
-        transform: 'scale(1)',
+        transformOrigin: '50% 25%',
+        transform: 'translate3d(0, 0px, 0) scale(1)',
         opacity: 1,
-        transition: 'transform 75ms ease-out, opacity 75ms ease-out',
       }}
     >
       {/* Background Image: Clearly visible cinematic backdrop */}

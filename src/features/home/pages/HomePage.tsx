@@ -104,7 +104,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div className="space-y-8 sm:space-y-10 pb-12 select-none">
       {/* ─── Hero Cinematic Showcase Banner ─── */}
-      <SectionReveal data-testid="reveal-hero">
+      <SectionReveal data-testid="reveal-hero" className="relative z-0">
         <HeroBanner
           content={heroContent}
           onPlay={(item) => handlePlayContent(item, 0)}
@@ -116,7 +116,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
       {/* ─── Section 1: Continue Watching (Landscape) ─── */}
       {continueWatchingList.length > 0 && (
-        <SectionReveal data-testid="reveal-continue-watching">
+        <SectionReveal data-testid="reveal-continue-watching" className="relative z-10">
           <HorizontalCarousel
             title="Continue Watching"
             eyebrow="RESUME PLAYBACK"

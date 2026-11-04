@@ -3,6 +3,7 @@ import type { NavigationPage } from '../../home/components/TopNavigation'
 import type { ContentMetadata } from '../../../types'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 import { scrollCoordinator } from '../../../utils/scrollCoordinator'
+import { CinematicStarfield } from './CinematicStarfield'
 
 export interface AmbientAtmosphereProps {
   activePage?: NavigationPage
@@ -187,22 +188,11 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
       className="fixed inset-0 pointer-events-none -z-10 overflow-hidden"
       aria-hidden="true"
     >
-      {/* ─── Static Film Grain Texture Overlay (GPU Composited) ─── */}
-      <div
-        data-testid="cinematic-grain-overlay"
-        className="absolute inset-0 pointer-events-none opacity-[0.035] mix-blend-overlay z-10 will-change-transform"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          transform: 'translateZ(0)',
-        }}
-      />
-
       {/* ─── Layer 1: Top Header & Hero Aura (Deep Indigo & Midnight Slate) ─── */}
       <div
         ref={l1Ref}
         data-testid="atmos-layer-1"
-        className="absolute -top-[12%] left-1/2 w-[130vw] max-w-[1500px] h-[550px] rounded-[100%] blur-[70px] transition-opacity duration-700 ease-out will-change-transform"
+        className="absolute -top-[12%] left-1/2 w-[130vw] max-w-[1500px] h-[550px] rounded-[100%] blur-[70px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
         style={{
           background: 'radial-gradient(ellipse at 50% 30%, #32436D 0%, #1D263D 45%, #10131D 75%, transparent 95%)',
           opacity: config.topOpacity,
@@ -214,7 +204,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
       <div
         ref={l2Ref}
         data-testid="atmos-layer-2"
-        className="absolute w-[560px] h-[560px] rounded-full blur-[80px] transition-opacity duration-700 ease-out will-change-transform"
+        className="absolute w-[560px] h-[560px] rounded-full blur-[80px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
         style={{
           top: `${config.accentYOffset}px`,
           right: `${config.accentXOffset}px`,
@@ -227,7 +217,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
       {/* ─── Optional Page Tint Gradient Overlay ─── */}
       {config.tintGradient && (
         <div
-          className="absolute inset-0 transition-opacity duration-700 ease-out"
+          className="absolute inset-0 transition-opacity duration-700 ease-out z-[1]"
           style={{
             background: config.tintGradient,
             opacity: config.accentOpacity * 1.3,
@@ -239,7 +229,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
       <div
         ref={l3Ref}
         data-testid="atmos-layer-3"
-        className="absolute top-[35%] -left-[100px] w-[660px] h-[660px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform"
+        className="absolute top-[35%] -left-[100px] w-[660px] h-[660px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
         style={{
           background: 'radial-gradient(circle, #2D3A5D 0%, #1A2238 45%, #10131D 75%, transparent 88%)',
           opacity: config.midOpacity,
@@ -251,7 +241,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
       <div
         ref={l4Ref}
         data-testid="atmos-layer-4"
-        className="absolute top-[65%] -right-[120px] w-[580px] h-[580px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform pointer-events-none"
+        className="absolute top-[65%] -right-[120px] w-[580px] h-[580px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform pointer-events-none z-[1]"
         style={{
           background: 'radial-gradient(circle, var(--accent-glow) 0%, #293452 45%, transparent 75%)',
           opacity: config.accentOpacity * 0.85,
@@ -262,10 +252,24 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
       {/* ─── Static Background Depth Pocket (Lower Left Idle Depth) ─── */}
       <div
         data-testid="atmos-static-pocket"
-        className="absolute bottom-[6%] -left-[100px] w-[520px] h-[520px] rounded-full blur-[90px] pointer-events-none"
+        className="absolute bottom-[6%] -left-[100px] w-[520px] h-[520px] rounded-full blur-[90px] pointer-events-none z-[1]"
         style={{
           background: 'radial-gradient(circle, #2B3754 0%, #10131D 60%, transparent 80%)',
           opacity: 0.45,
+        }}
+      />
+
+      {/* ─── Cinematic Starfield: 3-Layer Parallax & Subtle Twinkle ─── */}
+      <CinematicStarfield isPlayerOpen={isPlayerOpen} />
+
+      {/* ─── Static Film Grain Texture Overlay (GPU Composited) ─── */}
+      <div
+        data-testid="cinematic-grain-overlay"
+        className="absolute inset-0 pointer-events-none opacity-[0.035] mix-blend-overlay z-10 will-change-transform"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          transform: 'translateZ(0)',
         }}
       />
     </div>

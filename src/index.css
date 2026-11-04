@@ -89,6 +89,13 @@
   --shadow-card: 0 6px 24px -4px rgba(0, 0, 0, 0.55);
   --shadow-elevated: 0 16px 36px -6px rgba(0, 0, 0, 0.75);
   --shadow-accent-glow: 0 8px 30px -8px var(--accent-glow);
+
+  /* Starfield Theme Variables (Dark Mode Default) */
+  --star-color-cool: rgba(225, 235, 255, 0.72);
+  --star-color-white: rgba(255, 255, 255, 0.85);
+  --star-color-ivory: rgba(255, 248, 235, 0.78);
+  --star-color-indigo: rgba(185, 205, 245, 0.72);
+  --starfield-layer-opacity: 0.95;
 }
 
 /* ─── Light Mode Definitions ─── */
@@ -144,6 +151,13 @@
   /* Elevation Shadows */
   --shadow-card: 0 8px 24px -4px rgba(18, 26, 48, 0.08);
   --shadow-elevated: 0 18px 40px -8px rgba(18, 26, 48, 0.14);
+
+  /* Starfield Theme Variables (Luminous Light Mode) */
+  --star-color-cool: rgba(55, 72, 105, 0.45);
+  --star-color-white: rgba(45, 60, 92, 0.52);
+  --star-color-ivory: rgba(70, 80, 110, 0.42);
+  --star-color-indigo: rgba(50, 65, 98, 0.48);
+  --starfield-layer-opacity: 0.38;
 }
 
 /* ─── Explicit Dark Mode Override ─── */
@@ -267,5 +281,36 @@ body {
   ) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
 }
+
+/* ─── Cinematic Starfield Parallax & Gentle Twinkle ─── */
+@keyframes cinematic-star-twinkle {
+  0%, 100% {
+    opacity: var(--star-base-op, 0.6);
+  }
+  50% {
+    opacity: var(--star-dim-op, 0.15);
+  }
+}
+
+.star-twinkle {
+  animation-name: cinematic-star-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media (max-width: 640px) {
+  /* On mobile viewports, only foreground stars twinkle to optimize GPU performance */
+  .starfield-layer-distant .star-twinkle,
+  .starfield-layer-mid .star-twinkle {
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-twinkle {
+    animation: none !important;
+  }
+}
+
 
 

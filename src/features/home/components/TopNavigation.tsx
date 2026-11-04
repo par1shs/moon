@@ -82,17 +82,31 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
         aria-hidden="true"
       />
 
-      {/* ─── Persistent Viewport-Fixed Top Navigation (Preserves exact original design) ─── */}
+      {/* ─── Persistent Viewport-Fixed Top Navigation (Smooth fading atmospheric nav bar) ─── */}
       <header
         data-testid="top-navigation"
         data-scrolled={isScrolled ? 'true' : 'false'}
-        className={`fixed top-0 left-0 right-0 z-40 w-full transition-all duration-300 ${
-          isScrolled
-            ? 'bg-[var(--bg-nav)] backdrop-blur-md border-b border-[var(--border-subtle)] shadow-[0_8px_30px_rgba(0,0,0,0.5)]'
-            : 'bg-gradient-to-b from-[var(--bg-nav)] via-[var(--brand-midnight)]/80 to-transparent border-b border-transparent'
-        }`}
+        className="fixed top-0 left-0 right-0 z-40 w-full pointer-events-none"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+        {/* Seamless Fading Atmospheric Backdrop — smooth vertical gradient & mask so there is no discernable ending edge */}
+        <div
+          data-testid="nav-fading-backdrop"
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-28 sm:h-36 pointer-events-none transition-all duration-300 ease-out"
+          style={{
+            background: isScrolled
+              ? 'linear-gradient(180deg, var(--bg-nav) 0%, color-mix(in srgb, var(--bg-nav) 90%, transparent) 40%, color-mix(in srgb, var(--bg-nav) 50%, transparent) 70%, color-mix(in srgb, var(--bg-nav) 15%, transparent) 88%, transparent 100%)'
+              : 'linear-gradient(180deg, color-mix(in srgb, var(--bg-nav) 92%, transparent) 0%, color-mix(in srgb, var(--bg-nav) 70%, transparent) 35%, color-mix(in srgb, var(--bg-nav) 30%, transparent) 70%, transparent 100%)',
+            backdropFilter: isScrolled ? 'blur(16px)' : 'blur(8px)',
+            WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'blur(8px)',
+            maskImage:
+              'linear-gradient(to bottom, black 0%, black 40%, rgba(0, 0, 0, 0.7) 65%, rgba(0, 0, 0, 0.25) 85%, transparent 100%)',
+            WebkitMaskImage:
+              'linear-gradient(to bottom, black 0%, black 40%, rgba(0, 0, 0, 0.7) 65%, rgba(0, 0, 0, 0.25) 85%, transparent 100%)',
+          }}
+        />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between pointer-events-auto">
           {/* Left Side: Brand Logo & Desktop Navigation Links */}
           <div className="flex items-center gap-6 lg:gap-10">
             <button

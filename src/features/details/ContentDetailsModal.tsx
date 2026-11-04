@@ -582,12 +582,12 @@ export const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
             {/* ─── Synopsis & Metadata Grid ─── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column: Full Synopsis & Genres */}
-              <div className="lg:col-span-2 space-y-4">
+              <div className="lg:col-span-2 space-y-4" data-testid="about-section">
                 <h3 className="font-display font-bold text-lg text-[var(--text-primary)] flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
                   <span>About {content.title}</span>
                 </h3>
-                <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+                <p data-testid="content-about-description" className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
                   {content.description || content.subtitle}
                 </p>
 

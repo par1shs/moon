@@ -27,41 +27,38 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   const reducedMotion = useReducedMotionPreference()
   const bannerImage = content.backdropUrl || content.posterUrl
   const cardRef = useRef<HTMLElement>(null)
-  const artworkRef = useRef<HTMLDivElement>(null)
   const rafIdRef = useRef<number | null>(null)
 
-  // Card Parallax: Entire hero card scrolls slightly slower than standard content
+  // Hero Card Scale-Down & Fade-Out Effect:
+  // As the user scrolls down, the hero card gradually shrinks (scale 1.0 -> 0.92)
+  // and smoothly fades away (opacity 1.0 -> 0.15) over the first 450px of scroll.
   useEffect(() => {
     if (reducedMotion) return
 
-    const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
-    if (isTouch) return
-
-    const updateParallax = () => {
+    const updateScrollEffect = () => {
+      if (!cardRef.current) return
       const scrollY = window.scrollY || document.documentElement.scrollTop || 0
 
-      // The whole hero card lags slightly behind scroll (e.g. shifts down by ~18% of scroll up to 45px)
-      if (cardRef.current) {
-        const cardOffset = Math.min(45, scrollY * 0.18)
-        cardRef.current.style.transform = `translate3d(0, ${cardOffset.toFixed(1)}px, 0)`
-      }
+      // Over 0 to 450px of scroll:
+      // scale goes from 1.0 down to 0.92
+      // opacity goes from 1.0 down to 0.15
+      const progress = Math.min(1, Math.max(0, scrollY / 450))
+      const scale = (1 - progress * 0.08).toFixed(3)
+      const opacity = (1 - progress * 0.85).toFixed(3)
 
-      // Inside the card, the backdrop image also shifts with subtle inner depth
-      if (artworkRef.current) {
-        const artOffset = Math.min(25, scrollY * 0.08)
-        artworkRef.current.style.transform = `translate3d(0, ${artOffset.toFixed(1)}px, 0) scale(1.06)`
-      }
+      cardRef.current.style.transform = `scale(${scale})`
+      cardRef.current.style.opacity = opacity
     }
 
     const onScroll = () => {
       if (rafIdRef.current !== null) return
       rafIdRef.current = requestAnimationFrame(() => {
-        updateParallax()
+        updateScrollEffect()
         rafIdRef.current = null
       })
     }
 
-    updateParallax()
+    updateScrollEffect()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll, { passive: true })
 
@@ -80,18 +77,17 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       aria-label={`Featured: ${content.title}`}
       className={`relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)] min-h-[380px] sm:min-h-[440px] lg:min-h-[500px] flex flex-col justify-end p-5 sm:p-10 lg:p-14 select-none shadow-[var(--shadow-elevated)] will-change-transform ${className}`}
       style={{
-        transform: 'translate3d(0, 0px, 0)',
+        transformOrigin: '50% 30%',
+        transform: 'scale(1)',
+        opacity: 1,
+        transition: 'transform 75ms ease-out, opacity 75ms ease-out',
       }}
     >
-      {/* Background Image: Brightness increased so the cinematic artwork is clearly visible */}
+      {/* Background Image: Clearly visible cinematic backdrop */}
       {bannerImage && (
         <div
-          ref={artworkRef}
           data-testid="hero-parallax-artwork"
-          className="absolute inset-0 z-0 overflow-hidden will-change-transform"
-          style={{
-            transform: 'translate3d(0, 0px, 0) scale(1.06)',
-          }}
+          className="absolute inset-0 z-0 overflow-hidden"
         >
           <img
             src={bannerImage}

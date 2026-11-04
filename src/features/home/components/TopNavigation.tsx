@@ -79,22 +79,33 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
       }
     }
 
+    // Initial check
+    handleScroll()
+
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
     <>
-      {/* ─── Pinned Scroll Progress Indicator Bar (2px) ─── */}
+      {/* ─── Pinned Scroll Progress Indicator Bar (2px, z-50) ─── */}
       <ScrollProgressIndicator />
 
+      {/* ─── In-Flow Layout Spacer (Prevents content jump below fixed header) ─── */}
+      <div
+        data-testid="top-navigation-spacer"
+        className="h-16 sm:h-20 w-full shrink-0 pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* ─── Viewport-Fixed Top Navigation (Guaranteed sticky at top:0 across long scroll) ─── */}
       <header
         data-testid="top-navigation"
         data-scrolled={isScrolled ? 'true' : 'false'}
-        className={`sticky top-0 left-0 right-0 z-40 w-full transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-40 w-full transition-all duration-300 ${
           isScrolled
             ? 'nav-scrolled-atmospheric border-none border-b-0 shadow-none'
-            : 'bg-gradient-to-b from-[var(--bg-nav)] via-[var(--brand-midnight)]/60 to-transparent border-b border-transparent'
+            : 'bg-gradient-to-b from-[var(--bg-nav)] via-[var(--brand-midnight)]/80 to-transparent border-b border-transparent'
         }`}
       >
         <div

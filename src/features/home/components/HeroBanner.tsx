@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
 import { Play, Info, Plus, Check } from 'lucide-react'
 import type { ContentMetadata } from '../../../types'
@@ -26,19 +26,66 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 }) => {
   const reducedMotion = useReducedMotionPreference()
   const bannerImage = content.backdropUrl || content.posterUrl
+  const artworkRef = useRef<HTMLDivElement>(null)
+  const rafIdRef = useRef<number | null>(null)
+
+  // Subtle Hero Parallax: 8-12px transform-based vertical shift on artwork only
+  useEffect(() => {
+    if (reducedMotion) return
+
+    // Disable on touch devices
+    const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+    if (isTouch) return
+
+    const updateParallax = () => {
+      if (!artworkRef.current) return
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+
+      // Subtly translate artwork vertically: capped at 10px (within 8-12px range)
+      const offset = Math.min(10, Math.max(0, scrollY * 0.035))
+      artworkRef.current.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0) scale(1.04)`
+    }
+
+    const onScroll = () => {
+      if (rafIdRef.current !== null) return
+      rafIdRef.current = requestAnimationFrame(() => {
+        updateParallax()
+        rafIdRef.current = null
+      })
+    }
+
+    updateParallax()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+    }
+  }, [reducedMotion])
 
   return (
     <section
       aria-label={`Featured: ${content.title}`}
       className={`relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)] min-h-[380px] sm:min-h-[440px] lg:min-h-[500px] flex flex-col justify-end p-5 sm:p-10 lg:p-14 select-none shadow-[var(--shadow-elevated)] ${className}`}
     >
-      {/* Background Image */}
+      {/* Background Image with subtle hero parallax (8-12px transform) */}
       {bannerImage && (
-        <div className="absolute inset-0 z-0 overflow-hidden">
+        <div
+          ref={artworkRef}
+          data-testid="hero-parallax-artwork"
+          className="absolute inset-0 z-0 overflow-hidden will-change-transform"
+          style={{
+            transform: 'translate3d(0, 0px, 0) scale(1.04)',
+          }}
+        >
           <img
             src={bannerImage}
             alt={content.title}
-            className="w-full h-full object-cover object-center filter brightness-[0.8] contrast-[1.08] transition-transform duration-1000 scale-100"
+            className="w-full h-full object-cover object-center filter brightness-[0.8] contrast-[1.08]"
             loading="eager"
           />
         </div>

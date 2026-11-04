@@ -23,8 +23,8 @@ export const SectionReveal: React.FC<SectionRevealProps> = ({
   children,
   className = '',
   delay = 0,
-  threshold = 0.08,
-  rootMargin = '0px 0px -40px 0px',
+  threshold = 0.02,
+  rootMargin = '0px 0px -20px 0px',
   'data-testid': testId,
 }) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -69,10 +69,10 @@ export const SectionReveal: React.FC<SectionRevealProps> = ({
       className={className}
       style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
+        transform: isVisible ? 'translateY(0)' : 'translateY(14px)',
         transition: reducedMotion
           ? 'none'
-          : `opacity 380ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 380ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
+          : `opacity 400ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 400ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
         willChange: isVisible ? 'auto' : 'opacity, transform',
       }}
     >

@@ -56,8 +56,8 @@ export const ScrollProgressIndicator: React.FC = () => {
       <div
         ref={barRef}
         data-testid="scroll-progress-bar"
-        className="w-full h-full bg-[var(--accent-primary)] origin-left will-change-transform transition-transform duration-75 ease-out shadow-[0_0_8px_var(--accent-glow)]"
-        style={{ transform: 'scaleX(0)' }}
+        className="w-full h-full bg-[var(--accent-primary)] origin-left will-change-transform shadow-[0_0_8px_var(--accent-glow)]"
+        style={{ transformOrigin: '0% 50%', transform: 'scaleX(0)' }}
       />
     </div>
   )

@@ -83,11 +83,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         </div>
       )}
 
-      {/* Balanced Radial Gradient: Protects readability without blacking out the image */}
+      {/* Balanced Radial Gradient: Theme-aware protection without blacking out the image */}
       <div
-        className="absolute inset-0 z-10 pointer-events-none"
+        className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-300"
         style={{
-          background: 'radial-gradient(120% 85% at 75% 20%, rgba(40, 52, 85, 0.40) 0%, rgba(16, 19, 29, 0.65) 50%, rgba(12, 13, 15, 0.88) 100%)',
+          background: 'var(--hero-overlay-radial)',
         }}
       />
 
@@ -99,20 +99,20 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         }}
       />
 
-      {/* Cinematic Vignette Gradients: Soft text legibility protection */}
+      {/* Cinematic Vignette Gradients: Theme-aware soft text legibility protection */}
       <div
-        className="absolute inset-0 z-10 pointer-events-none"
+        className="absolute inset-0 z-10 pointer-events-none transition-all duration-300"
         style={{
-          background: 'linear-gradient(to top, rgba(12, 13, 15, 0.92) 0%, rgba(16, 19, 29, 0.60) 40%, transparent 100%)',
+          background: 'var(--hero-vignette-bottom)',
         }}
       />
       <div
-        className="absolute inset-0 z-10 pointer-events-none"
+        className="absolute inset-0 z-10 pointer-events-none transition-all duration-300"
         style={{
-          background: 'linear-gradient(to right, rgba(12, 13, 15, 0.92) 0%, rgba(16, 19, 29, 0.55) 45%, transparent 100%)',
+          background: 'var(--hero-vignette-left)',
         }}
       />
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] opacity-25 pointer-events-none z-10" />
+      <div className="absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none z-10" />
 
       {/* Top Right Badges */}
       <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20 flex items-center gap-2">
@@ -200,7 +200,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             aria-label={isSaved ? 'Remove from My List' : 'Add to My List'}
             onClick={() => onAddToList?.(content)}
             variant={isSaved ? 'outline' : 'ghost'}
-            className="rounded-full w-11 h-11 border border-white/20 bg-black/40 hover:bg-black/60 backdrop-blur-md"
+            className="rounded-full w-11 h-11 border border-[var(--border-subtle)] bg-[var(--bg-card)]/80 hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] backdrop-blur-md shadow-sm"
           />
         </div>
       </motion.div>

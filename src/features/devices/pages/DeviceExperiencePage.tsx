@@ -72,7 +72,7 @@ export const DeviceExperiencePage: React.FC<DeviceExperiencePageProps> = ({
   return (
     <div
       data-testid="device-experience-page"
-      className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] pb-24 pt-20 sm:pt-24 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-12 font-sans"
+      className="min-h-screen rounded-3xl border border-[var(--devices-container-border)] bg-[var(--devices-container-bg)] backdrop-blur-md text-[var(--text-primary)] pb-24 pt-10 sm:pt-12 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-12 font-sans shadow-2xl transition-all duration-300"
     >
       {/* ─── 1. Header & Simultaneous Screen Allowance Pill ─── */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-[var(--border-subtle)] pb-8">
@@ -163,15 +163,15 @@ export const DeviceExperiencePage: React.FC<DeviceExperiencePageProps> = ({
       {(isLimitReached || limitErrorMessage) && (
         <div
           data-testid="screen-limit-warning"
-          className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/35 text-amber-200 text-xs font-mono flex items-start sm:items-center justify-between gap-4 animate-in fade-in"
+          className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/35 text-amber-900 dark:text-amber-200 text-xs font-mono flex items-start sm:items-center justify-between gap-4 animate-in fade-in"
         >
           <div className="flex items-start sm:items-center gap-3">
-            <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
+            <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
             <div className="space-y-0.5">
-              <span className="font-bold text-amber-300 block">
+              <span className="font-bold text-amber-950 dark:text-amber-300 block">
                 Simultaneous Screen Allowance Limit Reached ({activeScreens}/{maxScreens})
               </span>
-              <p className="text-amber-200/90 leading-relaxed">
+              <p className="text-amber-900/90 dark:text-amber-200/90 leading-relaxed">
                 {limitErrorMessage ||
                   `Your ${plan.name} plan is capped at ${maxScreens} active screen${maxScreens > 1 ? 's' : ''}. Upgrade to Standard (2 screens) or Premium (4 screens) to stream simultaneously across multiple household devices.`}
               </p>
@@ -183,7 +183,7 @@ export const DeviceExperiencePage: React.FC<DeviceExperiencePageProps> = ({
               variant="outline"
               size="sm"
               onClick={onNavigateToMembership}
-              className="text-xs font-mono text-amber-300 border-amber-500/40 hover:bg-amber-500/20 shrink-0"
+              className="text-xs font-mono text-amber-900 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/20 shrink-0"
             >
               Compare Plans
             </Button>
@@ -192,7 +192,7 @@ export const DeviceExperiencePage: React.FC<DeviceExperiencePageProps> = ({
       )}
 
       {/* ─── 2. Smart TV 10-Foot Mode Showcase Banner ─── */}
-      <div className="relative rounded-3xl overflow-hidden p-6 sm:p-10 border border-[var(--border-subtle)] bg-gradient-to-r from-black/90 via-[var(--bg-card)] to-black/80 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
+      <div className="relative rounded-3xl overflow-hidden p-6 sm:p-10 border border-[var(--border-subtle)] bg-[var(--devices-banner-bg)] flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl transition-colors duration-300">
         <div className="space-y-4 max-w-2xl">
           <div className="flex items-center gap-2">
             <Tv className="w-5 h-5 text-[var(--accent-primary)]" />

@@ -1197,7 +1197,7 @@ export const GENRE_EDITORIALS: Record<string, GenreEditorial> = {
     name: 'Unified OTT & Linear Universe',
     tagline: 'EVERY GENRE. EVERY STORY.',
     description: 'Explore our complete interactive catalogue spanning blockbuster originals, indie masterworks, 4K restorations, and 24/7 broadcast feeds.',
-    backdropUrl: 'https://images.unsplash.com/photo-1518173946687-a4c8a383392e?q=80&w=1600&auto=format&fit=crop',
+    backdropUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1600&auto=format&fit=crop',
   },
   'Drama': {
     name: 'Prestige Human Drama',

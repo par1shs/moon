@@ -208,7 +208,7 @@ export const DiscoverPage: React.FC<DiscoverPageProps> = ({
           <img
             src={editorial.backdropUrl}
             alt={editorial.name}
-            className="w-full h-full object-cover filter brightness-[0.75] contrast-[1.08] transition-all duration-700"
+            className="w-full h-full object-cover filter brightness-[0.90] dark:brightness-[0.75] contrast-[1.08] transition-all duration-700"
           />
         </div>
 
@@ -220,19 +220,17 @@ export const DiscoverPage: React.FC<DiscoverPageProps> = ({
           }}
         />
 
-        {/* Protection Gradients */}
+        {/* Theme-Aware Protection Gradients */}
         <div
-          className="absolute inset-0 z-10 pointer-events-none"
+          className="absolute inset-0 z-10 pointer-events-none transition-all duration-300"
           style={{
-            background:
-              'linear-gradient(to top, rgba(12, 13, 15, 0.98) 0%, rgba(12, 13, 15, 0.65) 55%, transparent 100%)',
+            background: 'var(--hero-vignette-bottom)',
           }}
         />
         <div
-          className="absolute inset-0 z-10 pointer-events-none"
+          className="absolute inset-0 z-10 pointer-events-none transition-all duration-300"
           style={{
-            background:
-              'linear-gradient(to right, rgba(12, 13, 15, 0.95) 0%, rgba(12, 13, 15, 0.45) 60%, transparent 100%)',
+            background: 'var(--hero-vignette-left)',
           }}
         />
 
@@ -276,7 +274,7 @@ export const DiscoverPage: React.FC<DiscoverPageProps> = ({
                 className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-150 whitespace-nowrap cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] ${
                   isSelected
                     ? 'bg-[var(--accent-primary)] text-[var(--accent-contrast)] shadow-md font-semibold'
-                    : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-white/20 hover:text-[var(--text-primary)]'
+                    : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/40 hover:text-[var(--text-primary)]'
                 }`}
               >
                 {genre}

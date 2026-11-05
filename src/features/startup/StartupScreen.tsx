@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
 import { Sparkles } from 'lucide-react'
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference'
-import { AmbientRisingPixels } from './components/AmbientRisingPixels'
+import { CinematicStarfield } from '../cinematic/components/CinematicStarfield'
 import { PixelFormationLogo } from './components/PixelFormationLogo'
 
 export interface StartupScreenProps {
@@ -48,8 +48,14 @@ export const StartupScreen: React.FC<StartupScreenProps> = ({
       aria-label="PIXEL Startup Intro"
       data-testid="startup-screen"
     >
-      {/* ─── 1. Ambient Background Rising Pixels (coming up from the bottom) ─── */}
-      <AmbientRisingPixels />
+      {/* ─── 1. Cinematic Background Starfield (stationary, gentle twinkling) ─── */}
+      <CinematicStarfield
+        density="subtle"
+        visible={true}
+        showAccentStars={false}
+        opacity={0.85}
+        testId="startup-starfield"
+      />
 
       {/* ─── 2. Subtle Ambient Light / Gradient Effect ─── */}
       <motion.div

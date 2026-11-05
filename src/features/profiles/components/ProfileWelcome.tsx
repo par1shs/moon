@@ -7,8 +7,7 @@ import { Button } from '../../../components/common/Button'
 import { SoundControl } from '../../audio/SoundControl'
 import { AvatarRenderer } from './AvatarRenderer'
 import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
-import { AmbientRisingPixels } from '../../startup/components/AmbientRisingPixels'
-import { AmbientAtmosphere } from '../../cinematic/components/AmbientAtmosphere'
+import { CinematicStarfield } from '../../cinematic/components/CinematicStarfield'
 
 export interface ProfileWelcomeProps {
   profile: Profile
@@ -69,11 +68,14 @@ export const ProfileWelcome: React.FC<ProfileWelcomeProps> = ({
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="min-h-screen w-full bg-transparent text-[var(--text-primary)] flex flex-col justify-between p-6 sm:p-10 select-none overflow-hidden relative"
     >
-      {/* ─── Cinematic Ambient Atmosphere & Starfield ─── */}
-      <AmbientAtmosphere activePage="home" />
-
-      {/* Ambient Rising Pixels */}
-      <AmbientRisingPixels />
+      {/* ─── Cinematic Background Starfield with Profile-Derived Accent Stars ─── */}
+      <CinematicStarfield
+        density="subtle"
+        visible={true}
+        showAccentStars={true}
+        opacity={0.80}
+        testId="welcome-starfield"
+      />
 
       {/* Permanent Brand Primary Atmospheric Glow */}
       <div

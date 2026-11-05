@@ -13,7 +13,6 @@ import { useProfiles } from './hooks/useProfiles'
 import type { Profile } from './types'
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference'
 import { useTheme } from '../../hooks/useTheme'
-import { AmbientAtmosphere } from '../cinematic/components/AmbientAtmosphere'
 
 const STREAMING_SESSION_KEY = 'junction_in_streaming'
 
@@ -133,9 +132,6 @@ export const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({
       transition={{ duration: 0.45, ease: 'easeOut' }}
       className="min-h-screen w-full bg-transparent text-[var(--text-primary)] flex flex-col justify-between p-6 sm:p-10 select-none overflow-x-hidden relative"
     >
-      {/* ─── Cinematic Ambient Atmosphere & Starfield ─── */}
-      <AmbientAtmosphere activePage="home" />
-
       {/* Ambient Brand Primary Radial Glow */}
       <div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[950px] h-[650px] rounded-[100%] blur-[130px] opacity-70 pointer-events-none"

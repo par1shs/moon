@@ -155,6 +155,12 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
     return PAGE_ATMOSPHERE_PRESETS[activePage] || PAGE_ATMOSPHERE_PRESETS.home
   }, [activePage, selectedDetailContent, isPlayerOpen])
 
+  // Selective Starfield Atmosphere: Active ONLY on My List, Devices, and Membership
+  const isStarfieldSection = useMemo(() => {
+    if (isPlayerOpen) return false
+    return activePage === 'mylist' || activePage === 'devices' || activePage === 'membership'
+  }, [activePage, isPlayerOpen])
+
   // Scroll-reactive layer movement: driven by unified scrollCoordinator
   // Directly updates compositor transforms without CSS variable style recalculation
   useEffect(() => {
@@ -259,8 +265,13 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         }}
       />
 
-      {/* ─── Cinematic Starfield: 3-Layer Parallax & Subtle Twinkle ─── */}
-      <CinematicStarfield isPlayerOpen={isPlayerOpen} />
+      {/* ─── Selective Cinematic Starfield: Active ONLY on My List, Devices, Membership ─── */}
+      <CinematicStarfield
+        visible={isStarfieldSection}
+        density="dense"
+        showAccentStars={true}
+        testId="selective-starfield"
+      />
 
       {/* ─── Static Film Grain Texture Overlay (GPU Composited) ─── */}
       <div

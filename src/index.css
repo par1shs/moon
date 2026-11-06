@@ -232,13 +232,23 @@ body {
   padding: 0;
   min-height: 100vh;
   background-color: var(--brand-foundation);
-  background-image: var(--bg-body-gradient);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
   color: var(--text-primary);
   overflow-x: hidden;
+  position: relative;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hardware-composited fixed background plane (eliminates scroll repaints from background-attachment: fixed) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background-image: var(--bg-body-gradient);
+  background-repeat: no-repeat;
+  background-size: cover;
+  pointer-events: none;
+  transform: translateZ(0);
 }
 
 /* Custom restrained scrollbars */
@@ -330,13 +340,13 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* ─── Cinematic Starfield Parallax & Gentle Twinkle ─── */
+/* ─── Cinematic Starfield Parallax & Gentle Twinkle (Compositor Offloaded) ─── */
 @keyframes cinematic-star-twinkle {
   0%, 100% {
-    opacity: var(--star-base-op, 0.6);
+    opacity: 1;
   }
   50% {
-    opacity: var(--star-dim-op, 0.15);
+    opacity: 0.28;
   }
 }
 
@@ -344,6 +354,7 @@ body {
   animation-name: cinematic-star-twinkle;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+  will-change: opacity;
 }
 
 @media (max-width: 640px) {

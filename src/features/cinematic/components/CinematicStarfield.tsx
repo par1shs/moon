@@ -292,31 +292,61 @@ const StarSvgLayer: React.FC<{
     >
       {stars.map((star) => {
         const isTwinkle = Boolean(star.twinkle) && !reducedMotion
-        const style: React.CSSProperties = {
-          opacity: star.baseOpacity,
-          ...(star.hasGlow && {
-            filter: 'drop-shadow(0 0 2.5px rgba(255, 255, 255, 0.65))',
-          }),
-        }
+        const fill = getStarFill(star.colorType, showAccentStars)
 
         if (isTwinkle && star.twinkle) {
-          ;(style as Record<string, string | number>)['--star-base-op'] = star.baseOpacity
-          ;(style as Record<string, string | number>)['--star-dim-op'] = star.twinkle.dimOpacity
-          style.animationDuration = `${star.twinkle.duration}s`
-          style.animationDelay = `${star.twinkle.delay}s`
+          return (
+            <g key={star.id} opacity={star.baseOpacity}>
+              {star.hasGlow && (
+                <circle
+                  cx={star.x}
+                  cy={star.y}
+                  r={star.r * 2.4}
+                  fill={fill}
+                  opacity={0.32}
+                  className="star-twinkle"
+                  style={{
+                    animationDuration: `${star.twinkle.duration}s`,
+                    animationDelay: `${star.twinkle.delay}s`,
+                  }}
+                />
+              )}
+              <circle
+                data-testid={`${testIdPrefix}-${star.id}`}
+                cx={star.x}
+                cy={star.y}
+                r={star.r}
+                fill={fill}
+                className="star-twinkle"
+                style={{
+                  animationDuration: `${star.twinkle.duration}s`,
+                  animationDelay: `${star.twinkle.delay}s`,
+                }}
+              />
+            </g>
+          )
         }
 
         return (
-          <circle
-            key={star.id}
-            data-testid={`${testIdPrefix}-${star.id}`}
-            cx={star.x}
-            cy={star.y}
-            r={star.r}
-            fill={getStarFill(star.colorType, showAccentStars)}
-            className={isTwinkle ? 'star-twinkle' : undefined}
-            style={style}
-          />
+          <React.Fragment key={star.id}>
+            {star.hasGlow && (
+              <circle
+                cx={star.x}
+                cy={star.y}
+                r={star.r * 2.4}
+                fill={fill}
+                opacity={star.baseOpacity * 0.32}
+              />
+            )}
+            <circle
+              data-testid={`${testIdPrefix}-${star.id}`}
+              cx={star.x}
+              cy={star.y}
+              r={star.r}
+              fill={fill}
+              opacity={star.baseOpacity}
+            />
+          </React.Fragment>
         )
       })}
     </svg>
@@ -376,20 +406,14 @@ export const CinematicStarfield: React.FC<CinematicStarfieldProps> = memo(
       }
 
       // Initial alignment on mount / page change
-      updateParallax(window.scrollY || document.documentElement.scrollTop || 0)
+      updateParallax(scrollCoordinator.getScrollY())
 
       const unsubscribe = scrollCoordinator.subscribe((scrollTop) => {
         updateParallax(scrollTop)
       })
 
-      const handleScroll = () => {
-        updateParallax(window.scrollY || document.documentElement.scrollTop || 0)
-      }
-      window.addEventListener('scroll', handleScroll, { passive: true })
-
       return () => {
         unsubscribe()
-        window.removeEventListener('scroll', handleScroll)
       }
     }, [reducedMotion, enableParallax, density, visible])
 

@@ -184,7 +184,7 @@ export const MembershipPage: React.FC<MembershipPageProps> = ({
               initial={{ opacity: 0, y: reducedMotion ? 0 : 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 backdrop-blur-xl transition-all duration-200 border ${
+              className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 backdrop-blur-md transition-all duration-200 border ${
                 isCurrentPlan
                   ? 'bg-[var(--bg-elevated)]/90 border-[var(--accent-primary)] ring-2 ring-[var(--accent-primary)]/40 shadow-[0_12px_40px_rgba(0,0,0,0.5)]'
                   : 'bg-[var(--bg-card)]/75 border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/40 hover:bg-[var(--bg-elevated)]/50 shadow-md'
@@ -192,7 +192,7 @@ export const MembershipPage: React.FC<MembershipPageProps> = ({
             >
               {/* Highlight Aura */}
               <div
-                className="absolute top-0 right-0 w-44 h-44 rounded-full blur-[70px] opacity-15 pointer-events-none"
+                className="absolute top-0 right-0 w-44 h-44 rounded-full blur-2xl opacity-15 pointer-events-none"
                 style={{ backgroundColor: plan.highlightColor }}
               />
 

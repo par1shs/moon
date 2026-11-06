@@ -109,6 +109,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
               'linear-gradient(to bottom, black 0%, black 40%, rgba(0, 0, 0, 0.7) 65%, rgba(0, 0, 0, 0.25) 85%, transparent 100%)',
             WebkitMaskImage:
               'linear-gradient(to bottom, black 0%, black 40%, rgba(0, 0, 0, 0.7) 65%, rgba(0, 0, 0, 0.25) 85%, transparent 100%)',
+            transform: 'translateZ(0)',
           }}
         />
 

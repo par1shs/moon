@@ -1,0 +1,70 @@
+{
+  "label": "baseline",
+  "timestamp": "2026-11-06T10:41:18.602Z",
+  "scenarios": {
+    "initial_load": {
+      "durationMs": 2245,
+      "jsHeapUsedMB": 12.54,
+      "domNodes": 47,
+      "layoutCount": 1,
+      "recalcStyleCount": 1
+    },
+    "startup_intro": {
+      "hasStartup": false,
+      "hasStarfield": false,
+      "hasLogo": false
+    },
+    "profile_selection": {
+      "profileCardCount": 2,
+      "hasAmbientAura": true
+    },
+    "home_scrolling": {
+      "totalDurationMs": 6729,
+      "frameCount": 72,
+      "longFrames": 19,
+      "maxDeltaMs": 1188.2,
+      "avgFps": 11
+    },
+    "pointer_cursor": {
+      "totalDurationMs": 691,
+      "frameCount": 3,
+      "longFrames": 1,
+      "maxDeltaMs": 341.1,
+      "avgFps": 4
+    },
+    "starfield_parallax": {
+      "totalDurationMs": 16917,
+      "frameCount": 48,
+      "longFrames": 44,
+      "maxDeltaMs": 693.8,
+      "avgFps": 3,
+      "layer1Transform": "translate3d(0px, 81.4px, 0px)",
+      "layer2Transform": "translate3d(0px, 100.6px, 0px)",
+      "layer3Transform": "translate3d(0px, 119.8px, 0px)"
+    },
+    "navigation_latencies": {
+      "series": 166,
+      "movies": 154,
+      "discover": 177,
+      "livetv": 171,
+      "mylist": 201,
+      "devices": 1705,
+      "membership": 176,
+      "home": 164
+    },
+    "mobile_390px_scrolling": {
+      "totalDurationMs": 792,
+      "frameCount": 48,
+      "longFrames": 1,
+      "avgFps": 61
+    },
+    "final_engine_metrics": {
+      "jsHeapUsedMB": 39.36,
+      "totalLayoutCount": 90,
+      "totalRecalcStyleCount": 358,
+      "scriptDurationSec": 9.054,
+      "layoutDurationSec": 0.805,
+      "recalcStyleDurationSec": 2.842
+    }
+  }
+}

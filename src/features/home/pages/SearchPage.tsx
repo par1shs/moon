@@ -99,6 +99,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ profile, onSelectContent
   const isKids = profile?.isKidsProfile || false
 
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [scope, setScope] = useState<'All' | 'Movies' | 'Series' | 'Live'>('All')
   const [selectedGenre, setSelectedGenre] = useState('All Genres')
   const [selectedLanguage, setSelectedLanguage] = useState('All Languages')
@@ -109,14 +110,22 @@ export const SearchPage: React.FC<SearchPageProps> = ({ profile, onSelectContent
   const { isInWatchlist, toggleWatchlist } = useWatchlist(profileId, isKids)
   const { recentSearches, addSearch, removeSearch, clearSearches } = useSearchHistory(profileId)
 
+  // Debounce search query execution (120ms) to ensure smooth input responsiveness
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 120)
+    return () => clearTimeout(timer)
+  }, [query])
+
   // Auto-record search term into recent history after user pauses typing (debounce 1.2s)
   useEffect(() => {
-    if (!query.trim() || query.trim().length < 3) return
+    if (!debouncedQuery.trim() || debouncedQuery.trim().length < 3) return
     const timer = setTimeout(() => {
-      addSearch(query)
+      addSearch(debouncedQuery)
     }, 1200)
     return () => clearTimeout(timer)
-  }, [query, addSearch])
+  }, [debouncedQuery, addSearch])
 
   const searchFilters: SearchFilters = useMemo(
     () => ({
@@ -128,13 +137,14 @@ export const SearchPage: React.FC<SearchPageProps> = ({ profile, onSelectContent
     [scope, selectedGenre, selectedLanguage, sortBy]
   )
 
-  // Execute compound search
+  // Execute compound search with debounced query
   const outcome = useMemo(() => {
-    return executeSearch(UNIQUE_CATALOGUE, query, searchFilters, CATALOGUE_VOCABULARY)
-  }, [query, searchFilters])
+    return executeSearch(UNIQUE_CATALOGUE, debouncedQuery, searchFilters, CATALOGUE_VOCABULARY)
+  }, [debouncedQuery, searchFilters])
 
   const handleSelectQuery = (term: string) => {
     setQuery(term)
+    setDebouncedQuery(term)
     addSearch(term)
   }
 

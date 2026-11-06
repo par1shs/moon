@@ -188,51 +188,46 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
       const offset3 = Math.min(55, scrollTop * 0.10).toFixed(1)
       const offset4 = Math.min(45, scrollTop * 0.09).toFixed(1)
 
-      // Sync Layer Set A (Darker Gradients)
-      if (l1Ref.current) {
-        l1Ref.current.style.transform = `translate3d(-50%, ${offset1}px, 0) scale(${config.accentScale})`
-      }
-      if (l2Ref.current) {
-        l2Ref.current.style.transform = `translate3d(0, ${offset2}px, 0) scale(${config.accentScale})`
-      }
-      if (l3Ref.current) {
-        l3Ref.current.style.transform = `translate3d(0, ${offset3}px, 0)`
-      }
-      if (l4Ref.current) {
-        l4Ref.current.style.transform = `translate3d(0, ${offset4}px, 0)`
-      }
-
-      // Sync Layer Set B (Lighter Starfield Gradients)
-      if (l1StarRef.current) {
-        l1StarRef.current.style.transform = `translate3d(-50%, ${offset1}px, 0) scale(${config.accentScale})`
-      }
-      if (l2StarRef.current) {
-        l2StarRef.current.style.transform = `translate3d(0, ${offset2}px, 0) scale(${config.accentScale})`
-      }
-      if (l3StarRef.current) {
-        l3StarRef.current.style.transform = `translate3d(0, ${offset3}px, 0)`
-      }
-      if (l4StarRef.current) {
-        l4StarRef.current.style.transform = `translate3d(0, ${offset4}px, 0)`
+      // Only manipulate the active layer set's DOM nodes to eliminate redundant compositor updates
+      if (!isStarfieldSection) {
+        if (l1Ref.current) {
+          l1Ref.current.style.transform = `translate3d(-50%, ${offset1}px, 0) scale(${config.accentScale})`
+        }
+        if (l2Ref.current) {
+          l2Ref.current.style.transform = `translate3d(0, ${offset2}px, 0) scale(${config.accentScale})`
+        }
+        if (l3Ref.current) {
+          l3Ref.current.style.transform = `translate3d(0, ${offset3}px, 0)`
+        }
+        if (l4Ref.current) {
+          l4Ref.current.style.transform = `translate3d(0, ${offset4}px, 0)`
+        }
+      } else {
+        if (l1StarRef.current) {
+          l1StarRef.current.style.transform = `translate3d(-50%, ${offset1}px, 0) scale(${config.accentScale})`
+        }
+        if (l2StarRef.current) {
+          l2StarRef.current.style.transform = `translate3d(0, ${offset2}px, 0) scale(${config.accentScale})`
+        }
+        if (l3StarRef.current) {
+          l3StarRef.current.style.transform = `translate3d(0, ${offset3}px, 0)`
+        }
+        if (l4StarRef.current) {
+          l4StarRef.current.style.transform = `translate3d(0, ${offset4}px, 0)`
+        }
       }
     }
 
-    updateOffsets(window.scrollY || document.documentElement.scrollTop || 0)
+    updateOffsets(scrollCoordinator.getScrollY())
 
     const unsubscribe = scrollCoordinator.subscribe((scrollTop) => {
       updateOffsets(scrollTop)
     })
 
-    const handleScroll = () => {
-      updateOffsets(window.scrollY || document.documentElement.scrollTop || 0)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-
     return () => {
       unsubscribe()
-      window.removeEventListener('scroll', handleScroll)
     }
-  }, [reducedMotion, config.accentScale])
+  }, [reducedMotion, config.accentScale, isStarfieldSection])
 
   return (
     <div
@@ -254,7 +249,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         <div
           ref={l1Ref}
           data-testid="atmos-layer-1"
-          className="absolute -top-[12%] left-1/2 w-[130vw] max-w-[1500px] h-[550px] rounded-[100%] blur-[70px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
+          className="absolute -top-[12%] left-1/2 w-[130vw] max-w-[1500px] h-[550px] rounded-[100%] blur-3xl transition-opacity duration-700 ease-out will-change-transform z-[1]"
           style={{
             background: 'var(--atmos-dark-top)',
             opacity: config.topOpacity,
@@ -266,7 +261,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         <div
           ref={l2Ref}
           data-testid="atmos-layer-2"
-          className="absolute w-[560px] h-[560px] rounded-full blur-[80px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
+          className="absolute w-[560px] h-[560px] rounded-full blur-3xl transition-opacity duration-700 ease-out will-change-transform z-[1]"
           style={{
             top: `${config.accentYOffset}px`,
             right: `${config.accentXOffset}px`,
@@ -280,7 +275,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         <div
           ref={l3Ref}
           data-testid="atmos-layer-3"
-          className="absolute top-[35%] -left-[100px] w-[660px] h-[660px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
+          className="absolute top-[35%] -left-[100px] w-[660px] h-[660px] rounded-full blur-3xl transition-opacity duration-700 ease-out will-change-transform z-[1]"
           style={{
             background: 'var(--atmos-dark-mid)',
             opacity: config.midOpacity,
@@ -292,7 +287,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         <div
           ref={l4Ref}
           data-testid="atmos-layer-4"
-          className="absolute top-[65%] -right-[120px] w-[580px] h-[580px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform pointer-events-none z-[1]"
+          className="absolute top-[65%] -right-[120px] w-[580px] h-[580px] rounded-full blur-3xl transition-opacity duration-700 ease-out will-change-transform pointer-events-none z-[1]"
           style={{
             background: 'var(--atmos-dark-lower)',
             opacity: config.accentOpacity * 0.85,
@@ -303,7 +298,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         {/* Static Background Depth Pocket */}
         <div
           data-testid="atmos-static-pocket"
-          className="absolute bottom-[6%] -left-[100px] w-[520px] h-[520px] rounded-full blur-[90px] pointer-events-none z-[1]"
+          className="absolute bottom-[6%] -left-[100px] w-[520px] h-[520px] rounded-full blur-3xl pointer-events-none z-[1]"
           style={{
             background: 'var(--atmos-dark-static)',
             opacity: 0.32,
@@ -323,7 +318,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         {/* Lighter Top Aura */}
         <div
           ref={l1StarRef}
-          className="absolute -top-[12%] left-1/2 w-[130vw] max-w-[1500px] h-[550px] rounded-[100%] blur-[70px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
+          className="absolute -top-[12%] left-1/2 w-[130vw] max-w-[1500px] h-[550px] rounded-[100%] blur-3xl transition-opacity duration-700 ease-out will-change-transform z-[1]"
           style={{
             background: 'var(--atmos-star-top)',
             opacity: config.topOpacity,
@@ -334,7 +329,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         {/* Lighter Accent Glow */}
         <div
           ref={l2StarRef}
-          className="absolute w-[560px] h-[560px] rounded-full blur-[80px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
+          className="absolute w-[560px] h-[560px] rounded-full blur-3xl transition-opacity duration-700 ease-out will-change-transform z-[1]"
           style={{
             top: `${config.accentYOffset}px`,
             right: `${config.accentXOffset}px`,
@@ -347,7 +342,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         {/* Lighter Mid-Page Pocket */}
         <div
           ref={l3StarRef}
-          className="absolute top-[35%] -left-[100px] w-[660px] h-[660px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform z-[1]"
+          className="absolute top-[35%] -left-[100px] w-[660px] h-[660px] rounded-full blur-3xl transition-opacity duration-700 ease-out will-change-transform z-[1]"
           style={{
             background: 'var(--atmos-star-mid)',
             opacity: config.midOpacity,
@@ -358,7 +353,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
         {/* Lighter Lower-Page Pocket */}
         <div
           ref={l4StarRef}
-          className="absolute top-[65%] -right-[120px] w-[580px] h-[580px] rounded-full blur-[85px] transition-opacity duration-700 ease-out will-change-transform pointer-events-none z-[1]"
+          className="absolute top-[65%] -right-[120px] w-[580px] h-[580px] rounded-full blur-3xl transition-opacity duration-700 ease-out will-change-transform pointer-events-none z-[1]"
           style={{
             background: 'var(--atmos-star-lower)',
             opacity: config.accentOpacity * 0.85,
@@ -368,7 +363,7 @@ export const AmbientAtmosphere: React.FC<AmbientAtmosphereProps> = ({
 
         {/* Lighter Static Pocket */}
         <div
-          className="absolute bottom-[6%] -left-[100px] w-[520px] h-[520px] rounded-full blur-[90px] pointer-events-none z-[1]"
+          className="absolute bottom-[6%] -left-[100px] w-[520px] h-[520px] rounded-full blur-3xl pointer-events-none z-[1]"
           style={{
             background: 'var(--atmos-star-static)',
             opacity: 0.45,

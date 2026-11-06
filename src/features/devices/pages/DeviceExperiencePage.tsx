@@ -72,7 +72,8 @@ export const DeviceExperiencePage: React.FC<DeviceExperiencePageProps> = ({
   return (
     <div
       data-testid="device-experience-page"
-      className="min-h-screen rounded-3xl border border-[var(--devices-container-border)] bg-[var(--devices-container-bg)] backdrop-blur-md text-[var(--text-primary)] pb-24 pt-10 sm:pt-12 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-12 font-sans shadow-2xl transition-all duration-300"
+      className="min-h-screen rounded-3xl border border-[var(--devices-container-border)] bg-[var(--devices-container-bg)] backdrop-blur-md text-[var(--text-primary)] pb-24 pt-10 sm:pt-12 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-12 font-sans shadow-2xl transition-all duration-300 transform-gpu"
+      style={{ transform: 'translateZ(0)' }}
     >
       {/* ─── 1. Header & Simultaneous Screen Allowance Pill ─── */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-[var(--border-subtle)] pb-8">
